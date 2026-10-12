@@ -103,7 +103,12 @@ async function main() {
   });
 
   await app.prepare();
-  const handleUpgrade = app.getUpgradeHandler();
+  // Next's own upgrade listener is removed below, so route upgrades through the
+  // router-server handler it would have used. app.getUpgradeHandler() returns
+  // the inner server's handler, which leaves dev HMR sockets stuck in
+  // CONNECTING; browsers then queue the gateway socket behind it.
+  const handleUpgrade =
+    typeof app.upgradeHandler === "function" ? app.upgradeHandler : app.getUpgradeHandler();
   const handleServerUpgrade = (req, socket, head) => {
     if (resolvePathname(req.url) === "/api/gateway/ws") {
       proxy.handleUpgrade(req, socket, head);

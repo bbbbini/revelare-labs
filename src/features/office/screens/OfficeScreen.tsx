@@ -226,6 +226,10 @@ const ITEMS = [
   "laptop",
 ];
 const GYM_WORKOUT_LATCH_MS = 60_000;
+// Clock for timed office holds. Reading Date.now() during render made the
+// animation state a new object on every render, and the effects that depend on
+// it re-rendered the screen in a loop ("Maximum update depth exceeded").
+const OFFICE_ANIMATION_CLOCK_MS = 500;
 const MAIN_AGENT_ID = "main";
 const DEMO_MAIN_SESSION_KEY = buildAgentMainSessionKey(MAIN_AGENT_ID, "main");
 const createDemoMainAgentSeed = (): {
@@ -2924,7 +2928,13 @@ export function OfficeScreen({
     enabled: runtimeSupportsSkills,
     agents: state.agents,
   });
-  const animationNowMs = Date.now();
+  const [animationNowMs, setAnimationNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setAnimationNowMs(Date.now());
+    }, OFFICE_ANIMATION_CLOCK_MS);
+    return () => window.clearInterval(intervalId);
+  }, []);
   const officeAnimationState = useMemo(() => {
     const base = buildOfficeAnimationState({
       state: officeTriggerState,
