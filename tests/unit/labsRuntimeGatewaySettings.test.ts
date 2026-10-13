@@ -4,6 +4,7 @@ import { resolveGatewayAutoRetryDelayMs } from "@/lib/gateway/GatewayClient";
 import {
   LABS_RUNTIME_URL,
   isLabsRuntimeUrl,
+  isLocalRuntimeUrl,
   mergeStudioSettings,
   normalizeStudioSettings,
   resolveDefaultStudioGatewayProfile,
@@ -56,8 +57,40 @@ describe("local Labs Runtime gateway settings", () => {
     expect(gateway?.profiles?.local?.url).toBe("http://localhost:7770");
     expect(gateway?.profiles?.hermes?.url).toBe("ws://localhost:18789");
 
-    const otherPort = savedGateway({ url: "http://127.0.0.1:7771", adapterType: "custom" });
-    expect(otherPort?.url).toBe("http://localhost:7771");
+    // A custom 127.0.0.1 runtime on another port is kept as written, because
+    // the Studio proxy allowlist names 127.0.0.1.
+    const otherPort = savedGateway({ url: "http://127.0.0.1:7772", adapterType: "custom" });
+    expect(otherPort?.url).toBe("http://127.0.0.1:7772");
+    const typedLocalhost = savedGateway({ url: "http://localhost:7772", adapterType: "custom" });
+    expect(typedLocalhost?.url).toBe("http://localhost:7772");
+    const hermesLoopback = savedGateway({ url: "ws://127.0.0.1:18789", adapterType: "hermes" });
+    expect(hermesLoopback?.url).toBe("ws://localhost:18789");
+  });
+
+  it("treats any loopback http runtime as local, and nothing else", () => {
+    expect(isLocalRuntimeUrl("http://127.0.0.1:7772")).toBe(true);
+    expect(isLocalRuntimeUrl("http://localhost:7770/")).toBe(true);
+    for (const url of ["http://10.0.0.5:7772", "https://127.0.0.1:7772", "http://127.0.0.1:7772/api", "ws://127.0.0.1:7772"]) {
+      expect(isLocalRuntimeUrl(url)).toBe(false);
+    }
+  });
+
+  it("keeps a custom 127.0.0.1 runtime on 127.0.0.1 through merges", () => {
+    const current = normalizeStudioSettings({
+      version: 1,
+      gateway: { url: "http://127.0.0.1:7772", adapterType: "custom" },
+    });
+    const merged = mergeStudioSettings(current, {
+      gateway: {
+        url: "http://127.0.0.1:7772",
+        adapterType: "custom",
+        profiles: { custom: { url: "http://127.0.0.1:7772", token: "" } },
+        lastKnownGood: { url: "http://127.0.0.1:7772", adapterType: "custom" },
+      },
+    });
+    expect(merged.gateway?.url).toBe("http://127.0.0.1:7772");
+    expect(merged.gateway?.profiles?.custom?.url).toBe("http://127.0.0.1:7772");
+    expect(merged.gateway?.lastKnownGood?.url).toBe("http://127.0.0.1:7772");
   });
 
   it("stores 127.0.0.1 even when an open tab writes localhost back", () => {

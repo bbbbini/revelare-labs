@@ -344,17 +344,54 @@ export const isLabsRuntimeUrl = (value: unknown): boolean => {
 };
 
 /**
- * Normalizes a stored gateway URL for one backend. Only the custom backend's
- * local Labs Runtime address is pinned to 127.0.0.1; every other URL keeps the
- * existing normalization.
+ * True for a runtime on this machine: http on 127.0.0.1 or localhost, any port,
+ * with no path, query or credentials (for example the Labs Runtime on 7770 or
+ * a separate local instance on another port).
+ */
+export const isLocalRuntimeUrl = (value: unknown): boolean => {
+  const url = coerceString(value);
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    return (
+      parsed.protocol === "http:" &&
+      (host === "localhost" || host === "127.0.0.1") &&
+      (parsed.pathname === "/" || parsed.pathname === "") &&
+      !parsed.search &&
+      !parsed.hash &&
+      !parsed.username &&
+      !parsed.password
+    );
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Normalizes a stored gateway URL for one backend. The custom backend talks
+ * through the Studio proxy, whose allowlist names 127.0.0.1, so for it a
+ * 127.0.0.1 address is kept as written and the old localhost:7770 default
+ * becomes the Labs Runtime address. Every other URL keeps the existing
+ * normalization.
  */
 const normalizeAdapterGatewayUrl = (
   adapterType: StudioGatewayAdapterType,
   value: unknown,
-): string =>
-  adapterType === "custom" && isLabsRuntimeUrl(value)
-    ? LABS_RUNTIME_URL
-    : normalizeGatewayUrl(value);
+): string => {
+  if (adapterType !== "custom") return normalizeGatewayUrl(value);
+  if (isLabsRuntimeUrl(value)) return LABS_RUNTIME_URL;
+  const url = coerceString(value);
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "127.0.0.1" && !parsed.username && !parsed.password) {
+      return url.replace(/\/+$/, "");
+    }
+  } catch {
+    // Not a URL; fall through to the existing normalization.
+  }
+  return normalizeGatewayUrl(value);
+};
 
 const normalizeGatewayKey = (value: unknown) => {
   const key = normalizeGatewayUrl(value);

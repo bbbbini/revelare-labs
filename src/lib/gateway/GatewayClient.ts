@@ -15,8 +15,7 @@ import type {
   StudioSettingsPublic,
 } from "@/lib/studio/settings";
 import {
-  LABS_RUNTIME_URL,
-  isLabsRuntimeUrl,
+  isLocalRuntimeUrl,
   resolveDefaultStudioGatewayProfile,
   resolveStudioGatewayProfiles,
 } from "@/lib/studio/settings";
@@ -127,9 +126,9 @@ const CONTROL_UI_CLIENT_ID = "hermes3d-control-ui";
 const isAutoManagedAdapter = (adapterType: StudioGatewayAdapterType) =>
   adapterType === "hermes" || adapterType === "hermes-agent" || adapterType === "demo";
 
-/** The custom backend pointed at the local Labs Runtime. */
+/** The custom backend pointed at a runtime on this machine (the Labs Runtime). */
 const isLocalLabsRuntime = (adapterType: StudioGatewayAdapterType, url: string) =>
-  adapterType === "custom" && isLabsRuntimeUrl(url);
+  adapterType === "custom" && isLocalRuntimeUrl(url);
 
 /** Backends Studio connects to on its own, without a click. */
 const isAutoConnectTarget = (adapterType: StudioGatewayAdapterType, url: string) =>
@@ -138,8 +137,8 @@ const isAutoConnectTarget = (adapterType: StudioGatewayAdapterType, url: string)
 /** Retries for the local Labs Runtime before it has ever answered. */
 const LABS_RUNTIME_INITIAL_RETRY_ATTEMPTS = 5;
 
-const formatLabsRuntimeOfflineError = (detail: string) =>
-  `Labs Runtime(${LABS_RUNTIME_URL})에 연결하지 못했습니다. 레포 폴더에서 \`npm run labs-runtime\`이 실행 중인지 확인하세요. 잠시 후 자동으로 다시 시도하며, 연결 버튼으로 바로 다시 시도할 수 있습니다. (원인: ${detail})`;
+const formatLabsRuntimeOfflineError = (url: string, detail: string) =>
+  `Labs Runtime(${url.trim()})에 연결하지 못했습니다. 레포 폴더에서 \`npm run labs-runtime\`이 실행 중인지 확인하세요. 잠시 후 자동으로 다시 시도하며, 연결 버튼으로 바로 다시 시도할 수 있습니다. (원인: ${detail})`;
 
 export const resolveGatewayClientName = () => CONTROL_UI_CLIENT_ID;
 
@@ -927,7 +926,7 @@ export const useGatewayConnection = (
         setConnectErrorCode("studio.custom_runtime_probe_failed");
         setError(
           isLocalLabsRuntime(selectedAdapterType, gatewayUrl)
-            ? formatLabsRuntimeOfflineError(formatGatewayError(err))
+            ? formatLabsRuntimeOfflineError(gatewayUrl, formatGatewayError(err))
             : formatGatewayError(err)
         );
         gatewayDebugLog("connect:runtime-failed", {
