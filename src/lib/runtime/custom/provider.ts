@@ -300,6 +300,8 @@ export class CustomRuntimeProvider implements RuntimeProvider {
         return (await this.callChatAbort(params)) as T;
       case "sessions.reset":
         return (await this.callSessionsReset(params)) as T;
+      case "sessions.patch":
+        return this.callSessionsPatch(params) as T;
       case "agent.wait":
         return (await this.callAgentWait(params)) as T;
       case "exec.approvals.get":
@@ -684,6 +686,32 @@ export class CustomRuntimeProvider implements RuntimeProvider {
       this.activeRunIdBySessionKey.delete(key);
     }
     return { ok: true };
+  }
+
+  // The chat UI syncs session settings before sending. Sessions live in this
+  // provider, so only the model choice is kept; the runtime has no per-session
+  // thinking or exec settings, and those fields are accepted and ignored.
+  private callSessionsPatch(rawParams: unknown) {
+    const params = isRecord(rawParams) ? rawParams : {};
+    const key = typeof params.key === "string" ? params.key.trim() : "";
+    if (!key) {
+      throw new Error("Custom runtime requires key for sessions.patch.");
+    }
+    const agentId = parseAgentIdFromSessionKey(key) ?? "main";
+    const session = this.ensureSession(key, agentId, null);
+    if (params.model === null) {
+      session.model = null;
+    } else if (typeof params.model === "string" && params.model.trim()) {
+      session.model = params.model.trim();
+    }
+    return {
+      ok: true as const,
+      key,
+      resolved: {
+        modelProvider: "custom",
+        ...(session.model ? { model: session.model } : {}),
+      },
+    };
   }
 
   private async callAgentWait(rawParams: unknown) {

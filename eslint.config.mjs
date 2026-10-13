@@ -22,7 +22,7 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["server/**/*.js", "scripts/**/*.js"],
+    files: ["server/**/*.js", "scripts/**/*.js", "runtime/**/*.js"],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
     },

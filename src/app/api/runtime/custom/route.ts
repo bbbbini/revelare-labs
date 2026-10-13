@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -28,6 +30,25 @@ const isRuntimeUrlAllowed = (runtimeUrl: string): boolean => {
   } catch {
     return false;
   }
+};
+
+// Bearer token for the runtime, injected server-side so it never reaches the
+// browser. CUSTOM_RUNTIME_TOKEN_FILE points at a token file kept outside the
+// repository; CUSTOM_RUNTIME_TOKEN is the inline alternative.
+// Only injected when an explicit host allowlist is set, so the token cannot be
+// sent to arbitrary hosts in the allow-all dev default.
+const resolveRuntimeToken = (): string => {
+  if (!(process.env.CUSTOM_RUNTIME_ALLOWLIST ?? "").trim()) return "";
+  const tokenFile = (process.env.CUSTOM_RUNTIME_TOKEN_FILE ?? "").trim();
+  if (tokenFile) {
+    try {
+      return readFileSync(tokenFile.replace(/^~(?=$|[\\/])/, homedir()), "utf8").trim();
+    } catch {
+      console.error("[runtime/custom] Could not read CUSTOM_RUNTIME_TOKEN_FILE.");
+      return "";
+    }
+  }
+  return (process.env.CUSTOM_RUNTIME_TOKEN ?? "").trim();
 };
 
 const normalizeRuntimeUrl = (value: string): string => {
@@ -84,12 +105,14 @@ export async function POST(request: Request) {
     const runtimeUrl = normalizeRuntimeUrl(payload.runtimeUrl ?? "");
     const pathname = normalizePathname(payload.pathname);
     const method = normalizeMethod(payload.method);
+    const runtimeToken = resolveRuntimeToken();
     // Propagate the browser abort signal so that cancelling the client-side fetch
     // (e.g. hitting Stop) also cancels the upstream runtime request.
     const response = await fetch(`${runtimeUrl}${pathname}`, {
       method,
       headers: {
         Accept: "application/json",
+        ...(runtimeToken ? { Authorization: `Bearer ${runtimeToken}` } : null),
         ...(method === "POST" ? { "Content-Type": "application/json" } : null),
       },
       body: method === "POST" ? JSON.stringify(payload.body ?? {}) : undefined,
