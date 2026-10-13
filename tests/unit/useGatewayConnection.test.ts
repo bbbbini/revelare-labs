@@ -360,7 +360,7 @@ describe("useGatewayConnection", () => {
     expect(mod.resolveGatewayClientName()).toBe("hermes3d-control-ui");
   });
 
-  it("auto_applies_runtime_local_defaults_when_no_saved_gateway_and_build_time_empty", async () => {
+  it("defaults_to_labs_runtime_and_keeps_local_defaults_when_no_saved_gateway", async () => {
     // Simulates #57: NEXT_PUBLIC_GATEWAY_URL was never rebuilt, but
     // HERMES3D_GATEWAY_URL is set on the server so localGatewayDefaults
     // comes through in the sanitized (public) form with tokenConfigured.
@@ -402,10 +402,10 @@ describe("useGatewayConnection", () => {
 
     render(createElement(Probe));
 
-    // The runtime local defaults should be auto-applied since there are
-    // no saved settings and the build-time default is empty.
+    // With no saved settings the local Labs Runtime is the default backend.
+    // The runtime local defaults stay available for their own backend.
     await waitFor(() => {
-      expect(screen.getByTestId("gatewayUrl")).toHaveTextContent("ws://my-server:18789");
+      expect(screen.getByTestId("gatewayUrl")).toHaveTextContent("http://127.0.0.1:7770");
     });
     expect(screen.getByTestId("localDefaultsUrl")).toHaveTextContent("ws://my-server:18789");
   });

@@ -20,7 +20,7 @@ const DEFAULT_GATEWAY_URL_BY_ADAPTER = {
   demo: "ws://localhost:18789",
   local: "http://localhost:7770",
   hermes3d: "http://localhost:3000/api/runtime/custom",
-  custom: "http://localhost:7770",
+  custom: "http://127.0.0.1:7770",
 };
 
 const isRecord = (value) =>

@@ -103,7 +103,7 @@ describe("hermes3doctor core", () => {
 
     expect(runtime).toMatchObject({
       adapterType: "custom",
-      gatewayUrl: "http://localhost:7770",
+      gatewayUrl: "http://127.0.0.1:7770",
       tokenConfigured: false,
     });
   });

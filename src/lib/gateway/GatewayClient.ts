@@ -15,6 +15,8 @@ import type {
   StudioSettingsPublic,
 } from "@/lib/studio/settings";
 import {
+  LABS_RUNTIME_URL,
+  isLabsRuntimeUrl,
   resolveDefaultStudioGatewayProfile,
   resolveStudioGatewayProfiles,
 } from "@/lib/studio/settings";
@@ -124,6 +126,20 @@ const CONTROL_UI_CLIENT_ID = "hermes3d-control-ui";
 
 const isAutoManagedAdapter = (adapterType: StudioGatewayAdapterType) =>
   adapterType === "hermes" || adapterType === "hermes-agent" || adapterType === "demo";
+
+/** The custom backend pointed at the local Labs Runtime. */
+const isLocalLabsRuntime = (adapterType: StudioGatewayAdapterType, url: string) =>
+  adapterType === "custom" && isLabsRuntimeUrl(url);
+
+/** Backends Studio connects to on its own, without a click. */
+const isAutoConnectTarget = (adapterType: StudioGatewayAdapterType, url: string) =>
+  isAutoManagedAdapter(adapterType) || isLocalLabsRuntime(adapterType, url);
+
+/** Retries for the local Labs Runtime before it has ever answered. */
+const LABS_RUNTIME_INITIAL_RETRY_ATTEMPTS = 5;
+
+const formatLabsRuntimeOfflineError = (detail: string) =>
+  `Labs Runtime(${LABS_RUNTIME_URL})에 연결하지 못했습니다. 레포 폴더에서 \`npm run labs-runtime\`이 실행 중인지 확인하세요. 잠시 후 자동으로 다시 시도하며, 연결 버튼으로 바로 다시 시도할 수 있습니다. (원인: ${detail})`;
 
 export const resolveGatewayClientName = () => CONTROL_UI_CLIENT_ID;
 
@@ -386,7 +402,7 @@ export class GatewayClient {
       throw new Error("Gateway method is required.");
     }
     if (!this.client || !this.client.connected) {
-      throw new Error("Gateway is not connected.");
+      throw new Error("게이트웨이에 연결되어 있지 않습니다.");
     }
 
     const payload = await this.client.request<T>(method, params);
@@ -678,10 +694,14 @@ export const resolveGatewayAutoRetryDelayMs = (params: {
   connectErrorCode: string | null;
   lastDisconnectCode: number | null;
   attempt: number;
+  /** Retries allowed before the first successful connect (default none). */
+  initialRetryAttempts?: number;
 }): number | null => {
   if (params.status !== "disconnected") return null;
   if (!params.didAutoConnect) return null;
-  if (!params.hasConnectedOnce) return null;
+  if (!params.hasConnectedOnce && params.attempt >= (params.initialRetryAttempts ?? 0)) {
+    return null;
+  }
   if (params.wasManualDisconnect) return null;
   if (!params.gatewayUrl.trim()) return null;
   if (params.attempt >= MAX_AUTO_RETRY_ATTEMPTS) return null;
@@ -798,7 +818,8 @@ export const useGatewayConnection = (
         // auto-connects because lastKnownGood is still "hermes".
         const hasPersistedProfileForSelected =
           Boolean(resolvedGatewayProfiles.lastKnownGoodForSelected?.url) ||
-          (isAutoManagedAdapter(nextAdapterType) && nextGatewayUrl.trim().length > 0);
+          (isAutoConnectTarget(nextAdapterType, nextGatewayUrl) &&
+            nextGatewayUrl.trim().length > 0);
         loadedGatewaySettings.current = {
           gatewayUrl: nextGatewayUrl.trim(),
           token: nextToken,
@@ -904,7 +925,11 @@ export const useGatewayConnection = (
         setStatus("disconnected");
         setDetectedAdapterType(null);
         setConnectErrorCode("studio.custom_runtime_probe_failed");
-        setError(formatGatewayError(err));
+        setError(
+          isLocalLabsRuntime(selectedAdapterType, gatewayUrl)
+            ? formatLabsRuntimeOfflineError(formatGatewayError(err))
+            : formatGatewayError(err)
+        );
         gatewayDebugLog("connect:runtime-failed", {
           selectedAdapterType,
           message: err instanceof Error ? err.message : String(err),
@@ -994,7 +1019,7 @@ export const useGatewayConnection = (
     if (!settingsLoaded) return;
     if (!hasLastKnownGoodState) return;
     if (!gatewayUrl.trim()) return;
-    if (!isAutoManagedAdapter(selectedAdapterType)) return;
+    if (!isAutoConnectTarget(selectedAdapterType, gatewayUrl)) return;
     didAutoConnect.current = true;
     const delayMs = resolveInitialGatewayAutoConnectDelayMs(selectedAdapterType);
     gatewayDebugLog("auto-connect", {
@@ -1027,8 +1052,11 @@ export const useGatewayConnection = (
       connectErrorCode,
       lastDisconnectCode: client.lastDisconnectCode,
       attempt,
+      initialRetryAttempts: isLocalLabsRuntime(selectedAdapterType, gatewayUrl)
+        ? LABS_RUNTIME_INITIAL_RETRY_ATTEMPTS
+        : 0,
     });
-    if (!isAutoManagedAdapter(selectedAdapterType)) return;
+    if (!isAutoConnectTarget(selectedAdapterType, gatewayUrl)) return;
     if (delay === null) return;
     gatewayDebugLog("auto-retry-scheduled", {
       selectedAdapterType,

@@ -44,10 +44,8 @@ describe("officeRenderMode", () => {
     expect(resolveInitialOfficeRenderMode()).toBe("2d");
   });
 
-  it("falls back to 2d when WebGL is unavailable (jsdom has no WebGL)", () => {
-    // In jsdom canvas.getContext returns null, which the detector treats as
-    // a software/no-GL environment — exactly the machines the pixel office
-    // is designed for.
-    expect(resolveInitialOfficeRenderMode()).toBe("2d");
+  it("defaults to 3d without a stored choice, even without WebGL (jsdom)", () => {
+    // The 3D office is the product default; a stored 2D choice still wins.
+    expect(resolveInitialOfficeRenderMode()).toBe("3d");
   });
 });

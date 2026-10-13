@@ -434,7 +434,7 @@ describe("studio settings normalization", () => {
       token: "",
     });
     expect(resolveDefaultStudioGatewayProfile("custom", null)).toEqual({
-      url: "http://localhost:7770",
+      url: "http://127.0.0.1:7770",
       token: "",
     });
     expect(resolveDefaultStudioGatewayProfile("demo", null)).toEqual({

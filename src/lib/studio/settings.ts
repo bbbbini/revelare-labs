@@ -286,7 +286,12 @@ const DEFAULT_LOCAL_ADAPTER_GATEWAY_URL = "ws://localhost:18789";
 const DEFAULT_HERMES_AGENT_URL = "http://localhost:9119";
 const DEFAULT_LOCAL_RUNTIME_URL = "http://localhost:7770";
 const DEFAULT_HERMES3D_RUNTIME_URL = "http://localhost:3000/api/runtime/custom";
-const DEFAULT_CUSTOM_RUNTIME_URL = "http://localhost:7770";
+/**
+ * The local Labs Runtime. Its Studio proxy allowlist is 127.0.0.1, so this
+ * address is kept as 127.0.0.1 rather than canonicalized to localhost.
+ */
+export const LABS_RUNTIME_URL = "http://127.0.0.1:7770";
+const DEFAULT_CUSTOM_RUNTIME_URL = LABS_RUNTIME_URL;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value && typeof value === "object");
@@ -315,6 +320,41 @@ const normalizeGatewayUrl = (value: unknown) => {
     return url;
   }
 };
+
+/** True for the local Labs Runtime address, written as localhost or 127.0.0.1. */
+export const isLabsRuntimeUrl = (value: unknown): boolean => {
+  const url = coerceString(value);
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    return (
+      parsed.protocol === "http:" &&
+      (host === "localhost" || host === "127.0.0.1") &&
+      parsed.port === "7770" &&
+      (parsed.pathname === "/" || parsed.pathname === "") &&
+      !parsed.search &&
+      !parsed.hash &&
+      !parsed.username &&
+      !parsed.password
+    );
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Normalizes a stored gateway URL for one backend. Only the custom backend's
+ * local Labs Runtime address is pinned to 127.0.0.1; every other URL keeps the
+ * existing normalization.
+ */
+const normalizeAdapterGatewayUrl = (
+  adapterType: StudioGatewayAdapterType,
+  value: unknown,
+): string =>
+  adapterType === "custom" && isLabsRuntimeUrl(value)
+    ? LABS_RUNTIME_URL
+    : normalizeGatewayUrl(value);
 
 const normalizeGatewayKey = (value: unknown) => {
   const key = normalizeGatewayUrl(value);
@@ -807,10 +847,10 @@ const normalizeFocusedPreference = (
 
 const normalizeGatewaySettings = (value: unknown): StudioGatewaySettings | null => {
   if (!isRecord(value)) return null;
-  const url = normalizeGatewayUrl(value.url);
+  const adapterType = normalizeGatewayAdapterType(value.adapterType);
+  const url = normalizeAdapterGatewayUrl(adapterType, value.url);
   if (!url) return null;
   const token = coerceString(value.token);
-  const adapterType = normalizeGatewayAdapterType(value.adapterType);
   const profiles = normalizeGatewayProfiles(value.profiles);
   const lastKnownGood = normalizeGatewayConnectionState(value.lastKnownGood);
   return {
@@ -822,9 +862,12 @@ const normalizeGatewaySettings = (value: unknown): StudioGatewaySettings | null 
   };
 };
 
-const normalizeGatewayProfile = (value: unknown): StudioGatewayProfile | null => {
+const normalizeGatewayProfile = (
+  adapterType: StudioGatewayAdapterType,
+  value: unknown,
+): StudioGatewayProfile | null => {
   if (!isRecord(value)) return null;
-  const url = normalizeGatewayUrl(value.url);
+  const url = normalizeAdapterGatewayUrl(adapterType, value.url);
   if (!url) return null;
   const token = coerceString(value.token);
   return { url, token };
@@ -842,7 +885,7 @@ const normalizeGatewayProfiles = (
     "hermes3d",
     "custom",
   ] as const) {
-    const normalized = normalizeGatewayProfile(value[adapterType]);
+    const normalized = normalizeGatewayProfile(adapterType, value[adapterType]);
     if (normalized) {
       profiles[adapterType] = normalized;
     }
@@ -854,10 +897,10 @@ const normalizeGatewayConnectionState = (
   value: unknown
 ): StudioGatewayConnectionState | null => {
   if (!isRecord(value)) return null;
-  const url = normalizeGatewayUrl(value.url);
+  const adapterType = normalizeGatewayAdapterType(value.adapterType);
+  const url = normalizeAdapterGatewayUrl(adapterType, value.url);
   if (!url) return null;
   const token = coerceString(value.token);
-  const adapterType = normalizeGatewayAdapterType(value.adapterType);
   return { url, token, adapterType };
 };
 
@@ -866,15 +909,17 @@ const mergeGatewaySettings = (
   patch: StudioGatewaySettingsPatch | null,
 ): StudioGatewaySettings | null => {
   if (patch === null) return null;
-  const nextUrl =
-    patch.url === undefined ? current?.url ?? "" : normalizeGatewayUrl(patch.url);
-  if (!nextUrl) return null;
-  const nextToken =
-    patch.token === undefined ? current?.token ?? "" : coerceString(patch.token);
   const nextAdapterType =
     patch.adapterType === undefined
       ? current?.adapterType ?? "hermes"
       : normalizeGatewayAdapterType(patch.adapterType);
+  const nextUrl = normalizeAdapterGatewayUrl(
+    nextAdapterType,
+    patch.url === undefined ? current?.url ?? "" : patch.url,
+  );
+  if (!nextUrl) return null;
+  const nextToken =
+    patch.token === undefined ? current?.token ?? "" : coerceString(patch.token);
   const nextProfiles = mergeGatewayProfiles(current?.profiles, patch.profiles);
   const nextLastKnownGood = mergeGatewayConnectionState(
     current?.lastKnownGood ?? null,
@@ -915,10 +960,10 @@ const mergeGatewayProfiles = (
       continue;
     }
     const existing = current?.[adapterType] ?? null;
-    const nextUrl =
-      profilePatch.url === undefined
-        ? existing?.url ?? ""
-        : normalizeGatewayUrl(profilePatch.url);
+    const nextUrl = normalizeAdapterGatewayUrl(
+      adapterType,
+      profilePatch.url === undefined ? existing?.url ?? "" : profilePatch.url,
+    );
     if (!nextUrl) {
       delete next[adapterType];
       continue;
@@ -936,15 +981,17 @@ const mergeGatewayConnectionState = (
 ): StudioGatewayConnectionState | null => {
   if (patch === null) return null;
   if (patch === undefined) return current;
-  const nextUrl =
-    patch.url === undefined ? current?.url ?? "" : normalizeGatewayUrl(patch.url);
-  if (!nextUrl) return null;
-  const patchedToken = patch.token === undefined ? undefined : coerceString(patch.token);
-  const nextToken = patchedToken || (current?.token ?? "");
   const nextAdapterType =
     patch.adapterType === undefined
       ? current?.adapterType ?? "hermes"
       : normalizeGatewayAdapterType(patch.adapterType);
+  const nextUrl = normalizeAdapterGatewayUrl(
+    nextAdapterType,
+    patch.url === undefined ? current?.url ?? "" : patch.url,
+  );
+  if (!nextUrl) return null;
+  const patchedToken = patch.token === undefined ? undefined : coerceString(patch.token);
+  const nextToken = patchedToken || (current?.token ?? "");
   return {
     url: nextUrl,
     token: nextToken,
@@ -1012,11 +1059,10 @@ export const resolveStudioGatewayProfiles = ({
   gateway: StudioGatewaySettings | null;
   localDefaults?: StudioGatewaySettings | null;
 }): ResolvedStudioGatewayProfiles => {
+  // With nothing saved, the local Labs Runtime (custom backend) is the default.
+  // Detected local Hermes defaults still fill in their own profiles below.
   const selectedAdapterType =
-    gateway?.adapterType ??
-    gateway?.lastKnownGood?.adapterType ??
-    localDefaults?.adapterType ??
-    "hermes";
+    gateway?.adapterType ?? gateway?.lastKnownGood?.adapterType ?? "custom";
 
   const profiles: Partial<Record<StudioGatewayAdapterType, StudioGatewayProfile>> = {
     ...(localDefaults?.profiles ?? {}),
