@@ -589,8 +589,8 @@ export function InstancedFurnitureItems({
 }
 
 /**
- * Sage fabric privacy panel with a charcoal frame along the far edge of each
- * desk (research-lab look). Positions are in the desk GLB's local units, so
+ * Sage fabric privacy panel with a charcoal frame along the back edge of each
+ * desk, behind the monitor and away from the chair (research-lab look). Positions are in the desk GLB's local units, so
  * the panel follows the desk's placement, rotation and scale.
  */
 const DESK_TOP_Y = 0.384;

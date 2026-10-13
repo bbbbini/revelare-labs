@@ -13,7 +13,7 @@ import {
 import type { AgentState as AgentRecord } from "@/features/agents/state/store";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Check, ChevronRight, Clock, Mic, Paperclip, Pencil, Square, Trash2, X } from "lucide-react";
+import { ArrowUp, Check, ChevronRight, Clock, Mic, Paperclip, Pencil, Square, Trash2, X } from "lucide-react";
 import type { GatewayModelChoice } from "@/lib/gateway/models";
 import type { AgentAvatarProfile } from "@/lib/avatars/profile";
 import { rewriteMediaLinesToMarkdown } from "@/lib/text/media-markdown";
@@ -358,7 +358,7 @@ const UserMessageCard = memo(function UserMessageCard({
 }) {
   return (
     <div className="ui-chat-user-card w-full max-w-[70ch] self-end overflow-hidden rounded-[var(--radius-small)] bg-[color:var(--chat-user-bg)]">
-      <div className="flex items-center justify-between gap-3 bg-[color:var(--chat-user-header-bg)] px-3 py-2 dark:px-3.5 dark:py-2.5">
+      <div className="ui-chat-user-header flex items-center justify-between gap-3 bg-[color:var(--chat-user-header-bg)] px-3 py-2 dark:px-3.5 dark:py-2.5">
         <div className="type-meta min-w-0 truncate font-mono text-foreground/90">
           나
         </div>
@@ -1213,7 +1213,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
             placeholder="메시지를 입력하세요"
           />
           <button
-            className="rounded-md border border-border/70 bg-surface-3 px-2.5 py-2 font-mono text-[11px] font-medium tracking-[0.02em] text-white transition hover:bg-surface-2 hover:text-white disabled:cursor-not-allowed disabled:border-border/30 disabled:bg-muted/20 disabled:text-muted-foreground"
+            className="ui-chat-attach rounded-md border border-border/70 bg-surface-3 px-2.5 py-2 font-mono text-[11px] font-medium tracking-[0.02em] text-white transition hover:bg-surface-2 hover:text-white disabled:cursor-not-allowed disabled:border-border/30 disabled:bg-muted/20 disabled:text-muted-foreground"
             type="button"
             onClick={() => attachmentInputRef.current?.click()}
             disabled={!canSend}
@@ -1222,7 +1222,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
           >
             <span className="inline-flex items-center gap-1.5">
               <Paperclip className="h-3.5 w-3.5" />
-              <span>첨부</span>
+              <span className="ui-chat-btn-label">첨부</span>
             </span>
           </button>
           {voiceEnabled ? (
@@ -1263,8 +1263,10 @@ const AgentChatComposer = memo(function AgentChatComposer({
             type="button"
             onClick={onSend}
             disabled={sendDisabled}
+            aria-label="전송"
           >
-            전송
+            <ArrowUp className="ui-chat-send-icon hidden h-4 w-4" aria-hidden="true" />
+            <span className="ui-chat-btn-label">전송</span>
           </button>
         </div>
       </div>

@@ -186,6 +186,33 @@ export const getItemRotationRadians = (item: FurnitureItem) =>
   ((item.facing ?? 0) * Math.PI) / 180 +
   (FURNITURE_ROTATION[resolveItemTypeKey(item)] ?? 0);
 
+/**
+ * Canvas position of a point given in a furniture model's own (GLB) units,
+ * using the same transform the 3D scene draws it with: model scale, then a
+ * rotation about the footprint centre, then the item's position. Lets seats
+ * line up with where the chair and desk are actually drawn.
+ */
+export const modelPointToCanvas = (
+  item: FurnitureItem,
+  local: { x: number; z: number },
+  modelScale: number,
+): { x: number; y: number } => {
+  const { width, height } = getItemBaseSize(item);
+  const pivotX = width * SCALE * 0.5;
+  const pivotZ = height * SCALE * 0.5;
+  const rotation = getItemRotationRadians(item);
+  const lx = local.x * modelScale - pivotX;
+  const lz = local.z * modelScale - pivotZ;
+  const rx = lx * Math.cos(rotation) + lz * Math.sin(rotation);
+  const rz = -lx * Math.sin(rotation) + lz * Math.cos(rotation);
+  return { x: item.x + (rx + pivotX) / SCALE, y: item.y + (rz + pivotZ) / SCALE };
+};
+
+// Model-space anchors (GLB units) and the scene's model scales (FURNITURE_SCALE
+// in objects/furniture.tsx) for the desk zone.
+export const CHAIR_SEAT_ANCHOR = { local: { x: 0.1675, z: -0.157 }, scale: 1.2 };
+export const DESK_TOP_ANCHOR = { local: { x: 0.357, z: -0.184 }, scale: 1.5 };
+
 export const getItemBounds = (item: FurnitureItem) => {
   const { width, height } = getItemBaseSize(item);
   const rotation = getItemRotationRadians(item);

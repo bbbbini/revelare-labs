@@ -1491,3 +1491,46 @@ textarea:focus::-webkit-scrollbar {
   --chat-select-bg: #ffffff;
   --chat-select-fg: #2f3133;
 }
+
+/* Lab chat layout to match the approved concept: plain right-aligned user
+   bubbles, an icon attach button and a round icon send button. */
+.lab-theme .ui-chat-user-header {
+  display: none;
+}
+
+.lab-theme .ui-chat-user-card {
+  width: auto;
+  max-width: min(78%, 70ch);
+  border-radius: 18px;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.lab-theme .ui-chat-attach .ui-chat-btn-label,
+.lab-theme .ui-chat-send .ui-chat-btn-label {
+  display: none;
+}
+
+.lab-theme .ui-chat-attach {
+  border-radius: 9999px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.lab-theme .ui-chat-send {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.lab-theme .ui-chat-send .ui-chat-send-icon {
+  display: block;
+}
+
+.lab-theme .chat-composer-input {
+  font-size: 14px;
+}

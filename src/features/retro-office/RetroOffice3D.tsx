@@ -120,6 +120,7 @@ import {
   astar,
   buildNavGrid,
   getDeskLocations,
+  getRenderedDeskCenter,
   getGymWorkoutLocations,
   getJanitorCleaningStops,
   getMeetingSeatLocations,
@@ -914,6 +915,9 @@ function useAgentTick(
   const renderAgentsRef = useRef<RenderAgent[]>([]);
   const renderAgentLookupRef = useRef<Map<string, RenderAgent>>(new Map());
   const deskByAgentRef = useRef<Map<string, number>>(new Map());
+  // Desks picked for working agents that have no saved assignment. Not saved;
+  // released when the agent stops working.
+  const workingDeskByAgentRef = useRef<Map<string, number>>(new Map());
   const gymByAgentRef = useRef<Map<string, number>>(new Map());
   const qaByAgentRef = useRef<Map<string, number>>(new Map());
   const stickyUntilRef = useRef<Map<string, number>>(new Map());
@@ -1150,7 +1154,38 @@ function useAgentTick(
         );
         nextQaRef.current += 1;
       }
-      const deskIdx = deskByAgentRef.current.get(agent.id);
+      let deskIdx = deskByAgentRef.current.get(agent.id);
+      if (typeof deskIdx === "number" || agent.status !== "working") {
+        workingDeskByAgentRef.current.delete(agent.id);
+      } else if (deskLocations.length > 0) {
+        // A working agent without a saved desk sits at the nearest desk that
+        // no one is assigned to or already using, instead of on the floor.
+        const kept = workingDeskByAgentRef.current.get(agent.id);
+        if (typeof kept === "number" && kept < deskLocations.length) {
+          deskIdx = kept;
+        } else {
+          const taken = new Set<number>([
+            ...Object.values(assignedDeskIndexByAgentId),
+            ...workingDeskByAgentRef.current.values(),
+          ]);
+          const fromX = existing?.x ?? deskLocations[0].x;
+          const fromY = existing?.y ?? deskLocations[0].y;
+          let best = -1;
+          let bestDistance = Number.POSITIVE_INFINITY;
+          deskLocations.forEach((seat, index) => {
+            if (taken.has(index)) return;
+            const distance = Math.hypot(seat.x - fromX, seat.y - fromY);
+            if (distance < bestDistance) {
+              best = index;
+              bestDistance = distance;
+            }
+          });
+          if (best >= 0) {
+            workingDeskByAgentRef.current.set(agent.id, best);
+            deskIdx = best;
+          }
+        }
+      }
       const gymIdx =
         gymByAgentRef.current.get(agent.id) ??
         idx % Math.max(gymWorkoutLocations.length, 1);
@@ -1159,8 +1194,8 @@ function useAgentTick(
         idx % Math.max(qaLabStations.length, 1);
       const deskPos =
         typeof deskIdx === "number" ? (deskLocations[deskIdx] ?? null) : null;
-      // Unassigned agents intentionally have no synthetic desk fallback. Desk routing is now
-      // driven by persisted workspace assignments instead of sequential scene-local ownership.
+      // Saved workspace assignments drive desk routing. The only fallback is the
+      // temporary nearest free desk for a working agent (see above).
       if (!deskPos) {
         stickyUntilRef.current.delete(agent.id);
       }
@@ -2364,6 +2399,24 @@ function useAgentTick(
               nf = agent.facing;
             } else if (agent.interactionTarget === "meeting_room") {
               nf = agent.facing;
+            } else if (!agent.interactionTarget) {
+              // Sitting at a desk: face the nearest desk instead of keeping the
+              // direction the agent walked in (facing is the model's Y
+              // rotation; canvas x/y map to world x/z).
+              let nearestDesk: { x: number; y: number } | null = null;
+              let nearestDistance = 90;
+              for (const item of furnitureItems) {
+                if (item.type !== "desk_cubicle") continue;
+                const center = getRenderedDeskCenter(item);
+                const distance = Math.hypot(center.x - nx, center.y - ny);
+                if (distance < nearestDistance) {
+                  nearestDesk = center;
+                  nearestDistance = distance;
+                }
+              }
+              if (nearestDesk) {
+                nf = Math.atan2(nearestDesk.x - nx, nearestDesk.y - ny);
+              }
             }
           } else if (agent.status === "error") {
             ns = "standing";
@@ -2496,6 +2549,7 @@ function useAgentTick(
     deskByAgentRef,
     planPath,
   };
+
 }
 
 // ============================================================
@@ -2574,6 +2628,7 @@ export function RetroOffice3D({
   soundhermesEnabled = false,
   officeTitle = "REVELARE Security Labs",
   officeTitleLoaded = false,
+  chatPanelOpen = false,
   remoteOfficeEnabled = false,
   remoteOfficeSourceKind = "presence_endpoint",
   remoteOfficeLabel = "Remote Office",
@@ -2690,6 +2745,8 @@ export function RetroOffice3D({
   soundhermesEnabled?: boolean;
   officeTitle?: string;
   officeTitleLoaded?: boolean;
+  /** The chat panel covers the right side; the researcher view shifts left. */
+  chatPanelOpen?: boolean;
   remoteOfficeEnabled?: boolean;
   remoteOfficeSourceKind?: "presence_endpoint" | "hermes_gateway";
   remoteOfficeLabel?: string;
@@ -3197,6 +3254,8 @@ export function RetroOffice3D({
   const orbitRef = useRef<any>(null);
   // Follow cam: which agent to trail with a third-person perspective camera.
   const [followAgentId, setFollowAgentId] = useState<string | null>(null);
+  // '연구원 보기': keeps a close oblique view on the researcher while on.
+  const [researcherViewOn, setResearcherViewOn] = useState(false);
   const followAgentIdRef = useRef<string | null>(null);
   const prevMonitorAgentIdRef = useRef<string | null>(null);
   const prevAtmUidRef = useRef<string | null>(null);
@@ -3285,6 +3344,7 @@ export function RetroOffice3D({
   useEffect(() => {
     followAgentIdRef.current = followAgentId;
   }, [followAgentId]);
+
 
   // Derive per-agent colors from the agents prop (stable, no state needed).
   const agentColorMap = useMemo(
@@ -3399,6 +3459,45 @@ export function RetroOffice3D({
     conversationGroups,
     conversationExpiryRef,
   );
+
+  // While '연구원 보기' is on, re-aim the camera at the researcher's current
+  // spot so the close view keeps them in frame as they walk or sit down.
+  useEffect(() => {
+    if (!researcherViewOn) return;
+    const aim = () => {
+      const target = agents[0];
+      if (!target) return;
+      const live = renderAgentLookupRef.current.get(target.id);
+      if (!live) return;
+      const [wx, , wz] = toWorld(live.x, live.y);
+      // Look from in front of the researcher, about 57° to their side and
+      // from above so the desk partition does not hide them, like
+      // the concept's oblique desk view (facing is the model's Y rotation and
+      // the model faces +Z).
+      const angle = (live.facing ?? 0) + 1.0;
+      const camX = wx + Math.sin(angle) * 1.6;
+      const camZ = wz + Math.cos(angle) * 1.6;
+      // With the chat panel open, aim a little to the camera's right so the
+      // researcher stays visible in the left part of the screen.
+      let targetX = wx;
+      let targetZ = wz;
+      if (chatPanelOpen) {
+        const viewX = wx - camX;
+        const viewZ = wz - camZ;
+        const length = Math.hypot(viewX, viewZ) || 1;
+        targetX += (-viewZ / length) * 0.5;
+        targetZ += (viewX / length) * 0.5;
+      }
+      cameraPresetRef.current = {
+        pos: [camX + (targetX - wx), 1.85, camZ + (targetZ - wz)],
+        target: [targetX, 0.55, targetZ],
+        zoom: 400,
+      };
+    };
+    aim();
+    const timer = window.setInterval(aim, 400);
+    return () => window.clearInterval(timer);
+  }, [agents, chatPanelOpen, renderAgentLookupRef, researcherViewOn]);
   useEffect(() => {
     const syncRenderAgentUi = () => {
       const next: Record<string, RenderAgentUiSnapshot> = {};
@@ -5811,6 +5910,7 @@ export function RetroOffice3D({
               ref={orbitRef}
               target={cameraTarget}
               enabled={followAgentId === null && (!editMode || spaceDown)}
+              onStart={() => setResearcherViewOn(false)}
               enableDamping
               dampingFactor={0.08}
               rotateSpeed={0.6}
@@ -6461,6 +6561,8 @@ export function RetroOffice3D({
                 key={key}
                 title={title}
                 onClick={() => {
+                  // Any explicit view choice ends the researcher tracking.
+                  setResearcherViewOn(false);
                   cameraPresetRef.current = CAMERA_PRESET_MAP[key];
                 }}
                 className="w-7 h-7 flex items-center justify-center rounded-md bg-[#fbf8f2]/95 text-[#6f6a62] border border-[#e2dccf] hover:bg-white hover:text-[#2f3133] backdrop-blur-sm transition-colors shadow-sm"
@@ -6477,17 +6579,17 @@ export function RetroOffice3D({
                 title="연구원 보기"
                 aria-label="연구원 보기"
                 data-testid="camera-preset-researcher"
+                aria-pressed={researcherViewOn}
                 onClick={() => {
-                  const target = agents[0];
-                  const live = renderAgentLookupRef.current.get(target.id);
-                  const [wx, , wz] = toWorld(live?.x ?? 0, live?.y ?? 0);
-                  cameraPresetRef.current = {
-                    pos: [wx + 0.85, 0.95, wz + 1.0],
-                    target: [wx, 0.42, wz],
-                    zoom: 520,
-                  };
+                  // The follow camera and this view are separate modes.
+                  setFollowAgentId(null);
+                  setResearcherViewOn((on) => !on);
                 }}
-                className="w-7 h-7 flex items-center justify-center rounded-md bg-[#fbf8f2]/95 text-[#6f6a62] border border-[#e2dccf] hover:bg-white hover:text-[#2f3133] backdrop-blur-sm transition-colors shadow-sm"
+                className={`w-7 h-7 flex items-center justify-center rounded-md border backdrop-blur-sm transition-colors shadow-sm ${
+                  researcherViewOn
+                    ? "bg-[#e3e9dc] text-[#4f6545] border-[#b8c6ab]"
+                    : "bg-[#fbf8f2]/95 text-[#6f6a62] border-[#e2dccf] hover:bg-white hover:text-[#2f3133]"
+                }`}
               >
                 <Users size={12} />
               </button>
@@ -6706,11 +6808,12 @@ export function RetroOffice3D({
                             ? "따라가기 카메라 끄기"
                             : "따라가기 카메라"
                         }
-                        onClick={() =>
+                        onClick={() => {
+                          setResearcherViewOn(false);
                           setFollowAgentId((prev) =>
                             prev === agent.id ? null : agent.id,
-                          )
-                        }
+                          );
+                        }}
                         className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
                           followAgentId === agent.id
                             ? "border-amber-200/30 bg-amber-100/10 text-white"

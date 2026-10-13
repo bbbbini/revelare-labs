@@ -4616,6 +4616,7 @@ export function OfficeScreen({
         />
         ) : (
         <RetroOffice3D
+          chatPanelOpen={chatOpen}
           agents={allVisibleAgents}
           storageNamespace={activeFloor.id}
           layoutPreset="office"

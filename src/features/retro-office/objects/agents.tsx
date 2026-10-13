@@ -18,6 +18,42 @@ import { AGENT_STATUS_LABELS } from "@/features/office/statusLabels";
 /** Tee shown under the open "overshirt" top (research-lab look). */
 const OVERSHIRT_TEE_COLOR = "#efe9dc";
 const OVERSHIRT_CUFF_COLOR = "#93a786";
+/** World-units lift that puts a seated lab character on the chair seat. */
+const LAB_SEAT_LIFT = 0.13;
+
+/**
+ * A body part box. Character B (research lab) uses soft rounded parts; every
+ * other look keeps the original crisp boxes.
+ */
+function LabBox({
+  rounded,
+  size,
+  radius,
+  children,
+  ...meshProps
+}: {
+  rounded: boolean;
+  size: [number, number, number];
+  radius: number;
+  children: React.ReactNode;
+  position?: [number, number, number];
+  castShadow?: boolean;
+  receiveShadow?: boolean;
+}) {
+  if (rounded) {
+    return (
+      <RoundedBox args={size} radius={radius} smoothness={3} {...meshProps}>
+        {children}
+      </RoundedBox>
+    );
+  }
+  return (
+    <mesh {...meshProps}>
+      <boxGeometry args={size} />
+      {children}
+    </mesh>
+  );
+}
 
 const MAX_NAMEPLATE_TEXT_LENGTH = 10;
 const MAX_SUBTITLE_TEXT_LENGTH = 20;
@@ -98,6 +134,7 @@ export const AgentModel = memo(function AgentModel({
 }: AgentModelProps) {
   const groupRef = useRef<THREE.Group>(null);
   const leftArmRef = useRef<THREE.Group>(null);
+  const nameplateRef = useRef<THREE.Group>(null);
   const rightArmRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
   const rightLegRef = useRef<THREE.Group>(null);
@@ -549,10 +586,9 @@ export const AgentModel = memo(function AgentModel({
     }
 
     if (speechBubbleMatRef.current) {
-      speechBubbleMatRef.current.color.set(
-        isError ? "#3a1016" : working ? "#1d2a17" : "#1a2030",
-      );
-      speechBubbleMatRef.current.opacity = isError ? 0.97 : 0.92;
+      // Research-lab bubble: an ivory card for every state.
+      speechBubbleMatRef.current.color.set(isError ? "#f6e7e4" : "#fbf8f2");
+      speechBubbleMatRef.current.opacity = 0.97;
     }
 
     if (heldPaddleRef.current) {
@@ -704,18 +740,16 @@ export const AgentModel = memo(function AgentModel({
         : 0.216
     : 0.13;
   const speechBubbleTextColor = activeSpeechBubble
-    ? "#f8fafc"
+    ? "#2f3133"
     : status === "error"
-      ? "#ff9aa5"
+      ? "#a3483e"
       : status === "working"
-        ? "#b9f99d"
-        : "#a0c8ff";
+        ? "#4f6545"
+        : "#6f6a62";
   const speechBubbleBorderColor = activeSpeechBubble
     ? status === "error"
-      ? "#ff7f93"
-      : status === "working"
-        ? "#93f57d"
-        : "#8dc4ff"
+      ? "#e8c9c4"
+      : "#cdd8c2"
     : "transparent";
   const speechBubbleBorderInset = activeSpeechBubble ? 0.03 : 0;
   const nameplateText = name ? formatAgentNameplateText(name) : "";
@@ -735,8 +769,47 @@ export const AgentModel = memo(function AgentModel({
         : "";
   const nameplateHeight =
     1.05 + (inHuddle ? ((huddleSeatIndex ?? 0) % 4) * 0.17 : 0);
-  const nameplateFontSize =
-    nameplateText.length > 9 ? 0.118 : nameplateText.length > 7 ? 0.13 : 0.144;
+  // Hangul glyphs are about twice as wide as Latin ones, so size the name by
+  // its estimated width and keep it on one line inside the plate.
+  const NAMEPLATE_WIDTH = 0.96;
+  const nameplateTextWidth = NAMEPLATE_WIDTH - 0.24;
+  const nameplateEm = [...nameplateText].reduce(
+    (sum, char) => sum + (/[\u3131-\uD79D]/.test(char) ? 1 : char === " " ? 0.3 : 0.58),
+    0,
+  );
+  const nameplateFontSize = Math.min(
+    0.144,
+    nameplateEm > 0 ? nameplateTextWidth / nameplateEm : 0.144,
+  );
+
+  // Character B seated at a desk: thighs forward, hips at chair-seat height,
+  // a slight lean toward the desk and hands reaching for the keyboard. Runs
+  // after the main pose update, and only for the lab look while sitting.
+  useFrame(() => {
+    if (!labLook || !groupRef.current) return;
+    const agent =
+      agentLookupRef?.current?.get(agentId) ??
+      agentsRef.current?.find((candidate) => candidate.id === agentId);
+    if (!agent || agent.state !== "sitting") return;
+    groupRef.current.position.y += LAB_SEAT_LIFT;
+    groupRef.current.rotation.x = 0.06;
+    if (leftLegRef.current) leftLegRef.current.rotation.x = -1.45;
+    if (rightLegRef.current) rightLegRef.current.rotation.x = -1.45;
+    if (leftArmRef.current) leftArmRef.current.rotation.x = -0.95;
+    if (rightArmRef.current) rightArmRef.current.rotation.x = -0.95;
+  });
+
+  // Keep the nameplate a readable size on screen: full size in the overview,
+  // smaller as the camera comes close so it does not cover the agent or menus.
+  useFrame((state) => {
+    if (!nameplateRef.current || !groupRef.current) return;
+    const distance = state.camera.position.distanceTo(groupRef.current.position);
+    const plateScale = THREE.MathUtils.clamp(distance / 12, 0.24, 1);
+    nameplateRef.current.scale.setScalar(plateScale);
+    // Close up, the smaller plate also sits just above the head.
+    const headTop = 0.68;
+    nameplateRef.current.position.y = headTop + (nameplateHeight - headTop) * plateScale;
+  });
 
   return (
     <group
@@ -775,10 +848,9 @@ export const AgentModel = memo(function AgentModel({
           </>
         ) : (
           <>
-            <mesh castShadow>
-              <boxGeometry args={[0.07, 0.14, 0.08]} />
+            <LabBox rounded={labLook} size={labLook ? [0.062, 0.14, 0.072] : [0.07, 0.14, 0.08]} radius={0.022} castShadow>
               <meshStandardMaterial color={trouserColor} roughness={0.75} />
-            </mesh>
+            </LabBox>
             {bottomStyle === "cuffed" ? (
               <mesh position={[0, -0.05, 0]}>
                 <boxGeometry args={[0.074, 0.022, 0.084]} />
@@ -787,10 +859,9 @@ export const AgentModel = memo(function AgentModel({
             ) : null}
           </>
         )}
-        <mesh position={[0, -0.09, 0]} castShadow>
-          <boxGeometry args={[0.07, 0.05, 0.12]} />
+        <LabBox rounded={labLook} size={labLook ? [0.066, 0.045, 0.115] : [0.07, 0.05, 0.12]} radius={0.018} position={[0, -0.09, 0]} castShadow>
           <meshStandardMaterial color={shoeColor} roughness={0.75} />
-        </mesh>
+        </LabBox>
       </group>
       <group ref={leftLegRef} position={[0.045, 0.1, 0]}>
         {bottomStyle === "shorts" ? (
@@ -806,10 +877,9 @@ export const AgentModel = memo(function AgentModel({
           </>
         ) : (
           <>
-            <mesh castShadow>
-              <boxGeometry args={[0.07, 0.14, 0.08]} />
+            <LabBox rounded={labLook} size={labLook ? [0.062, 0.14, 0.072] : [0.07, 0.14, 0.08]} radius={0.022} castShadow>
               <meshStandardMaterial color={trouserColor} roughness={0.75} />
-            </mesh>
+            </LabBox>
             {bottomStyle === "cuffed" ? (
               <mesh position={[0, -0.05, 0]}>
                 <boxGeometry args={[0.074, 0.022, 0.084]} />
@@ -818,10 +888,9 @@ export const AgentModel = memo(function AgentModel({
             ) : null}
           </>
         )}
-        <mesh position={[0, -0.09, 0]} castShadow>
-          <boxGeometry args={[0.07, 0.05, 0.12]} />
+        <LabBox rounded={labLook} size={labLook ? [0.066, 0.045, 0.115] : [0.07, 0.05, 0.12]} radius={0.018} position={[0, -0.09, 0]} castShadow>
           <meshStandardMaterial color={shoeColor} roughness={0.75} />
-        </mesh>
+        </LabBox>
       </group>
       {showBackpack ? (
         <group position={[0, 0.28, -0.08]}>
@@ -839,10 +908,9 @@ export const AgentModel = memo(function AgentModel({
           </mesh>
         </group>
       ) : null}
-      <mesh position={[0, 0.28, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.18, 0.2, 0.1]} />
+      <LabBox rounded={labLook} size={labLook ? [0.165, 0.2, 0.1] : [0.18, 0.2, 0.1]} radius={0.034} position={[0, 0.28, 0]} castShadow receiveShadow>
         <meshStandardMaterial ref={bodyMatRef} color={topColor} roughness={0.75} />
-      </mesh>
+      </LabBox>
       {topStyle === "hoodie" ? (
         <>
           <mesh position={[0, 0.35, -0.045]} castShadow>
@@ -1247,16 +1315,16 @@ export const AgentModel = memo(function AgentModel({
         />
       </mesh>
       {!activeSpeechBubble && nameplateText ? (
-        <Billboard position={[0, nameplateHeight, 0]}>
+        <Billboard ref={nameplateRef} position={[0, nameplateHeight, 0]}>
           <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[0.82, subtitleText ? 0.34 : 0.24]} />
+            <planeGeometry args={[NAMEPLATE_WIDTH, subtitleText ? 0.34 : 0.24]} />
             <meshBasicMaterial color="#fbf8f2" transparent opacity={0.96} />
           </mesh>
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[0.84, subtitleText ? 0.36 : 0.26]} />
+            <planeGeometry args={[NAMEPLATE_WIDTH + 0.02, subtitleText ? 0.36 : 0.26]} />
             <meshBasicMaterial color="#d9d2c4" transparent opacity={0.9} />
           </mesh>
-          <mesh position={[0.355, subtitleText ? 0.05 : 0, 0]}>
+          <mesh position={[NAMEPLATE_WIDTH / 2 - 0.065, subtitleText ? 0.05 : 0, 0]}>
             <circleGeometry args={[0.052, 14]} />
             <meshBasicMaterial ref={statusDotMatRef} color="#ef4444" />
           </mesh>
@@ -1266,7 +1334,7 @@ export const AgentModel = memo(function AgentModel({
             color="#2f3133"
             anchorX="center"
             anchorY="middle"
-            maxWidth={0.68}
+            maxWidth={nameplateTextWidth}
             font={undefined}
           >
             {nameplateText}
@@ -1278,7 +1346,7 @@ export const AgentModel = memo(function AgentModel({
               color="#6f8762"
               anchorX="center"
               anchorY="middle"
-              maxWidth={0.68}
+              maxWidth={nameplateTextWidth}
               font={undefined}
             >
               {subtitleText}
@@ -1313,9 +1381,9 @@ export const AgentModel = memo(function AgentModel({
             >
               <planeGeometry args={[0.22, 0.22]} />
               <meshBasicMaterial
-                color="#1a2030"
+                color="#fbf8f2"
                 transparent
-                opacity={0.82}
+                opacity={0.97}
                 depthTest={false}
                 depthWrite={false}
               />
@@ -1342,7 +1410,7 @@ export const AgentModel = memo(function AgentModel({
             <planeGeometry args={[speechBubbleWidth, speechBubbleHeight]} />
             <meshBasicMaterial
               ref={speechBubbleMatRef}
-              color="#1a2030"
+              color="#fbf8f2"
               transparent
               opacity={activeSpeechBubble ? 0.76 : 0.92}
               depthTest={false}
@@ -1373,7 +1441,7 @@ export const AgentModel = memo(function AgentModel({
             <Text
               position={[0, -speechBubbleHeight * 0.34, 0.001]}
               fontSize={0.09}
-              color="#8ab4ff"
+              color="#6f8762"
               anchorX="center"
               anchorY="middle"
               maxWidth={speechBubbleMaxWidth}
@@ -1383,7 +1451,7 @@ export const AgentModel = memo(function AgentModel({
               material-depthTest={false}
               material-depthWrite={false}
             >
-              click for full chat
+              클릭하면 전체 대화
             </Text>
           ) : null}
         </Billboard>

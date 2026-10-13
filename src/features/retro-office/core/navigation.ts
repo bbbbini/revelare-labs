@@ -4,9 +4,12 @@ import {
   CANVAS_W,
 } from "@/features/retro-office/core/constants";
 import {
+  CHAIR_SEAT_ANCHOR,
+  DESK_TOP_ANCHOR,
   getItemBounds,
   ITEM_FOOTPRINT,
   ITEM_METADATA,
+  modelPointToCanvas,
   snap,
 } from "@/features/retro-office/core/geometry";
 import type {
@@ -349,10 +352,35 @@ export function astar(
   return [];
 }
 
-export const getDeskLocations = (items: FurnitureItem[]) =>
-  items
+// The authored seat sits at a fixed offset from its desk. When a chair stands
+// by the desk (desks can be rotated and chairs moved), the agent sits on that
+// chair: both the chair seat and the desk top are taken from where their 3D
+// models are actually drawn, not from the footprint corners.
+const DESK_CHAIR_SNAP_RADIUS = 80;
+
+export const getRenderedDeskCenter = (item: FurnitureItem) =>
+  modelPointToCanvas(item, DESK_TOP_ANCHOR.local, DESK_TOP_ANCHOR.scale);
+
+export const getDeskLocations = (items: FurnitureItem[]) => {
+  const chairSeats = items
+    .filter((item) => item.type === "chair")
+    .map((item) => modelPointToCanvas(item, CHAIR_SEAT_ANCHOR.local, CHAIR_SEAT_ANCHOR.scale));
+  return items
     .filter((item) => item.type === "desk_cubicle")
-    .map((item) => ({ x: item.x + 40, y: item.y - 5 }));
+    .map((item) => {
+      const deskCenter = getRenderedDeskCenter(item);
+      let best: { x: number; y: number } | null = null;
+      let bestDistance = DESK_CHAIR_SNAP_RADIUS;
+      for (const seat of chairSeats) {
+        const distance = Math.hypot(seat.x - deskCenter.x, seat.y - deskCenter.y);
+        if (distance <= bestDistance) {
+          best = seat;
+          bestDistance = distance;
+        }
+      }
+      return best ?? { x: item.x + 40, y: item.y - 5 };
+    });
+};
 
 export const getMeetingSeatLocations = (items: FurnitureItem[]) => {
   // Meeting seats are inferred from chair placement in the conference area so standup
