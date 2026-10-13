@@ -14,7 +14,7 @@ export const AgentsStep = ({ agentCount, connected }: AgentsStepProps) => {
       <div className="flex flex-col items-center justify-center gap-3 py-8">
         <WifiOff className="h-8 w-8 text-white/30" />
         <p className="text-sm text-white/60">
-          Connect to your gateway first to discover agents.
+          에이전트를 찾으려면 먼저 게이트웨이에 연결하세요.
         </p>
       </div>
     );
@@ -27,21 +27,21 @@ export const AgentsStep = ({ agentCount, connected }: AgentsStepProps) => {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5">
             <Bot className="h-6 w-6 text-white/40" />
           </div>
-          <p className="text-sm font-medium text-white">No agents found</p>
+          <p className="text-sm font-medium text-white">에이전트가 없습니다</p>
           <p className="max-w-xs text-center text-xs text-white/55">
-            Your gateway is connected, but no agents are configured yet.
-            You can create agents from the Hermes3D fleet sidebar after
-            completing this wizard.
+            게이트웨이는 연결되었지만 아직 설정된 에이전트가 없습니다.
+            안내를 마친 뒤 에이전트 사이드바에서 에이전트를 만들 수
+            있습니다.
           </p>
         </div>
 
         <div className="rounded-lg border border-white/8 bg-white/[0.02] px-4 py-3">
-          <p className="text-xs font-medium text-white/80">Quick start:</p>
+          <p className="text-xs font-medium text-white/80">빠른 시작:</p>
           <ol className="mt-2 space-y-1.5 text-[11px] text-white/55">
-            <li>1. Click the + button in the fleet sidebar</li>
-            <li>2. Choose a name and model for your agent</li>
-            <li>3. Configure skills and personality</li>
-            <li>4. Watch your agent appear at their desk!</li>
+            <li>1. 에이전트 사이드바의 + 버튼을 누릅니다</li>
+            <li>2. 에이전트 이름과 모델을 고릅니다</li>
+            <li>3. 스킬과 성격을 설정합니다</li>
+            <li>4. 에이전트가 자기 책상에 나타나는 것을 확인합니다!</li>
           </ol>
         </div>
       </div>
@@ -54,24 +54,24 @@ export const AgentsStep = ({ agentCount, connected }: AgentsStepProps) => {
         <Users className="h-5 w-5 text-amber-300" />
         <div>
           <p className="text-sm font-semibold text-white">
-            {agentCount} agent{agentCount !== 1 ? "s" : ""} discovered
+            에이전트 {agentCount}명을 찾았습니다
           </p>
           <p className="text-[11px] text-white/55">
-            Your AI team is ready and waiting in the office.
+            AI 팀이 오피스에서 준비를 마치고 기다리고 있습니다.
           </p>
         </div>
       </div>
 
       <div className="space-y-2">
         <p className="text-xs font-medium text-white/70">
-          What you can do with agents:
+          에이전트와 할 수 있는 일:
         </p>
         <div className="grid grid-cols-2 gap-2">
           {[
-            { label: "Chat", desc: "Send messages and get responses" },
-            { label: "Approve", desc: "Review and approve exec commands" },
-            { label: "Configure", desc: "Edit brain files and settings" },
-            { label: "Monitor", desc: "Watch runtime activity in real time" },
+            { label: "대화", desc: "메시지를 보내고 답변을 받습니다" },
+            { label: "승인", desc: "실행 명령을 검토하고 승인합니다" },
+            { label: "설정", desc: "brain 파일과 설정을 수정합니다" },
+            { label: "모니터링", desc: "런타임 활동을 실시간으로 봅니다" },
           ].map(({ label, desc }) => (
             <div
               key={label}

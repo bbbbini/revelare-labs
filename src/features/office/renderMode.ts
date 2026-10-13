@@ -14,13 +14,13 @@ export const OFFICE_RENDER_MODE_OPTIONS: Array<{
 }> = [
   {
     id: "3d",
-    label: "3D immersive",
-    description: "Full Three.js office with shadows and post-processing.",
+    label: "3D 몰입형",
+    description: "그림자와 후처리 효과가 있는 전체 Three.js 오피스입니다.",
   },
   {
     id: "2d",
-    label: "2D pixel",
-    description: "Gather-style pixel office. Great for low-power machines.",
+    label: "2D 픽셀",
+    description: "Gather 스타일 픽셀 오피스입니다. 저사양 컴퓨터에 적합합니다.",
   },
 ];
 

@@ -57,13 +57,13 @@ export const CompleteStep = ({
       <div className="space-y-2 text-center">
         <p className="text-base font-semibold text-white">
           {companyCreated
-            ? `${companyName?.trim() || "Your company"} created successfully`
-            : "Welcome to your AI office"}
+            ? `${companyName?.trim() || "회사"} 생성 완료`
+            : "AI 오피스에 오신 것을 환영합니다"}
         </p>
         <p className="max-w-sm text-sm text-white/60">
           {companyCreated
-            ? `${companyName?.trim() || "Your company"} is ready. Your new team has been created in the connected runtime and placed into the office.`
-            : "Your gateway is connected and your agents are ready. Step inside and explore the 3D workspace where your AI team operates."}
+            ? `${companyName?.trim() || "회사"} 준비가 끝났습니다. 새 팀이 연결된 런타임에 만들어졌고 오피스에 배치되었습니다.`
+            : "게이트웨이가 연결되었고 에이전트가 준비되었습니다. 안으로 들어가 AI 팀이 일하는 3D 작업 공간을 둘러보세요."}
         </p>
       </div>
 
@@ -72,19 +72,19 @@ export const CompleteStep = ({
           <Building2 className="h-4 w-4 shrink-0 text-amber-300" />
           <div>
             <p className="text-xs font-medium text-white">
-              {companyCreated ? "Meet Your New Team" : "Explore the Office"}
+              {companyCreated ? "새 팀 만나기" : "오피스 둘러보기"}
             </p>
             <p className="text-[10px] text-white/45">
               {companyCreated
-                ? "Walk the office, inspect the new roles, and start delegating work."
-                : "Navigate rooms, watch agents, and interact"}
+                ? "오피스를 둘러보며 새 역할을 확인하고 업무를 맡겨 보세요."
+                : "방을 이동하며 에이전트를 지켜보고 상호작용하세요"}
             </p>
           </div>
         </div>
       </div>
 
       <p className="text-[11px] text-white/35">
-        You can always re-run onboarding from Studio settings.
+        온보딩은 Studio 설정에서 언제든 다시 실행할 수 있습니다.
       </p>
     </div>
   );

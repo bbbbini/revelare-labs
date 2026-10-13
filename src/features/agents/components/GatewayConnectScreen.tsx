@@ -99,35 +99,35 @@ export const GatewayConnectScreen = ({
   };
   const statusCopy = useMemo(() => {
     if (status === "connecting" && isLocal) {
-      return `Local gateway detected on port ${localPort}. Connecting…`;
+      return `${localPort} 포트에서 로컬 게이트웨이를 찾았습니다. 연결 중…`;
     }
     if (status === "connecting") {
-      return "Connecting to remote gateway…";
+      return "원격 게이트웨이에 연결 중…";
     }
     if (isLocal) {
-      return "No local gateway found.";
+      return "로컬 게이트웨이를 찾지 못했습니다.";
     }
-    return "Not connected to a gateway.";
+    return "게이트웨이에 연결되지 않았습니다.";
   }, [isLocal, localPort, status]);
   const selectedAdapterHint = useMemo(() => {
     switch (selectedAdapterType) {
       case "hermes":
-        return "Hermes is the agent runtime path with its own provider/account flow behind the gateway.";
+        return "Hermes는 게이트웨이 뒤에서 자체 provider·계정 흐름을 쓰는 에이전트 런타임입니다.";
       case "hermes-agent":
-        return "Hermes Agent connects straight to a hermes-agent backend's JSON-RPC gateway — no adapter process. Point it at the server root (Studio appends /api/ws) and use the session token, not a dashboard login.";
+        return "Hermes Agent는 어댑터 프로세스 없이 hermes-agent 백엔드의 JSON-RPC 게이트웨이에 직접 연결합니다. 서버 루트 주소를 입력하고(Studio가 /api/ws를 붙입니다) 대시보드 로그인이 아닌 세션 토큰을 사용하세요.";
       case "demo":
-        return "Demo can fall back to a seeded main agent locally, or connect to the bundled mock gateway for streaming replies.";
+        return "데모는 로컬의 기본 main 에이전트로 동작하거나, 함께 제공되는 mock 게이트웨이에 연결해 스트리밍 답변을 받을 수 있습니다.";
       case "local":
-        return "Local runtime expects a direct HTTP runtime/orchestrator boundary, not a provider catalog.";
+        return "로컬 런타임은 provider 카탈로그가 아니라 HTTP로 직접 연결되는 런타임/오케스트레이터를 대상으로 합니다.";
       case "hermes3d":
-        return "Hermes3D runtime preserves Hermes3D transcript conventions over the direct runtime seam.";
+        return "Hermes3D 런타임은 직접 런타임 연결에서 Hermes3D transcript 규칙을 그대로 사용합니다.";
       case "custom":
       default:
-        return "Custom is the generic direct runtime seam. Use it for compatible orchestrators, not for provider-specific auth flows.";
+        return "커스텀은 범용 직접 런타임 연결입니다. 호환되는 오케스트레이터에 사용하고, provider 전용 인증 흐름에는 사용하지 마세요.";
     }
   }, [selectedAdapterType]);
   const connectDisabled = status === "connecting";
-  const connectLabel = connectDisabled ? "Connecting…" : "Connect";
+  const connectLabel = connectDisabled ? "연결 중…" : "연결";
   const statusDotClass =
     status === "connected"
       ? "ui-dot-status-connected"
@@ -156,19 +156,19 @@ export const GatewayConnectScreen = ({
           type="button"
           className="ui-btn-icon ui-command-copy h-7 w-7 shrink-0"
           onClick={copyLocalCommand}
-          aria-label="Copy local gateway command"
-          title="Copy command"
+          aria-label="로컬 게이트웨이 명령 복사"
+          title="명령 복사"
         >
           {copyStatus === "copied" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
       </div>
       {copyStatus === "copied" ? (
-        <p className="text-xs text-muted-foreground">Copied</p>
+        <p className="text-xs text-muted-foreground">복사됨</p>
       ) : copyStatus === "failed" ? (
-        <p className="ui-text-danger text-xs">Could not copy command.</p>
+        <p className="ui-text-danger text-xs">명령을 복사하지 못했습니다.</p>
       ) : (
         <p className="text-xs leading-snug text-muted-foreground">
-          In a source checkout, use <span className="font-mono text-foreground">{localGatewayCommandPnpm}</span>.
+          소스 체크아웃에서는 <span className="font-mono text-foreground">{localGatewayCommandPnpm}</span>을 사용하세요.
         </p>
       )}
     </div>
@@ -177,7 +177,7 @@ export const GatewayConnectScreen = ({
   const remoteForm = (
     <div className="mt-2.5 flex flex-col gap-3">
       <label className="flex flex-col gap-1 text-[11px] font-medium text-foreground/90">
-        Upstream URL
+        업스트림 URL
         <input
           className="ui-input h-10 rounded-md px-4 font-sans text-sm text-foreground outline-none"
           type="text"
@@ -206,27 +206,27 @@ export const GatewayConnectScreen = ({
       ) : null}
 
       <div className="space-y-0.5 text-xs text-muted-foreground">
-        <p className="font-medium text-foreground">Using Tailscale?</p>
+        <p className="font-medium text-foreground">Tailscale을 사용하나요?</p>
         <p>
           URL: <span className="font-mono">wss://&lt;your-tailnet-host&gt;</span>
         </p>
       </div>
 
       <label className="flex flex-col gap-1 text-[11px] font-medium text-foreground/90">
-        {tokenOptional ? "Upstream token (optional)" : "Upstream token"}
+        {tokenOptional ? "업스트림 토큰 (선택)" : "업스트림 토큰"}
         <div className="relative">
           <input
             className="ui-input h-10 w-full rounded-md px-4 pr-10 font-sans text-sm text-foreground outline-none"
             type={showToken ? "text" : "password"}
             value={token}
             onChange={(event) => onTokenChange(event.target.value)}
-            placeholder={tokenOptional ? "optional token" : "gateway token"}
+            placeholder={tokenOptional ? "토큰 (선택)" : "게이트웨이 토큰"}
             spellCheck={false}
           />
           <button
             type="button"
             className="ui-btn-icon absolute inset-y-0 right-1 my-auto h-8 w-8 border-transparent bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground"
-            aria-label={showToken ? "Hide token" : "Show token"}
+            aria-label={showToken ? "토큰 숨기기" : "토큰 보기"}
             onClick={() => setShowToken((prev) => !prev)}
           >
             {showToken ? (
@@ -250,7 +250,7 @@ export const GatewayConnectScreen = ({
       {status === "connecting" ? (
         <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
           <RunningAvatarLoader size={16} trackWidth={32} inline />
-          Connecting…
+          연결 중…
         </div>
       ) : null}
       {error ? <p className="ui-text-danger text-xs leading-snug">{error}</p> : null}
@@ -275,10 +275,10 @@ export const GatewayConnectScreen = ({
       {renderMode && onRenderModeChange ? (
         <div className="ui-card px-4 py-4 sm:px-6">
           <p className="font-mono text-[10px] font-medium tracking-[0.06em] text-muted-foreground">
-            Office renderer
+            오피스 렌더러
           </p>
           <p className="mt-2 text-sm text-foreground/90">
-            Pick before connecting — nothing heavy loads until you do.
+            연결 전에 고르세요. 고르기 전에는 무거운 리소스를 불러오지 않습니다.
           </p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {OFFICE_RENDER_MODE_OPTIONS.map((option) => {
@@ -313,16 +313,16 @@ export const GatewayConnectScreen = ({
       <div className="ui-card px-4 py-5 sm:px-6">
         <div>
           <p className="font-mono text-[10px] font-medium tracking-[0.06em] text-muted-foreground">
-            Remote gateway (recommended)
+            원격 게이트웨이 (권장)
           </p>
           <p className="mt-2 text-sm text-foreground/90">
-            Choose a backend, then connect to its gateway URL.
+            백엔드를 고른 뒤 해당 게이트웨이 URL로 연결하세요.
           </p>
           <p className="mt-2 font-mono text-[11px] text-muted-foreground">
-            Selected backend: {selectedAdapterType} | Active backend: {activeAdapterType}
+            선택한 백엔드: {selectedAdapterType} | 사용 중인 백엔드: {activeAdapterType}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Each backend keeps its own saved URL and token.
+            백엔드마다 URL과 토큰이 따로 저장됩니다.
           </p>
           <p className="mt-2 text-xs leading-snug text-muted-foreground">
             {selectedAdapterHint}
@@ -333,42 +333,42 @@ export const GatewayConnectScreen = ({
               className="ui-btn-secondary px-3 py-1.5 text-[11px] font-semibold tracking-[0.05em]"
               onClick={useDemoPreset}
             >
-              Demo backend
+              데모 백엔드
             </button>
             <button
               type="button"
               className="ui-btn-secondary px-3 py-1.5 text-[11px] font-semibold tracking-[0.05em]"
               onClick={useHermesPreset}
             >
-              Hermes backend
+              Hermes 백엔드
             </button>
             <button
               type="button"
               className="ui-btn-secondary px-3 py-1.5 text-[11px] font-semibold tracking-[0.05em]"
               onClick={useHermesAgentPreset}
             >
-              Hermes Agent (direct)
+              Hermes Agent (직접 연결)
             </button>
             <button
               type="button"
               className="ui-btn-secondary px-3 py-1.5 text-[11px] font-semibold tracking-[0.05em]"
               onClick={useLocalPreset}
             >
-              Local runtime
+              로컬 런타임
             </button>
             <button
               type="button"
               className="ui-btn-secondary px-3 py-1.5 text-[11px] font-semibold tracking-[0.05em]"
               onClick={useHermes3dPreset}
             >
-              Hermes3D runtime
+              Hermes3D 런타임
             </button>
             <button
               type="button"
               className="ui-btn-secondary px-3 py-1.5 text-[11px] font-semibold tracking-[0.05em]"
               onClick={useCustomPreset}
             >
-              Custom backend
+              커스텀 백엔드
             </button>
           </div>
         </div>
@@ -378,54 +378,63 @@ export const GatewayConnectScreen = ({
       <div className="ui-card px-4 py-4 sm:px-6 sm:py-5">
         <div className="space-y-1.5">
           <p className="font-mono text-[10px] font-semibold tracking-[0.06em] text-muted-foreground">
-            Run locally (optional)
+            로컬에서 실행 (선택)
           </p>
           <p className="text-sm text-foreground/90">
-            Start a local gateway process on this machine, then connect.
+            이 컴퓨터에서 로컬 게이트웨이 프로세스를 시작한 뒤 연결하세요.
           </p>
         </div>
         <div className="mt-3 space-y-3">
-          {commandField}
+          {selectedAdapterType === "custom" ? (
+            <div className="rounded-md border border-border bg-muted/30 px-3 py-3">
+              <p className="text-xs font-medium text-foreground">Labs Runtime을 사용하나요?</p>
+              <p className="mt-1 text-xs leading-snug text-muted-foreground">
+                <span className="font-mono text-foreground">npm run labs-runtime</span>을 실행한 뒤
+                <span className="font-mono text-foreground"> 커스텀 백엔드</span>에서 URL
+                <span className="font-mono text-foreground"> http://127.0.0.1:7770</span>에 연결하세요.
+                토큰은 Studio 서버가 자동으로 붙이므로 비워 둡니다.
+              </p>
+            </div>
+          ) : null}
+          {selectedAdapterType === "hermes" ? commandField : null}
           <div className="rounded-md border border-border bg-muted/30 px-3 py-3">
-            <p className="text-xs font-medium text-foreground">Just want to see the office?</p>
+            <p className="text-xs font-medium text-foreground">오피스만 먼저 보고 싶나요?</p>
             <p className="mt-1 text-xs leading-snug text-muted-foreground">
-              Run <span className="font-mono text-foreground">{localDemoCommand}</span> to start a built-in mock gateway with demo agents.
-              Then choose <span className="font-mono text-foreground">Demo backend</span> and connect.
+              <span className="font-mono text-foreground">{localDemoCommand}</span>를 실행하면 데모 에이전트가 있는 내장 mock 게이트웨이가 시작됩니다.
+              그다음 <span className="font-mono text-foreground">데모 백엔드</span>를 고르고 연결하세요.
             </p>
           </div>
           <div className="rounded-md border border-border bg-muted/30 px-3 py-3">
-            <p className="text-xs font-medium text-foreground">Using Hermes locally?</p>
+            <p className="text-xs font-medium text-foreground">Hermes를 로컬에서 사용하나요?</p>
             <p className="mt-1 text-xs leading-snug text-muted-foreground">
-              Run <span className="font-mono text-foreground">npm run hermes-adapter</span>, then choose
-              <span className="font-mono text-foreground"> Hermes backend</span>. The default local URL is
-              <span className="font-mono text-foreground"> ws://localhost:18789</span>.
+              <span className="font-mono text-foreground">npm run hermes-adapter</span>를 실행한 뒤
+              <span className="font-mono text-foreground"> Hermes 백엔드</span>를 고르세요. 기본 로컬 URL은
+              <span className="font-mono text-foreground"> ws://localhost:18789</span>입니다.
             </p>
           </div>
           <div className="rounded-md border border-border bg-muted/30 px-3 py-3">
-            <p className="text-xs font-medium text-foreground">Using a local or custom runtime?</p>
+            <p className="text-xs font-medium text-foreground">로컬 또는 커스텀 런타임을 사용하나요?</p>
             <p className="mt-1 text-xs leading-snug text-muted-foreground">
-              Choose <span className="font-mono text-foreground">Local runtime</span>,
-              <span className="font-mono text-foreground"> Hermes3D runtime</span>, or
-              <span className="font-mono text-foreground"> Custom backend</span> and point the URL at
-              your orchestrator or runtime boundary. These profiles already preserve separate saved URLs
-              and tokens, but transport-specific chat handoff still needs a follow-up slice.
+              <span className="font-mono text-foreground">로컬 런타임</span>,
+              <span className="font-mono text-foreground"> Hermes3D 런타임</span>,
+              <span className="font-mono text-foreground"> 커스텀 백엔드</span> 중 하나를 고르고 URL을
+              오케스트레이터나 런타임 주소로 지정하세요. 이 프로필들은 URL과 토큰을 따로 저장합니다.
             </p>
           </div>
           <div className="rounded-md border border-border bg-muted/30 px-3 py-3">
-            <p className="text-xs font-medium text-foreground">Opening Hermes3D from another machine?</p>
+            <p className="text-xs font-medium text-foreground">다른 컴퓨터에서 접속하나요?</p>
             <p className="mt-1 text-xs leading-snug text-muted-foreground">
-              Start Studio with <span className="font-mono text-foreground">HOST=0.0.0.0</span> (or a
-              specific LAN/Tailscale host) and set
-              <span className="font-mono text-foreground"> STUDIO_ACCESS_TOKEN</span> before exposing it
-              beyond localhost. Gateway settings are stored on the Studio host, but device approval
-              remains per browser/device.
+              localhost 밖으로 노출하기 전에 <span className="font-mono text-foreground">HOST=0.0.0.0</span>(또는
+              특정 LAN/Tailscale 호스트)으로 Studio를 시작하고
+              <span className="font-mono text-foreground"> STUDIO_ACCESS_TOKEN</span>을 설정하세요. 게이트웨이
+              설정은 Studio 호스트에 저장되지만 기기 승인은 브라우저·기기마다 따로 합니다.
             </p>
           </div>
           {localGatewayDefaults ? (
             <div className="ui-input rounded-md px-3 py-3">
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">
-                  Use token from <span className="font-mono">~/.hermes/hermes.json</span>.
+                  <span className="font-mono">~/.hermes/hermes.json</span>의 토큰을 사용합니다.
                 </p>
                 <p className="font-mono text-[11px] text-foreground">
                   {localGatewayDefaults.url}
@@ -435,7 +444,7 @@ export const GatewayConnectScreen = ({
                   className="ui-btn-secondary h-9 w-full px-3 text-xs font-semibold tracking-[0.05em]"
                   onClick={onUseLocalDefaults}
                 >
-                  Use local defaults
+                  로컬 기본값 사용
                 </button>
               </div>
             </div>

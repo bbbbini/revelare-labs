@@ -46,4 +46,12 @@ HOST=127.0.0.1 HERMES_STATE_DIR=~/security-labs-private/hermes3d-state \
 - 커스텀 런타임 연결 시 콘솔에 `Custom runtime does not support config.get` 오류 1건이 남는다(upstream 동작, 채팅과 표시에는 영향 없음).
 - CLI 응답 timeout 2건 관측: 1차는 2026-10-13 00시대(KST) 3D 채팅 검증 중 claude, 기록된 경과 1014초. 2차는 06:41~06:57(KST) codex smoke 중, 기록된 경과 986초. 두 시간대 모두 `pmset -g log`에 Idle/Maintenance Sleep 기록이 있고, 기록된 경과가 180초 제한을 크게 넘는다. 슬립으로 타이머가 멈췄을 가능성이 높지만 다른 원인은 배제하지 않았다. 같은 질문을 `caffeinate -i`로 슬립을 막고 보냈을 때는 5~6초에 성공했다.
 
-NEXT: Phase 1 완료. Phase 2(HTB writeup, 비공개 저장 전용)는 사용자 지시 후 시작
+## 후속 K — 한국어 UI
+
+- [ ] K1 (리뷰 중) `html lang="ko"`, 메타, 상단 브랜드 `REVELARE Security Labs`, 온보딩 6단계, 연결 화면, 연결 오류 문구. 온보딩 준비 단계는 Labs Runtime 준비(`labs-runtime:init`, `labs-runtime`, claude CLI 로그인, 토큰 자동 주입)만 안내한다. 연결 단계에 백엔드 선택(Labs Runtime 권장/데모/Hermes)을 두었다. 저장된 adapter와 URL은 자동으로 바꾸지 않는다. Labs Runtime 주소(`http://127.0.0.1:7770`)는 사용자가 'Labs Runtime 주소 넣기'를 눌렀을 때만 채운다(리뷰 지적 반영, 회귀 테스트 `tests/unit/onboardingConnectStep.test.ts`). Hermes 준비는 Hermes를 고른 경우에만 보인다. 연결 화면에서는 커스텀 백엔드일 때 hermes-adapter 명령 대신 Labs Runtime 안내를 보여 준다. 연결 오버레이는 배경이 항상 어두우므로 `dark` 토큰을 적용해 라이트 테마에서도 글자가 읽히게 했다.
+  - 관측: fresh 브라우저 기본 렌더러인 2D 픽셀 모드에서 연결 후 'Maximum update depth exceeded'가 반복되었다. 2D 코드는 변경하지 않았고 3D 경로에서는 나타나지 않았다. 변경 전 코드에서는 재현하지 않았다.
+  - 영어로 남긴 것: 업스트림 URL 진단 메시지(`upstreamUrlDiagnostics.ts`)는 CLI doctor(`scripts/lib/hermes3doctor-core.mjs`)와 문자열 일치를 테스트가 검사하므로 원문을 유지했다. 게이트웨이가 보낸 원본 오류 메시지는 접두어만 한국어이다.
+- [ ] K2 3D 오피스와 채팅
+- [ ] K3 설정, 테스트, 브라우저 검증
+
+NEXT: K1 리뷰 후 커밋, 이어서 K2(3D 오피스·채팅 한국어화)

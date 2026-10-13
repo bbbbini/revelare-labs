@@ -4490,7 +4490,9 @@ export function OfficeScreen({
         </div>
       ) : null}
       {showGatewayConnectOverlay ? (
-        <div className="pointer-events-auto absolute inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#120a05]/76 px-4 py-10">
+        // The overlay background is always dark, so its contents use the dark
+        // theme tokens even when the app theme is light.
+        <div className="dark pointer-events-auto absolute inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#120a05]/76 px-4 py-10">
           <div className="mb-10 w-full max-w-[860px] rounded-2xl border border-amber-900/55 bg-[#120a05]/98 p-3 shadow-2xl">
             <GatewayConnectScreen
               renderMode={officeRenderMode}
@@ -4989,6 +4991,8 @@ export function OfficeScreen({
           onConnect={() => {
             void connect();
           }}
+          adapterType={selectedAdapterType}
+          onAdapterTypeChange={setSelectedAdapterType}
           onComplete={handleCompleteOnboarding}
           onOpenCompanyBuilder={handleOpenCompanyBuilder}
           initialStep={companyCreatedSignal > 0 ? "complete" : "welcome"}

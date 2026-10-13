@@ -523,19 +523,19 @@ export const syncGatewaySessionSettings = async ({
 };
 
 const doctorFixHint =
-  "Run `npx hermes doctor --fix` on the gateway host (or `pnpm hermes doctor --fix` in a source checkout).";
+  "게이트웨이 호스트에서 `npx hermes doctor --fix`를 실행하세요(소스 체크아웃에서는 `pnpm hermes doctor --fix`).";
 
 const protocolMismatchHint =
-  "This gateway looks too old for Hermes3D's protocol v3. Upgrade the gateway, run `npm run hermes-adapter`, or run `npm run demo-gateway` for a no-framework office demo.";
+  "이 게이트웨이는 protocol v3를 지원하지 않는 이전 버전으로 보입니다. 게이트웨이를 업그레이드하거나 `npm run hermes-adapter`를 실행하세요. 프레임워크 없이 오피스만 보려면 `npm run demo-gateway`를 실행하세요.";
 
 const tailscaleGatewayHint =
-  "If this is a remote Hermes/Tailscale gateway, confirm the Studio host can reach the `wss://...` address and approve the first device pairing on the gateway host with `hermes devices approve --latest`.";
+  "원격 Hermes/Tailscale 게이트웨이라면 Studio 호스트가 `wss://...` 주소에 접속할 수 있는지 확인하고, 게이트웨이 호스트에서 `hermes devices approve --latest`로 첫 기기 페어링을 승인하세요.";
 
 const pairingRequiredHint =
-  "This gateway is asking for first-time device approval. Run `hermes devices approve --latest` on the gateway host, then restart Hermes3D and reconnect from this browser.";
+  "이 게이트웨이가 처음 접속하는 기기의 승인을 요청하고 있습니다. 게이트웨이 호스트에서 `hermes devices approve --latest`를 실행한 뒤 Studio를 다시 시작하고 이 브라우저에서 다시 연결하세요.";
 
 const requiresDeviceIdentityHint =
-  "This gateway rejected the client as a control UI without device identity. For remote Hermes/Tailscale connections, update to the latest Hermes3D build and approve the device pairing on the gateway host.";
+  "게이트웨이가 기기 식별 정보가 없는 제어 UI라서 연결을 거부했습니다. 원격 Hermes/Tailscale 연결이라면 최신 빌드로 업데이트하고 게이트웨이 호스트에서 기기 페어링을 승인하세요.";
 
 const isGatewayProtocolMismatchError = (error: GatewayResponseError) => {
   if (error.code.trim().toUpperCase() !== "INVALID_REQUEST") return false;
@@ -564,24 +564,24 @@ const isGatewayProtocolMismatchError = (error: GatewayResponseError) => {
 const formatGatewayError = (error: unknown) => {
   if (error instanceof GatewayResponseError) {
     if (isGatewayProtocolMismatchError(error)) {
-      return `Gateway error (${error.code}): ${error.message}. ${protocolMismatchHint}`;
+      return `게이트웨이 오류 (${error.code}): ${error.message}. ${protocolMismatchHint}`;
     }
     if (error.code === "INVALID_REQUEST" && /invalid config/i.test(error.message)) {
-      return `Gateway error (${error.code}): ${error.message}. ${doctorFixHint}`;
+      return `게이트웨이 오류 (${error.code}): ${error.message}. ${doctorFixHint}`;
     }
     if (error.code === "studio.upstream_timeout") {
-      return `Gateway error (${error.code}): ${error.message} ${tailscaleGatewayHint}`;
+      return `게이트웨이 오류 (${error.code}): ${error.message} ${tailscaleGatewayHint}`;
     }
     if (error.code === "studio.upstream_rejected") {
       const lower = error.message.toLowerCase();
       if (lower.includes("pairing required")) {
-        return `Gateway error (${error.code}): ${error.message}. ${pairingRequiredHint}`;
+        return `게이트웨이 오류 (${error.code}): ${error.message}. ${pairingRequiredHint}`;
       }
       if (lower.includes("device identity")) {
-        return `Gateway error (${error.code}): ${error.message}. ${requiresDeviceIdentityHint}`;
+        return `게이트웨이 오류 (${error.code}): ${error.message}. ${requiresDeviceIdentityHint}`;
       }
     }
-    return `Gateway error (${error.code}): ${error.message}`;
+    return `게이트웨이 오류 (${error.code}): ${error.message}`;
   }
   if (error instanceof Error) {
     if (/timed out connecting to the gateway/i.test(error.message)) {
@@ -590,11 +590,11 @@ const formatGatewayError = (error: unknown) => {
       // without biasing toward a protocol mismatch — that is only one of
       // several possible root causes (network, origin allowlist, upstream
       // policy, credentials, nginx idle timeout, ...).
-      return `${error.message} Verify that the gateway is reachable at the configured URL, that origin and credentials meet the gateway's requirements, and (if testing locally with a self-built gateway) consider \`npm run demo-gateway\` to isolate the problem.`;
+      return "게이트웨이 연결 시간이 초과되었습니다. 게이트웨이가 실행 중인지, 설정한 URL로 접속할 수 있는지, origin과 인증 정보가 게이트웨이 요구 사항에 맞는지 확인하세요. 로컬에서 직접 만든 게이트웨이를 시험 중이라면 `npm run demo-gateway`로 문제를 분리해 볼 수 있습니다.";
     }
     return error.message;
   }
-  return "Unknown gateway error.";
+  return "알 수 없는 게이트웨이 오류입니다.";
 };
 
 export type GatewayConnectionState = {

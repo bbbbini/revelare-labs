@@ -21,6 +21,7 @@ import { ConnectStep } from "@/features/onboarding/components/ConnectStep";
 import { AgentsStep } from "@/features/onboarding/components/AgentsStep";
 import { CompanyStep } from "@/features/onboarding/components/CompanyStep";
 import { CompleteStep } from "@/features/onboarding/components/CompleteStep";
+import type { StudioGatewayAdapterType } from "@/lib/studio/settings";
 
 export type OnboardingWizardProps = {
   /** Whether the gateway is currently connected. */
@@ -35,6 +36,9 @@ export type OnboardingWizardProps = {
   onGatewayUrlChange: (value: string) => void;
   onTokenChange: (value: string) => void;
   onConnect: () => void;
+  /** Selected gateway backend and its setter (for the connect step). */
+  adapterType: StudioGatewayAdapterType;
+  onAdapterTypeChange: (value: StudioGatewayAdapterType) => void;
   /** Called when the user finishes or dismisses the wizard. */
   onComplete: () => void;
   /** Opens the reusable company builder. */
@@ -57,6 +61,8 @@ export const OnboardingWizard = ({
   onGatewayUrlChange,
   onTokenChange,
   onConnect,
+  adapterType,
+  onAdapterTypeChange,
   onComplete,
   onOpenCompanyBuilder,
   initialStep = "welcome",
@@ -121,6 +127,8 @@ export const OnboardingWizard = ({
             onGatewayUrlChange={onGatewayUrlChange}
             onTokenChange={onTokenChange}
             onConnect={onConnect}
+            adapterType={adapterType}
+            onAdapterTypeChange={onAdapterTypeChange}
             connected={gatewayConnected}
             connecting={connecting}
             error={connectionError}
@@ -155,7 +163,7 @@ export const OnboardingWizard = ({
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold text-white">
-              {currentStepDef?.title ?? "Onboarding"}
+              {currentStepDef?.title ?? "온보딩"}
             </h2>
             <p className="mt-0.5 text-xs text-white/60">
               {currentStepDef?.description}
@@ -165,8 +173,8 @@ export const OnboardingWizard = ({
             type="button"
             className="flex h-8 w-8 items-center justify-center rounded-md text-white/50 transition-colors hover:bg-white/10 hover:text-white"
             onClick={onComplete}
-            aria-label="Close onboarding"
-            title="Skip onboarding"
+            aria-label="온보딩 닫기"
+            title="온보딩 건너뛰기"
           >
             <X className="h-4 w-4" />
           </button>
@@ -201,7 +209,7 @@ export const OnboardingWizard = ({
                 onClick={goPrev}
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                Back
+                이전
               </button>
             ) : null}
           </div>
@@ -215,7 +223,7 @@ export const OnboardingWizard = ({
                 className="inline-flex items-center gap-1.5 rounded-md bg-amber-500 px-4 py-2 text-xs font-semibold text-[#1a1206] transition-colors hover:bg-amber-400"
                 onClick={onComplete}
               >
-                Enter Office
+                오피스 입장
               </button>
             ) : (
               <button
@@ -225,8 +233,8 @@ export const OnboardingWizard = ({
                 disabled={!canGoNext}
               >
                 {currentStep === "connect" && !gatewayConnected
-                  ? "Connect first"
-                  : "Next"}
+                  ? "먼저 연결하세요"
+                  : "다음"}
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             )}
