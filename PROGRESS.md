@@ -67,7 +67,7 @@ HOST=127.0.0.1 HERMES_STATE_DIR=~/security-labs-private/hermes3d-state \
   - 리뷰 지적 반영: 콘솔 머리글은 줄바꿈을 허용하고 버튼은 줄바꿈하지 않게 했다(1400px·900px 모두 버튼 높이 20px, 한 줄). 전역 CSS에 `:lang(ko) { word-break: keep-all }`을 추가해 한글이 단어 중간에서 끊기지 않게 했다. 권한 도움말, 저장 실패 '저장하지 못했습니다'와 '다시 시도'(같은 저장 함수 호출 유지), 설정 백엔드 표시 '데모/로컬/커스텀'(id 유지)도 번역했다.
   - 채팅의 '동작 설정 열기'로 여는 에이전트 편집기(머리글, 파일 탭 이름과 설명, 이름/역할/분위기/이모지, 없는 파일 만들기/취소/저장, 에이전트 삭제)를 번역했다. 파일 이름(IDENTITY.md 등)은 그대로 두었다.
   - 화면 재확인(다크 1400px, 라이트 900px, 공유 3000에서 쓰기 차단): 콘솔, Studio 설정, 에이전트 편집기. 화면에 남은 영어: 브랜드명, `custom`, 'JSON', 모델 이름, 편집기의 'Gateway is not connected.'(GatewayClient 오류 문구, K4에서 처리).
-- [ ] K4 (리뷰 중) 로컬 Labs 자동 연결(사용자 승인 12:06Z)
+- [x] K4 (커밋 825e441, dev-review 승인) 로컬 Labs 자동 연결(사용자 승인 12:06Z)
   - 원인 1: `normalizeGatewayUrl`이 loopback `127.0.0.1`을 `localhost`로 바꿔 저장한다. 그래서 127로 연결해도 저장값은 `localhost:7770`이 되고, 허용 목록(127.0.0.1)이 다음 로드에서 거부한다. 열린 탭이 메모리 값을 다시 써도 같은 일이 생긴다.
   - 원인 2: 자동 연결 대상이 hermes, hermes-agent, demo뿐이라 custom은 새로고침할 때마다 클릭이 필요했다.
   - 수정: custom 백엔드의 Labs 주소만 `http://127.0.0.1:7770`으로 읽고 저장한다(settings.ts `normalizeAdapterGatewayUrl`). 사무실 설정 키 정규화는 그대로다. custom 기본값도 127이다(doctor 미러 포함). 저장된 설정이 없으면 기본 백엔드는 custom(Labs)이다. custom + Labs 주소일 때 자동 연결하고, 첫 연결 전 실패는 5회까지만 재시도하며 한국어 안내를 보여 준다. GatewayClient의 'Gateway is not connected.'도 번역했다.
@@ -80,11 +80,33 @@ HOST=127.0.0.1 HERMES_STATE_DIR=~/security-labs-private/hermes3d-state \
     - 오프라인(runtime 프록시 502): 한국어 안내, 요청은 처음 1회와 재시도 5회 뒤 멈춤.
     - Hermes 저장값: WebSocket을 서버 측 프록시가 서버 저장 설정으로 연결하므로 이 방법으로는 재현할 수 없다. 자동 연결 조건은 바꾸지 않았고 unit 테스트로 확인했다.
 
-- [ ] K4b (리뷰 중) 사용자용 격리 runtime(127.0.0.1:7772) 보존
+- [x] K4b (커밋 8bb6161, dev-review 승인) 사용자용 격리 runtime(127.0.0.1:7772) 보존
   - 원인: K4는 127 고정을 Labs 기본 포트 7770에만 적용했다. 그래서 custom `127.0.0.1:7772`는 기존 규칙대로 `localhost:7772`로 저장되었고, 허용 목록(127.0.0.1)에서 거부되었다.
   - 수정: custom 백엔드의 `127.0.0.1` 주소는 포트와 상관없이 입력한 그대로 저장한다. 예전 기본값 `localhost:7770`만 127로 바꾼다. 사용자가 입력한 `localhost:<port>`는 그대로 두고, 다른 백엔드는 기존 정규화를 쓴다. 자동 연결과 오프라인 안내는 custom + 이 컴퓨터의 loopback http 주소(모든 포트)에 적용하며 안내에 실제 주소를 표시한다. 허용 목록은 넓히지 않았다.
+  - 리뷰어 확인: live /api/studio가 custom http://127.0.0.1:7772를 유지했고, 읽기 전용 프록시 /health는 200이었다. 7772에서 처음 접속과 새로고침 시 자동 연결, 오프라인 재시도, 3D 화면은 이 후보로 독립 실행하지 않았다.
 
-- [ ] K5 새로고침 후 대화 유지(사용자 요청 12:31Z)
-  - 원인: runtime은 conversation_id를 쓰지 않는 무상태 서버이고, 대화는 브라우저 메모리(CustomRuntimeProvider.sessions)에만 있어서 새로고침하면 사라진다. 이전 대화는 어디에도 저장되지 않았으므로 복원할 수 없다.
+- [ ] K5 (리뷰 중) 새로고침 후 대화 유지(사용자 요청 12:31Z)
+  - 원인 1: runtime은 conversation_id를 쓰지 않는 무상태 서버이고, 대화는 브라우저 메모리(CustomRuntimeProvider.sessions)에만 있었다.
+  - 원인 2: custom provider의 `sessions.list`가 세션 키를 `researcher-1`로 돌려줘서, 오피스 초기화가 `agent:researcher-1:main` 세션이 없다고 판단했다.
+  - 원인 3: 오피스 화면에는 연결 직후 기록을 불러오는 단계가 없었다(에이전트 페이지에만 있었다).
+  - 이전 대화는 어디에도 저장되지 않았으므로 복원할 수 없다. Studio task-manager에 질문 제목 일부가 남아 있지만 답변은 없고, 이것을 대화로 되살리지 않았다.
+  - runtime(`runtime/transcripts.js`, server.js):
+    - 저장 위치는 비공개 폴더 `researchers/<id>/sessions/`이고, 파일 이름은 session id의 sha256 앞 40자다. 경로 이탈이 불가능하다.
+    - 0600 파일에 임시 파일과 rename으로 원자적으로 쓴다. 경로마다 기존 `assertOutsideRepo`(realpath, symlink)로 검사한다.
+    - session id는 `agent:<researcher-id>:`로 시작해야 하며 연구원별로 격리된다.
+    - 한도는 메시지 200개, 1MB이다. 넘으면 오래된 메시지부터 정리하고 `truncated`로 표시한다. 저장에 실패하면 답변은 그대로 돌려주고 응답에 `history_saved: false`를 넣으며, 로그에는 오류 코드만 남긴다.
+    - 토큰 인증 엔드포인트 `GET /v1/sessions/history?session_id=`와 `POST /v1/sessions/reset`을 추가했다. reset은 파일을 지우지 않고 `.reset-<ts>.json`으로 보관한다.
+  - provider: `chat.history`는 메모리에 대화가 없으면 세션당 한 번 runtime에서 불러온다(엔드포인트가 없는 runtime이면 빈 상태). '새 대화'는 runtime에 보관을 요청하고 새로고침 뒤에도 비어 있게 한다. `sessions.list` 키를 main 세션 키로 맞췄다.
+  - 오피스 화면: 연결마다 에이전트당 한 번, 에이전트 페이지와 같은 기록 동기화를 실행한다.
+  - 실제 새로고침 검증(임시 runtime 127.0.0.1:7771, 스크래치 비공개 폴더, 토큰은 격리 runtime 토큰 파일을 symlink로 가리킴, 공유 3000, 검증 브라우저의 Studio 쓰기 차단, 모든 runtime 프록시 호출이 7771인지 기록):
+    - '3×3'에 답 '9'를 받았고 0600 파일에 저장되었다. 임시 runtime을 재시작한 뒤 새 브라우저로 열자 질문과 '9'가 보였다(history GET 1회).
+    - 이어서 '4×5'에 답 '20'을 받은 뒤 같은 브라우저를 새로고침하자 두 턴이 모두 보였다.
+  - 테스트: runtime 32/32(신규 8: 반복 reset 보관 보존, 단일 초대형 메시지 한도, 저장과 재시작 후 유지, 토큰·다른 연구원·경로 이탈 거부, reset 보관, 저장 실패 보고, 한도 정리, repo symlink 거부). provider 복원 unit 3/3.
+  - 리뷰 지적 반영:
+    - reset 실패를 성공으로 숨기지 않는다. 실행 중인 답변을 먼저 중단하고 runtime 보관을 요청한다. 404(엔드포인트 없는 runtime)만 '보관할 것 없음'으로 보고, 그 밖의 실패는 '새 대화를 시작하지 못했습니다…'로 알리며 기존 대화를 메모리와 디스크 모두 유지한다.
+    - 보관 파일 이름은 시각과 UUID로 만들고 linkSync로 생성해 기존 파일을 덮어쓰지 않는다(반복 reset에서도 모두 보존).
+    - 메시지 하나는 200,000자로 자르고 안내 문구를 붙인다. 그래도 1MB를 넘으면 저장 실패로 보고한다.
+    - 저장 실패(`history_saved:false`)는 답변을 그대로 보여 주면서 대화창에 '알림: 이 대화는 저장하지 못했습니다…' 줄로 알린다(모델에게 보내는 대화에는 넣지 않음).
+  - 운영 반영: 사용자용 7772 runtime은 재시작해야 반영된다(operator 수행).
 
-NEXT: K4 리뷰 후 커밋, 이어서 K5(새로고침 후 대화 유지: runtime 비공개 저장과 provider 복원)
+NEXT: K4b·K5 리뷰 후 커밋, 사용자용 7772 runtime 재시작 뒤 사용자 Chrome에서 새로고침 후 대화 유지 확인

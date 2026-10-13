@@ -250,6 +250,15 @@ export async function sendChatMessageViaStudio(params: {
           },
         });
       }
+      if ((sendResult as { historySaved?: unknown } | null)?.historySaved === false) {
+        // The reply is shown, but the runtime could not save it; say so rather
+        // than let it disappear silently on the next reload.
+        params.dispatch({
+          type: "appendOutput",
+          agentId,
+          line: "알림: 이 대화는 저장하지 못했습니다. 새로고침하면 이 답변이 사라질 수 있습니다.",
+        });
+      }
       params.dispatch({
         type: "updateAgent",
         agentId,

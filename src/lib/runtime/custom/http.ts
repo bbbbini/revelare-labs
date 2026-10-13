@@ -50,8 +50,11 @@ export async function requestCustomRuntime<T = unknown>({
   });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(
-      text.trim() || `Custom runtime request failed (${response.status}) for ${pathname}.`
+    throw Object.assign(
+      new Error(
+        text.trim() || `Custom runtime request failed (${response.status}) for ${pathname}.`
+      ),
+      { status: response.status }
     );
   }
   const contentType = response.headers.get("content-type") ?? "";

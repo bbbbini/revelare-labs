@@ -3,6 +3,9 @@
 // REVELARE Labs Runtime: a private HTTP runtime for Hermes3D's custom runtime
 // adapter. Binds to 127.0.0.1 only and requires a bearer token on every route.
 //   GET  /health, GET /state, GET /registry, POST /v1/chat/completions
+//   GET  /v1/sessions/history?session_id=..., POST /v1/sessions/reset
+// Chat transcripts are kept per session in the private folder (transcripts.js)
+// so a browser reload can restore the conversation.
 
 const crypto = require("node:crypto");
 const fs = require("node:fs");
@@ -12,6 +15,7 @@ const { loadConfig } = require("./config");
 const { buildPrompt } = require("./prompt");
 const { getProvider } = require("./providers");
 const { createJobQueue } = require("./queue");
+const { createTranscriptStore } = require("./transcripts");
 
 const RUNTIME_NAME = "REVELARE Labs Runtime";
 const RUNTIME_VERSION = "0.1.0";
@@ -77,10 +81,18 @@ const CLI_ERROR_STATUS = {
   aborted: 499,
 };
 
-const createRuntimeServer = (config, { log = console, spawnImpl, env = process.env } = {}) => {
+const createRuntimeServer = (
+  config,
+  { log = console, spawnImpl, env = process.env, repoRoot } = {},
+) => {
   const researcher = config.researchers[0];
   const provider = getProvider(researcher.provider);
   const queue = createJobQueue(config.limits);
+  const transcripts = createTranscriptStore({
+    paths: config.paths,
+    researcherId: researcher.id,
+    repoRoot,
+  });
   let activeJobs = 0;
 
   const researcherStatus = () => (activeJobs > 0 ? "working" : "idle");
@@ -113,6 +125,61 @@ const createRuntimeServer = (config, { log = console, spawnImpl, env = process.e
     sendJson(res, 200, {
       models: { [provider.modelId]: { provider: provider.id, label: provider.label } },
     });
+  };
+
+  // Appends the latest user message and the reply to the session transcript.
+  // A failed save is reported in the response and logged (code only), never
+  // silently dropped; the reply itself is still returned.
+  const saveTurn = (body, text, startedAt) => {
+    const sessionId = typeof body.session_id === "string" ? body.session_id : "";
+    if (!sessionId) return false;
+    const lastUser = [...(Array.isArray(body.messages) ? body.messages : [])]
+      .reverse()
+      .find((message) => message && message.role === "user" && typeof message.content === "string");
+    try {
+      transcripts.append(sessionId, [
+        ...(lastUser ? [{ role: "user", content: lastUser.content, timestamp: startedAt }] : []),
+        { role: "assistant", content: text, timestamp: Date.now() },
+      ]);
+      return true;
+    } catch (error) {
+      log.warn(`[labs-runtime] transcript save failed code=${error?.code ?? "unknown"}`);
+      return false;
+    }
+  };
+
+  const handleHistory = (res, searchParams) => {
+    try {
+      const { messages, truncated } = transcripts.read(searchParams.get("session_id") ?? "");
+      sendJson(res, 200, { session_id: searchParams.get("session_id"), messages, truncated });
+    } catch (error) {
+      if (error.code === "bad_session") {
+        sendError(res, 400, "bad_session", error.message);
+        return;
+      }
+      log.warn(`[labs-runtime] transcript read failed code=${error?.code ?? "unknown"}`);
+      sendError(res, 500, "history_unavailable", "Transcript could not be read.");
+    }
+  };
+
+  const handleReset = async (req, res) => {
+    let body;
+    try {
+      body = await readJsonBody(req, config.limits.maxRequestBytes);
+    } catch (error) {
+      sendError(res, error.status ?? 400, "bad_request", error.message);
+      return;
+    }
+    try {
+      sendJson(res, 200, { ok: true, ...transcripts.reset(String(body?.session_id ?? "")) });
+    } catch (error) {
+      if (error.code === "bad_session") {
+        sendError(res, 400, "bad_session", error.message);
+        return;
+      }
+      log.warn(`[labs-runtime] transcript reset failed code=${error?.code ?? "unknown"}`);
+      sendError(res, 500, "reset_failed", "Transcript could not be reset.");
+    }
   };
 
   const handleChat = async (req, res) => {
@@ -170,7 +237,9 @@ const createRuntimeServer = (config, { log = console, spawnImpl, env = process.e
         return;
       }
       log.info(`[labs-runtime] chat ok provider=${provider.id} ms=${Date.now() - startedAt} chars=${text.length}`);
+      const historySaved = saveTurn(body, text, startedAt);
       sendJson(res, 200, {
+        history_saved: historySaved,
         id: `chatcmpl-${crypto.randomUUID()}`,
         object: "chat.completion",
         created: Math.floor(Date.now() / 1000),
@@ -201,13 +270,19 @@ const createRuntimeServer = (config, { log = console, spawnImpl, env = process.e
       sendError(res, 401, "unauthorized", "Missing or invalid bearer token.");
       return;
     }
-    const pathname = new URL(req.url, "http://127.0.0.1").pathname;
+    const { pathname, searchParams } = new URL(req.url, "http://127.0.0.1");
     if (req.method === "GET" && pathname === "/health") {
       sendJson(res, 200, { ok: true, status: "ok" });
     } else if (req.method === "GET" && pathname === "/state") {
       handleState(res);
     } else if (req.method === "GET" && pathname === "/registry") {
       handleRegistry(res);
+    } else if (req.method === "GET" && pathname === "/v1/sessions/history") {
+      handleHistory(res, searchParams);
+    } else if (req.method === "POST" && pathname === "/v1/sessions/reset") {
+      handleReset(req, res).catch(() => {
+        if (!res.headersSent && !res.destroyed) sendError(res, 500, "internal", "Runtime error.");
+      });
     } else if (req.method === "POST" && pathname === "/v1/chat/completions") {
       handleChat(req, res).catch((error) => {
         log.warn(`[labs-runtime] chat handler error code=${error?.code ?? "unknown"}`);

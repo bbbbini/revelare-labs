@@ -244,6 +244,8 @@ export class CustomRuntimeProvider implements RuntimeProvider {
   private readonly sessions = new Map<string, SessionRecord>();
   private readonly activeRunsByRunId = new Map<string, ActiveRunRecord>();
   private readonly activeRunIdBySessionKey = new Map<string, string>();
+  // Sessions whose saved transcript has already been loaded from the runtime.
+  private readonly restoredSessionKeys = new Set<string>();
 
   constructor(
     readonly client: GatewayClient,
@@ -399,8 +401,16 @@ export class CustomRuntimeProvider implements RuntimeProvider {
     const agentId = typeof params.agentId === "string" ? params.agentId.trim() : "";
     const descriptor = await this.describeRuntime();
     const modelChoices = normalizeModelChoices(descriptor.registry);
+    // An agent's session uses the same main key chat.send and chat.history use,
+    // so Studio finds it when it hydrates the office after a reload.
     const sessions = agentId
-      ? [this.ensureSession(agentId, agentId, resolveDefaultModelId(descriptor.state, modelChoices))]
+      ? [
+          this.ensureSession(
+            buildAgentMainSessionKey(agentId, "main"),
+            agentId,
+            resolveDefaultModelId(descriptor.state, modelChoices)
+          ),
+        ]
       : [...this.sessions.values()];
     return {
       sessions: sessions.map((session) => ({
@@ -480,6 +490,7 @@ export class CustomRuntimeProvider implements RuntimeProvider {
     if (!sessionKey) {
       throw new Error("Custom runtime requires sessionKey for chat.history.");
     }
+    await this.restoreSavedTranscript(sessionKey);
     const session = this.sessions.get(sessionKey) ?? null;
     return {
       sessionKey,
@@ -559,10 +570,17 @@ export class CustomRuntimeProvider implements RuntimeProvider {
         timestamp: assistantTimestamp,
       });
       session.updatedAt = assistantTimestamp;
+      // The Labs Runtime reports whether it saved the turn; other runtimes
+      // do not, and are left as they were.
+      const historySaved =
+        isRecord(payload) && typeof payload.history_saved === "boolean"
+          ? payload.history_saved
+          : null;
       return {
         status: "completed",
         runId: runId || null,
         text: assistantText,
+        ...(historySaved === false ? { historySaved: false } : {}),
       };
     } catch (error) {
       if (isAbortLikeError(error, controller)) {
@@ -678,13 +696,36 @@ export class CustomRuntimeProvider implements RuntimeProvider {
     if (!key) {
       throw new Error("Custom runtime requires key for sessions.reset.");
     }
-    this.sessions.delete(key);
+    // A running reply is stopped first, so it cannot be saved into the
+    // transcript after it has been archived.
     const activeRunId = this.activeRunIdBySessionKey.get(key);
     if (activeRunId) {
       this.activeRunsByRunId.get(activeRunId)?.controller.abort();
       this.activeRunsByRunId.delete(activeRunId);
       this.activeRunIdBySessionKey.delete(key);
     }
+    // Keep "new session" new after a reload: the runtime archives the saved
+    // transcript (it is not deleted). A runtime without the endpoint (404) has
+    // nothing saved; any other failure is reported and the session is kept.
+    try {
+      await requestCustomRuntime({
+        runtimeUrl: this.baseUrl,
+        pathname: "/v1/sessions/reset",
+        method: "POST",
+        body: { session_id: key },
+      });
+    } catch (error) {
+      const status = (error as { status?: unknown } | null)?.status;
+      if (status !== 404) {
+        throw new Error(
+          `새 대화를 시작하지 못했습니다. 저장된 대화를 보관하지 못해 이전 대화를 유지합니다. (${
+            error instanceof Error ? error.message : String(error)
+          })`
+        );
+      }
+    }
+    this.sessions.delete(key);
+    this.restoredSessionKeys.add(key);
     return { ok: true };
   }
 
@@ -735,6 +776,50 @@ export class CustomRuntimeProvider implements RuntimeProvider {
     };
     this.sessions.set(sessionKey, session);
     return session;
+  }
+
+  // Sessions only live in this provider, so a browser reload starts empty. The
+  // Labs Runtime keeps each session's transcript in its private folder; load it
+  // once per session when nothing is in memory yet. Runtimes without this
+  // endpoint (or an unreachable runtime) simply leave the session empty.
+  private async restoreSavedTranscript(sessionKey: string) {
+    if (this.restoredSessionKeys.has(sessionKey)) return;
+    const existing = this.sessions.get(sessionKey);
+    if (existing && existing.messages.length > 0) {
+      this.restoredSessionKeys.add(sessionKey);
+      return;
+    }
+    let payload: unknown;
+    try {
+      payload = await this.fetchJson(
+        `/v1/sessions/history?session_id=${encodeURIComponent(sessionKey)}`
+      );
+    } catch {
+      return;
+    }
+    this.restoredSessionKeys.add(sessionKey);
+    const saved = isRecord(payload) && Array.isArray(payload.messages) ? payload.messages : [];
+    const messages: SessionMessage[] = saved.flatMap((entry) => {
+      if (!isRecord(entry)) return [];
+      const role = entry.role === "user" || entry.role === "assistant" ? entry.role : null;
+      const text = typeof entry.content === "string" ? entry.content : "";
+      if (!role || !text) return [];
+      const timestamp =
+        typeof entry.timestamp === "number" && Number.isFinite(entry.timestamp)
+          ? entry.timestamp
+          : Date.now();
+      return [{ role, text, timestamp }];
+    });
+    if (messages.length === 0) return;
+    const current = this.sessions.get(sessionKey);
+    if (current && current.messages.length > 0) return;
+    const session = current ?? this.ensureSession(
+      sessionKey,
+      parseAgentIdFromSessionKey(sessionKey) ?? "main",
+      null
+    );
+    session.messages = messages;
+    session.updatedAt = messages[messages.length - 1]?.timestamp ?? null;
   }
 
   private async fetchJson<T = unknown>(pathname: string): Promise<T> {

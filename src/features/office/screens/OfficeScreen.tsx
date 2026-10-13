@@ -108,6 +108,7 @@ import { useConfigMutationQueue } from "@/features/agents/operations/useConfigMu
 import {
   RUNTIME_SYNC_DEFAULT_HISTORY_LIMIT,
   RUNTIME_SYNC_MAX_HISTORY_LIMIT,
+  resolveRuntimeSyncBootstrapHistoryAgentIds,
 } from "@/features/agents/operations/runtimeSyncControlWorkflow";
 import {
   TRANSCRIPT_V2_ENABLED,
@@ -2243,7 +2244,7 @@ export function OfficeScreen({
   const requestAgentHistoryRefresh = useCallback(
     async (params: {
       agentId: string;
-      reason: "chat-final-no-trace" | "run-start-no-chat";
+      reason: "chat-final-no-trace" | "run-start-no-chat" | "office-bootstrap";
       sessionKey?: string;
     }) => {
       if (status !== "connected") return;
@@ -2448,6 +2449,29 @@ export function OfficeScreen({
     },
     [requestAgentHistoryRefresh],
   );
+
+  // Load each agent's saved conversation once per connection, as the agents
+  // page does, so a reload shows earlier messages instead of an empty chat.
+  const officeBootstrapHistoryRef = useRef<{ epoch: number; agentIds: Set<string> }>({
+    epoch: -1,
+    agentIds: new Set(),
+  });
+  useEffect(() => {
+    if (status !== "connected") return;
+    const tracker = officeBootstrapHistoryRef.current;
+    if (tracker.epoch !== connectionEpochRef.current) {
+      tracker.epoch = connectionEpochRef.current;
+      tracker.agentIds = new Set();
+    }
+    for (const agentId of resolveRuntimeSyncBootstrapHistoryAgentIds({
+      status,
+      agents: state.agents,
+    })) {
+      if (tracker.agentIds.has(agentId)) continue;
+      tracker.agentIds.add(agentId);
+      void requestAgentHistoryRefresh({ agentId, reason: "office-bootstrap" });
+    }
+  }, [requestAgentHistoryRefresh, state.agents, status]);
 
   // Local patch (2026-08-27): the demo-adapter placeholder seed below sets
   // agentsLoaded=true while disconnected, so when the (auto-)connect lands a

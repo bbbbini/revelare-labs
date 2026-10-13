@@ -386,6 +386,58 @@ describe("sendChatMessageViaStudio", () => {
     expect(idlePatchAction).toBeTruthy();
   });
 
+  it("shows_the_reply_and_a_notice_when_the_runtime_could_not_save_it", async () => {
+    const agent = createAgent({ sessionSettingsSynced: true, sessionCreated: true });
+    const dispatch = vi.fn();
+    const call = vi.fn(async () => ({
+      status: "completed",
+      runId: "run-1",
+      text: "4",
+      historySaved: false,
+    }));
+
+    await sendChatMessageViaStudio({
+      client: { call },
+      dispatch,
+      getAgent: () => agent,
+      agentId: agent.agentId,
+      sessionKey: agent.sessionKey,
+      message: "2 더하기 2는?",
+      now: () => 1234,
+      generateRunId: () => "run-1",
+    });
+
+    const lines = dispatch.mock.calls
+      .map((entry) => entry[0])
+      .filter((action) => action?.type === "appendOutput")
+      .map((action) => action.line);
+    expect(lines).toContain("4");
+    expect(lines.some((line: string) => line.includes("저장하지 못했습니다"))).toBe(true);
+  });
+
+  it("adds_no_notice_when_the_reply_was_saved_or_not_reported", async () => {
+    const agent = createAgent({ sessionSettingsSynced: true, sessionCreated: true });
+    const dispatch = vi.fn();
+    const call = vi.fn(async () => ({ status: "completed", runId: "run-1", text: "4" }));
+
+    await sendChatMessageViaStudio({
+      client: { call },
+      dispatch,
+      getAgent: () => agent,
+      agentId: agent.agentId,
+      sessionKey: agent.sessionKey,
+      message: "2 더하기 2는?",
+      now: () => 1234,
+      generateRunId: () => "run-1",
+    });
+
+    const lines = dispatch.mock.calls
+      .map((entry) => entry[0])
+      .filter((action) => action?.type === "appendOutput")
+      .map((action) => action.line);
+    expect(lines.some((line: string) => line.includes("저장하지 못했습니다"))).toBe(false);
+  });
+
   it("clears_running_state_for_stop_style_immediate_success_payload", async () => {
     const agent = createAgent({ sessionSettingsSynced: true, sessionCreated: true });
     const dispatch = vi.fn();
