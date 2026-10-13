@@ -78,7 +78,8 @@ function DaylightDrift({
     elapsedRef.current += delta;
     const phase =
       (Math.sin((elapsedRef.current / DAYLIGHT_DRIFT_PERIOD) * Math.PI * 2) + 1) / 2;
-    sun.intensity = 3.05 + phase * 0.5;
+    // Research-lab look: a softer key so pale floors keep their warm grey.
+    sun.intensity = 2.05 + phase * 0.3;
     sun.color.copy(SUN_WARM).lerp(SUN_NEUTRAL, phase);
     // Sun swings a few degrees across the sky over the drift period.
     const sway = (phase - 0.5) * 6;
@@ -270,13 +271,13 @@ export function SceneAtmosphere({
       </Suspense>
 
       {/* Sky/ground bounce fill. */}
-      <hemisphereLight args={["#cfe0f4", "#8a6b4d", 0.38]} />
+      <hemisphereLight args={["#f3eadc", "#8c7d6a", 0.62]} />
 
       {/* Warm key sun with tight, high-resolution soft shadows. */}
       <directionalLight
         ref={sunRef}
         position={SUN_BASE_POSITION.toArray()}
-        intensity={3.3}
+        intensity={2.2}
         color="#ffedd2"
         castShadow
         shadow-mapSize={[config.shadowMapSize, config.shadowMapSize]}
@@ -292,7 +293,7 @@ export function SceneAtmosphere({
       />
 
       {/* Cool sky fill from the opposite side — lifts shadowed faces. */}
-      <directionalLight position={[-14, 12, -10]} intensity={0.55} color="#a7c4ef" />
+      <directionalLight position={[-14, 12, -10]} intensity={0.45} color="#e9e2d6" />
 
       {/* Concrete plaza apron directly around the building. */}
       <mesh

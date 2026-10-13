@@ -588,6 +588,82 @@ export function InstancedFurnitureItems({
   );
 }
 
+/**
+ * Sage fabric privacy panel with a charcoal frame along the far edge of each
+ * desk (research-lab look). Positions are in the desk GLB's local units, so
+ * the panel follows the desk's placement, rotation and scale.
+ */
+const DESK_TOP_Y = 0.384;
+const DESK_PARTITION_PARTS: {
+  key: string;
+  center: [number, number, number];
+  size: [number, number, number];
+  color: string;
+  roughness: number;
+}[] = [
+  { key: "panel", center: [0.357, DESK_TOP_Y + 0.105, -0.365], size: [0.7, 0.19, 0.016], color: "#8f9f80", roughness: 0.95 },
+  { key: "rail", center: [0.357, DESK_TOP_Y + 0.205, -0.365], size: [0.724, 0.014, 0.022], color: "#3d3f42", roughness: 0.55 },
+  { key: "postL", center: [0.0, DESK_TOP_Y + 0.105, -0.365], size: [0.014, 0.21, 0.022], color: "#3d3f42", roughness: 0.55 },
+  { key: "postR", center: [0.714, DESK_TOP_Y + 0.105, -0.365], size: [0.014, 0.21, 0.022], color: "#3d3f42", roughness: 0.55 },
+];
+
+export function DeskPartitions({ items }: { items: FurnitureItem[] }) {
+  const meshRefs = useRef<(THREE.InstancedMesh | null)[]>([]);
+  const parts = useMemo(
+    () =>
+      DESK_PARTITION_PARTS.map((part) => ({
+        ...part,
+        geometry: new THREE.BoxGeometry(...part.size),
+        material: new THREE.MeshStandardMaterial({ color: part.color, roughness: part.roughness, metalness: 0.05 }),
+        local: new THREE.Matrix4().makeTranslation(...part.center),
+      })),
+    [],
+  );
+  useEffect(
+    () => () => {
+      for (const part of parts) {
+        part.geometry.dispose();
+        part.material.dispose();
+      }
+    },
+    [parts],
+  );
+  const itemMatrices = useMemo(
+    () => items.map((item) => buildFurnitureItemMatrix(item, "desk_cubicle")),
+    [items],
+  );
+  useLayoutEffect(() => {
+    parts.forEach((part, partIndex) => {
+      const mesh = meshRefs.current[partIndex];
+      if (!mesh) return;
+      const world = new THREE.Matrix4();
+      itemMatrices.forEach((matrix, itemIndex) => {
+        world.multiplyMatrices(matrix, part.local);
+        mesh.setMatrixAt(itemIndex, world);
+      });
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.computeBoundingSphere();
+    });
+  }, [itemMatrices, parts]);
+
+  if (items.length === 0) return null;
+  return (
+    <>
+      {parts.map((part, partIndex) => (
+        <instancedMesh
+          key={`desk-partition-${part.key}`}
+          ref={(node) => {
+            meshRefs.current[partIndex] = node;
+          }}
+          args={[part.geometry, part.material, items.length]}
+          castShadow
+          receiveShadow
+        />
+      ))}
+    </>
+  );
+}
+
 export function FurnitureModel({
   item,
   isSelected,

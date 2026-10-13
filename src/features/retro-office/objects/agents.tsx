@@ -1,4 +1,4 @@
-import { Billboard, Text } from "@react-three/drei";
+import { Billboard, RoundedBox, Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { memo, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -17,6 +17,7 @@ import { AGENT_STATUS_LABELS } from "@/features/office/statusLabels";
 
 /** Tee shown under the open "overshirt" top (research-lab look). */
 const OVERSHIRT_TEE_COLOR = "#efe9dc";
+const OVERSHIRT_CUFF_COLOR = "#93a786";
 
 const MAX_NAMEPLATE_TEXT_LENGTH = 10;
 const MAX_SUBTITLE_TEXT_LENGTH = 20;
@@ -621,6 +622,9 @@ export const AgentModel = memo(function AgentModel({
   const showHeadset = resolvedAppearance.accessories.headset;
   const showBackpack = resolvedAppearance.accessories.backpack;
   const accessoryColor = topColor;
+  // Character B (research lab): the overshirt outfit gets the rounded head,
+  // fuller parted hair and smaller eyes.
+  const labLook = topStyle === "overshirt";
   const sleeveColor = topStyle === "jacket" ? "#dbe4ff" : topColor;
   const cuffColor = topStyle === "hoodie" ? "#d1d5db" : sleeveColor;
   // Jacket accent brightened ~10% so it doesn't turn muddy under ACES tone mapping.
@@ -881,6 +885,13 @@ export const AgentModel = memo(function AgentModel({
           <boxGeometry args={[0.06, 0.16, 0.06]} />
           <meshStandardMaterial color={sleeveColor} roughness={0.75} />
         </mesh>
+        {labLook ? (
+          // Rolled-up overshirt sleeve.
+          <mesh position={[0, -0.135, 0]}>
+            <boxGeometry args={[0.066, 0.03, 0.066]} />
+            <meshStandardMaterial color={OVERSHIRT_CUFF_COLOR} roughness={0.8} />
+          </mesh>
+        ) : null}
         {topStyle === "hoodie" ? (
           <mesh position={[0, -0.145, 0]}>
             <boxGeometry args={[0.064, 0.03, 0.064]} />
@@ -984,6 +995,13 @@ export const AgentModel = memo(function AgentModel({
           <boxGeometry args={[0.06, 0.16, 0.06]} />
           <meshStandardMaterial color={sleeveColor} roughness={0.75} />
         </mesh>
+        {labLook ? (
+          // Rolled-up overshirt sleeve.
+          <mesh position={[0, -0.135, 0]}>
+            <boxGeometry args={[0.066, 0.03, 0.066]} />
+            <meshStandardMaterial color={OVERSHIRT_CUFF_COLOR} roughness={0.8} />
+          </mesh>
+        ) : null}
         {topStyle === "hoodie" ? (
           <mesh position={[0, -0.145, 0]}>
             <boxGeometry args={[0.064, 0.03, 0.064]} />
@@ -999,22 +1017,60 @@ export const AgentModel = memo(function AgentModel({
         <boxGeometry args={[0.07, 0.05, 0.07]} />
         <meshStandardMaterial color={skin} roughness={0.55} />
       </mesh>
-      <mesh position={[0, 0.47, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.16, 0.16, 0.14]} />
-        <meshStandardMaterial attach="material-0" color={skin} roughness={0.55} />
-        <meshStandardMaterial attach="material-1" color={skin} roughness={0.55} />
-        <meshStandardMaterial attach="material-2" color={skin} roughness={0.55} />
-        <meshStandardMaterial attach="material-3" color={skin} roughness={0.55} />
-        <meshStandardMaterial attach="material-4" map={faceTexture} roughness={0.55} />
-        <meshStandardMaterial attach="material-5" color={skin} roughness={0.55} />
-      </mesh>
+      {labLook ? (
+        // Research-lab character B: a softly rounded head; the face features
+        // below sit on its flat front.
+        <RoundedBox
+          args={[0.165, 0.17, 0.145]}
+          radius={0.04}
+          smoothness={4}
+          position={[0, 0.47, 0]}
+          castShadow
+          receiveShadow
+        >
+          <meshStandardMaterial color={skin} roughness={0.6} />
+        </RoundedBox>
+      ) : (
+        <mesh position={[0, 0.47, 0]} castShadow receiveShadow>
+          <boxGeometry args={[0.16, 0.16, 0.14]} />
+          <meshStandardMaterial attach="material-0" color={skin} roughness={0.55} />
+          <meshStandardMaterial attach="material-1" color={skin} roughness={0.55} />
+          <meshStandardMaterial attach="material-2" color={skin} roughness={0.55} />
+          <meshStandardMaterial attach="material-3" color={skin} roughness={0.55} />
+          <meshStandardMaterial attach="material-4" map={faceTexture} roughness={0.55} />
+          <meshStandardMaterial attach="material-5" color={skin} roughness={0.55} />
+        </mesh>
+      )}
       {hairStyle === "short" ? (
         <mesh position={[0, 0.555, 0]} castShadow>
           <boxGeometry args={[0.17, 0.05, 0.15]} />
           <meshStandardMaterial color={hairColor} roughness={0.35} metalness={0.05} />
         </mesh>
       ) : null}
-      {hairStyle === "parted" ? (
+      {hairStyle === "parted" && labLook ? (
+        // Short, full dark hair with a side part (character B).
+        <>
+          <RoundedBox args={[0.19, 0.075, 0.17]} radius={0.034} smoothness={3} position={[0, 0.565, -0.004]} castShadow>
+            <meshStandardMaterial color={hairColor} roughness={0.7} />
+          </RoundedBox>
+          <RoundedBox args={[0.18, 0.12, 0.045]} radius={0.02} smoothness={3} position={[0, 0.5, -0.062]} castShadow>
+            <meshStandardMaterial color={hairColor} roughness={0.7} />
+          </RoundedBox>
+          <RoundedBox args={[0.02, 0.07, 0.1]} radius={0.008} smoothness={2} position={[-0.088, 0.505, -0.01]}>
+            <meshStandardMaterial color={hairColor} roughness={0.7} />
+          </RoundedBox>
+          <RoundedBox args={[0.02, 0.07, 0.1]} radius={0.008} smoothness={2} position={[0.088, 0.505, -0.01]}>
+            <meshStandardMaterial color={hairColor} roughness={0.7} />
+          </RoundedBox>
+          <RoundedBox args={[0.115, 0.05, 0.05]} radius={0.02} smoothness={3} position={[-0.028, 0.54, 0.06]} rotation={[0.25, 0, -0.22]} castShadow>
+            <meshStandardMaterial color={hairColor} roughness={0.7} />
+          </RoundedBox>
+          <RoundedBox args={[0.07, 0.042, 0.045]} radius={0.018} smoothness={3} position={[0.058, 0.548, 0.055]} rotation={[0.2, 0, 0.18]} castShadow>
+            <meshStandardMaterial color={hairColor} roughness={0.7} />
+          </RoundedBox>
+        </>
+      ) : null}
+      {hairStyle === "parted" && !labLook ? (
         <>
           <mesh position={[0, 0.555, 0]} castShadow>
             <boxGeometry args={[0.17, 0.045, 0.15]} />
@@ -1105,11 +1161,11 @@ export const AgentModel = memo(function AgentModel({
         <meshBasicMaterial color="#342016" />
       </mesh>
       <mesh ref={leftEyeRef} position={[-0.04, 0.475, 0.072]}>
-        <boxGeometry args={[0.03, 0.03, 0.01]} />
+        <boxGeometry args={labLook ? [0.022, 0.026, 0.01] : [0.03, 0.03, 0.01]} />
         <meshBasicMaterial color="#1a1a2e" />
       </mesh>
       <mesh ref={rightEyeRef} position={[0.04, 0.475, 0.072]}>
-        <boxGeometry args={[0.03, 0.03, 0.01]} />
+        <boxGeometry args={labLook ? [0.022, 0.026, 0.01] : [0.03, 0.03, 0.01]} />
         <meshBasicMaterial color="#1a1a2e" />
       </mesh>
       <mesh ref={leftEyeHighlightRef} position={[-0.03, 0.482, 0.074]}>

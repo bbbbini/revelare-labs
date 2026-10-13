@@ -181,6 +181,7 @@ import { AgentModel as AgentObjectModel } from "@/features/retro-office/objects/
 import { JukeboxModel as InteractiveJukeboxModel } from "@/features/retro-office/objects/Jukebox";
 import {
   FurnitureModel as GenericFurnitureModel,
+  DeskPartitions as DeskPartitionsModel,
   InstancedFurnitureItems as InstancedFurnitureItemsModel,
   PlacementGhost as FurniturePlacementGhost,
 } from "@/features/retro-office/objects/furniture";
@@ -5875,11 +5876,14 @@ export function RetroOffice3D({
                 <PrimitiveInstancedWallSegmentsModel items={wallItems} />
               ) : null}
               {!editMode ? (
-                <InstancedFurnitureItemsModel
-                  itemType="desk_cubicle"
-                  items={deskItems}
-                  onItemClick={handleDeskClick}
-                />
+                <>
+                  <InstancedFurnitureItemsModel
+                    itemType="desk_cubicle"
+                    items={deskItems}
+                    onItemClick={handleDeskClick}
+                  />
+                  <DeskPartitionsModel items={deskItems} />
+                </>
               ) : null}
               {!editMode ? (
                 <InstancedFurnitureItemsModel
@@ -6464,6 +6468,30 @@ export function RetroOffice3D({
                 {icon}
               </button>
             ))}
+            {agents.length > 0 ? (
+              // Close oblique view of the researcher and their desk, like the
+              // approved lab concept.
+              <button
+                key="researcher"
+                type="button"
+                title="연구원 보기"
+                aria-label="연구원 보기"
+                data-testid="camera-preset-researcher"
+                onClick={() => {
+                  const target = agents[0];
+                  const live = renderAgentLookupRef.current.get(target.id);
+                  const [wx, , wz] = toWorld(live?.x ?? 0, live?.y ?? 0);
+                  cameraPresetRef.current = {
+                    pos: [wx + 0.85, 0.95, wz + 1.0],
+                    target: [wx, 0.42, wz],
+                    zoom: 520,
+                  };
+                }}
+                className="w-7 h-7 flex items-center justify-center rounded-md bg-[#fbf8f2]/95 text-[#6f6a62] border border-[#e2dccf] hover:bg-white hover:text-[#2f3133] backdrop-blur-sm transition-colors shadow-sm"
+              >
+                <Users size={12} />
+              </button>
+            ) : null}
           </div>
           {standupMeeting ? (
             <button
@@ -6957,7 +6985,7 @@ export function RetroOffice3D({
                 {followed?.name ?? "에이전트"}
               </span>
               <span className="text-[9px] text-amber-600/60">
-                · click 📷 to exit
+                · 📷 버튼을 다시 누르면 종료
               </span>
             </div>
           );

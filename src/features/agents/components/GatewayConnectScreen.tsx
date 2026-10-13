@@ -291,14 +291,14 @@ export const GatewayConnectScreen = ({
                   data-testid={`connect-render-mode-${option.id}`}
                   className={`rounded-md border px-3 py-2.5 text-left transition-colors ${
                     selected
-                      ? "border-amber-500/70 bg-amber-500/10"
-                      : "border-border bg-muted/30 hover:border-amber-500/35"
+                      ? "border-[color:var(--primary)] bg-[color:var(--surface-selected)]"
+                      : "border-border bg-muted/30 hover:border-[color:var(--surface-selected-border)]"
                   }`}
                   onClick={() => onRenderModeChange(option.id)}
                 >
                   <span className="flex items-center gap-2 text-xs font-semibold text-foreground">
                     {option.label}
-                    {selected ? <Check className="h-3.5 w-3.5 text-amber-400" /> : null}
+                    {selected ? <Check className="h-3.5 w-3.5 text-[color:var(--primary)]" /> : null}
                   </span>
                   <span className="mt-1 block text-xs leading-snug text-muted-foreground">
                     {option.description}
