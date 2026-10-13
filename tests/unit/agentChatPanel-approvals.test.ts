@@ -83,9 +83,9 @@ describe("AgentChatPanel exec approvals", () => {
     );
 
     expect(screen.getByTestId("exec-approval-card-approval-1")).toBeInTheDocument();
-    expect(screen.getByText("Exec approval required")).toBeInTheDocument();
+    expect(screen.getByText("실행 승인 필요")).toBeInTheDocument();
     expect(screen.getByText("npm run test")).toBeInTheDocument();
-    expect(screen.getByText("Host: gateway")).toBeInTheDocument();
+    expect(screen.getByText("호스트: gateway")).toBeInTheDocument();
     expect(screen.getByText("CWD: /repo")).toBeInTheDocument();
   });
 
@@ -139,9 +139,9 @@ describe("AgentChatPanel exec approvals", () => {
       })
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Allow once for exec approval approval-1" }));
-    fireEvent.click(screen.getByRole("button", { name: "Always allow for exec approval approval-1" }));
-    fireEvent.click(screen.getByRole("button", { name: "Deny exec approval approval-1" }));
+    fireEvent.click(screen.getByRole("button", { name: "실행 승인 approval-1 한 번 허용" }));
+    fireEvent.click(screen.getByRole("button", { name: "실행 승인 approval-1 항상 허용" }));
+    fireEvent.click(screen.getByRole("button", { name: "실행 승인 approval-1 거부" }));
 
     expect(onResolveExecApproval).toHaveBeenNthCalledWith(1, "approval-1", "allow-once");
     expect(onResolveExecApproval).toHaveBeenNthCalledWith(2, "approval-1", "allow-always");
@@ -169,8 +169,8 @@ describe("AgentChatPanel exec approvals", () => {
       })
     );
 
-    expect(screen.getByRole("button", { name: "Allow once for exec approval approval-1" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Always allow for exec approval approval-1" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Deny exec approval approval-1" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "실행 승인 approval-1 한 번 허용" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "실행 승인 approval-1 항상 허용" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "실행 승인 approval-1 거부" })).toBeDisabled();
   });
 });

@@ -21,6 +21,7 @@ import {
   createPixelSceneBridge,
   type PixelSceneBridge,
 } from "@/features/pixel-office/PixelSceneBridge";
+import { GATEWAY_STATUS_LABELS } from "@/features/office/statusLabels";
 
 type ContextMenuState = {
   agentId: string;
@@ -210,16 +211,16 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
           {officeTitleLoaded ? officeTitle : ""}
         </div>
         <div className="rounded-md border border-black/25 bg-[#11131c]/70 px-2 py-1.5 text-[10px] font-mono text-white/70 backdrop-blur-sm">
-          2D PIXEL
+          2D 픽셀
         </div>
         <div className="flex items-center gap-2 rounded-md border border-black/25 bg-[#11131c]/70 px-2 py-1.5 text-[10px] font-mono backdrop-blur-sm">
-          <span className="text-emerald-300/85">{workingCount} working</span>
+          <span className="text-emerald-300/85">작업 중 {workingCount}</span>
           <span className="text-white/25">·</span>
-          <span className="text-amber-300/85">{idleCount} idle</span>
+          <span className="text-amber-300/85">대기 {idleCount}</span>
           {errorCount > 0 ? (
             <>
               <span className="text-white/25">·</span>
-              <span className="text-rose-300/85">{errorCount} error</span>
+              <span className="text-rose-300/85">오류 {errorCount}</span>
             </>
           ) : null}
         </div>
@@ -230,11 +231,11 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
         {onAddAgent ? (
           <button
             onClick={onAddAgent}
-            title="Add agent"
+            title="에이전트 추가"
             className="flex h-7 items-center justify-center gap-1 rounded-md border border-cyan-500/35 bg-[#071018]/92 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-cyan-200 transition-all backdrop-blur-sm hover:border-cyan-400/55 hover:text-white"
           >
             <UserPlus size={12} />
-            <span>Add</span>
+            <span>추가</span>
           </button>
         ) : null}
         <div
@@ -245,13 +246,13 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
                 ? "border-amber-400/25 bg-amber-500/10 text-amber-100"
                 : "border-rose-400/25 bg-rose-500/10 text-rose-100"
           }`}
-          title={`Runtime: ${activeAdapterType} (${gatewayStatus})`}
+          title={`런타임: ${activeAdapterType} (${GATEWAY_STATUS_LABELS[gatewayStatus] ?? gatewayStatus})`}
         >
-          {activeAdapterType} • {gatewayStatus}
+          {activeAdapterType} • {GATEWAY_STATUS_LABELS[gatewayStatus] ?? gatewayStatus}
         </div>
         <button
           onClick={() => onRenderModeChange("3d")}
-          title="Switch to the 3D office"
+          title="3D 오피스로 전환"
           className="flex h-7 items-center justify-center gap-1 rounded-md border border-white/15 bg-[#11131c]/85 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/75 transition-all backdrop-blur-sm hover:border-cyan-400/45 hover:text-cyan-100"
         >
           <Boxes size={12} />
@@ -259,7 +260,7 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
         </button>
         <button
           onClick={() => setSettingsOpen(true)}
-          title="Studio settings"
+          title="Studio 설정"
           className={`flex h-7 w-7 items-center justify-center rounded-md border transition-all backdrop-blur-sm ${
             settingsOpen
               ? "border-amber-500/50 bg-amber-500/30 text-amber-300"
@@ -273,7 +274,7 @@ export function PixelOffice2D(props: PixelOffice2DProps) {
       {/* Controls hint — bottom center (event console and chat own the corners). */}
       <div className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 pointer-events-none select-none">
         <div className="rounded-full bg-black/50 px-3 py-1 text-[10px] font-mono text-white/55 backdrop-blur-sm">
-          drag to pan · scroll to zoom · click an agent to chat
+          드래그로 이동 · 스크롤로 확대/축소 · 에이전트를 클릭해 대화
         </div>
       </div>
 

@@ -71,15 +71,15 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    expect(screen.getByLabelText("Model")).toBeInTheDocument();
-    expect(screen.getByLabelText("Thinking")).toBeInTheDocument();
+    expect(screen.getByLabelText("모델")).toBeInTheDocument();
+    expect(screen.getByLabelText("생각 수준")).toBeInTheDocument();
     expect(screen.queryByDisplayValue("Agent One")).not.toBeInTheDocument();
     expect(screen.getByTestId("agent-rename-toggle")).toBeInTheDocument();
-    expect(screen.getByLabelText("Rename agent")).toBeInTheDocument();
+    expect(screen.getByLabelText("에이전트 이름 변경")).toBeInTheDocument();
     expect(screen.getByTestId("agent-new-session-toggle")).toBeInTheDocument();
-    expect(screen.getByLabelText("Start new session")).toBeInTheDocument();
+    expect(screen.getByLabelText("새 대화 시작")).toBeInTheDocument();
     expect(screen.getByTestId("agent-settings-toggle")).toBeInTheDocument();
-    expect(screen.getByLabelText("Open behavior")).toBeInTheDocument();
+    expect(screen.getByLabelText("동작 설정 열기")).toBeInTheDocument();
     expect(screen.queryByText("Inspect")).not.toBeInTheDocument();
   });
 
@@ -242,7 +242,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    const modelSelect = screen.getByLabelText("Model") as HTMLSelectElement;
+    const modelSelect = screen.getByLabelText("모델") as HTMLSelectElement;
     modelSelect.focus();
     expect(modelSelect).toHaveFocus();
 
@@ -273,7 +273,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    fireEvent.change(screen.getByLabelText("Thinking"), {
+    fireEvent.change(screen.getByLabelText("생각 수준"), {
       target: { value: "high" },
     });
     expect(onThinkingChange).toHaveBeenCalledWith("high");
@@ -325,7 +325,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Stop" }));
+    fireEvent.click(screen.getByRole("button", { name: "중지" }));
     expect(onStopRun).toHaveBeenCalledTimes(1);
   });
 
@@ -349,9 +349,9 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    const textarea = screen.getByPlaceholderText("type a message");
+    const textarea = screen.getByPlaceholderText("메시지를 입력하세요");
     fireEvent.change(textarea, { target: { value: "follow up" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
 
     expect(onSend).toHaveBeenCalledWith("follow up", []);
   });
@@ -378,7 +378,7 @@ describe("AgentChatPanel controls", () => {
     );
 
     expect(screen.getByTestId("queued-messages-bar")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Remove queued message 1" }));
+    fireEvent.click(screen.getByRole("button", { name: "대기 메시지 1 삭제" }));
     expect(onRemoveQueuedMessage).toHaveBeenCalledWith(0);
   });
 
@@ -405,7 +405,7 @@ describe("AgentChatPanel controls", () => {
     );
 
     const stopButton = screen.getByRole("button", {
-      name: `Stop unavailable: ${stopDisabledReason}`,
+      name: `중지 불가: ${stopDisabledReason}`,
     });
     expect(stopButton).toBeDisabled();
     expect(stopButton.parentElement).toHaveAttribute("title", stopDisabledReason);
@@ -431,7 +431,7 @@ describe("AgentChatPanel controls", () => {
     );
 
     expect(screen.getByTestId("agent-typing-indicator")).toBeInTheDocument();
-    expect(within(screen.getByTestId("agent-typing-indicator")).getByText("Thinking")).toBeInTheDocument();
+    expect(within(screen.getByTestId("agent-typing-indicator")).getByText("생각 과정")).toBeInTheDocument();
   });
 
   it("shows_thinking_indicator_after_stream_starts", () => {
@@ -459,7 +459,7 @@ describe("AgentChatPanel controls", () => {
     );
 
     expect(screen.getByTestId("agent-typing-indicator")).toBeInTheDocument();
-    expect(within(screen.getByTestId("agent-typing-indicator")).getByText("Thinking")).toBeInTheDocument();
+    expect(within(screen.getByTestId("agent-typing-indicator")).getByText("생각 과정")).toBeInTheDocument();
   });
 
   it("does_not_render_duplicate_typing_indicator_when_internal_thinking_is_visible", () => {
@@ -486,7 +486,7 @@ describe("AgentChatPanel controls", () => {
     );
 
     expect(screen.queryByTestId("agent-typing-indicator")).not.toBeInTheDocument();
-    expect(screen.getByText("Thinking (internal)")).toBeInTheDocument();
+    expect(screen.getByText("생각 과정 (내부)")).toBeInTheDocument();
   });
 
   it("renders thinking row collapsed by default", () => {
@@ -512,7 +512,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    const details = screen.getByText("Thinking (internal)").closest("details");
+    const details = screen.getByText("생각 과정 (내부)").closest("details");
     expect(details).toBeTruthy();
     expect(details).not.toHaveAttribute("open");
   });
@@ -538,7 +538,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    const textarea = screen.getByPlaceholderText("type a message") as HTMLTextAreaElement;
+    const textarea = screen.getByPlaceholderText("메시지를 입력하세요") as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: "hello world" } });
     expect(textarea.value).toBe("hello world");
 
@@ -601,7 +601,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    const textarea = screen.getByPlaceholderText("type a message");
+    const textarea = screen.getByPlaceholderText("메시지를 입력하세요");
     fireEvent.change(textarea, { target: { value: "draft text" } });
 
     fireEvent.keyDown(textarea, {

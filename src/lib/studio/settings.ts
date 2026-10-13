@@ -557,7 +557,16 @@ const normalizeTaskBoardPreference = (
   };
 };
 
-const DEFAULT_OFFICE_TITLE = "Luke Headquarters";
+const DEFAULT_OFFICE_TITLE = "REVELARE Security Labs";
+/** The upstream default title, kept in saved settings of earlier installs. */
+export const LEGACY_DEFAULT_OFFICE_TITLE = "Luke Headquarters";
+
+/**
+ * Title to show for a saved office title. Only the untouched upstream default
+ * is shown as the current default; the saved value itself is never rewritten.
+ */
+export const resolveOfficeDisplayTitle = (title: string): string =>
+  title === LEGACY_DEFAULT_OFFICE_TITLE ? DEFAULT_OFFICE_TITLE : title;
 const DEFAULT_REMOTE_OFFICE_LABEL = "Remote Office";
 const DEFAULT_REMOTE_OFFICE_SOURCE_KIND = "presence_endpoint" as const;
 

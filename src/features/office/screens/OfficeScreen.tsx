@@ -34,6 +34,7 @@ import {
 } from "@/lib/studio/coordinator";
 import {
   resolveDeskAssignments,
+  resolveOfficeDisplayTitle,
   resolveOfficePreferencePublic,
 } from "@/lib/studio/settings";
 import {
@@ -1160,7 +1161,7 @@ export function OfficeScreen({
   }, []);
   const {
     loaded: officeTitleLoaded,
-    title: officeTitle,
+    title: savedOfficeTitle,
     remoteOfficeEnabled,
     remoteOfficeSourceKind,
     remoteOfficeLabel,
@@ -1178,6 +1179,7 @@ export function OfficeScreen({
     gatewayUrl,
     settingsCoordinator,
   });
+  const officeTitle = resolveOfficeDisplayTitle(savedOfficeTitle);
   useOfficeFloorRuntimePersistence({
     activeFloorId,
     gatewayUrl,
@@ -4483,7 +4485,7 @@ export function OfficeScreen({
             <RunningAvatarLoader
               size={28}
               trackWidth={76}
-              label="Connecting to your runtime..."
+              label="런타임에 연결 중..."
               labelClassName="text-amber-100/80"
             />
           </div>
@@ -5011,10 +5013,10 @@ export function OfficeScreen({
       {showHermesConsole ? (
         <section className="pointer-events-auto fixed bottom-3 left-3 z-30 flex w-[520px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded border border-cyan-500/25 bg-black/78 shadow-2xl backdrop-blur">
           <div className="flex items-center justify-between border-b border-cyan-500/15 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-cyan-200/80">
-            <span>Agent Event Console</span>
+            <span>에이전트 이벤트 콘솔</span>
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-cyan-100/45">
-                agents {state.agents.length} | events{" "}
+                에이전트 {state.agents.length} | 이벤트{" "}
                 {filteredHermesLogEntries.length}/{hermesLogEntries.length}
               </span>
               <button
@@ -5025,24 +5027,24 @@ export function OfficeScreen({
                 className="rounded border border-cyan-500/20 px-2 py-0.5 text-[9px] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
               >
                 {hermesConsoleCopyStatus === "copied"
-                  ? "Copied"
+                  ? "복사됨"
                   : hermesConsoleCopyStatus === "error"
-                    ? "Copy Failed"
-                    : "Copy JSON"}
+                    ? "복사 실패"
+                    : "JSON 복사"}
               </button>
               <button
                 type="button"
                 onClick={handleDownloadHermesConsoleJson}
                 className="rounded border border-cyan-500/20 px-2 py-0.5 text-[9px] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
               >
-                Download JSON
+                JSON 다운로드
               </button>
               <button
                 type="button"
                 onClick={handleClearHermesConsole}
                 className="rounded border border-cyan-500/20 px-2 py-0.5 text-[9px] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
               >
-                Clear
+                지우기
               </button>
               <button
                 type="button"
@@ -5051,7 +5053,7 @@ export function OfficeScreen({
                 }
                 className="rounded border border-cyan-500/20 px-2 py-0.5 text-[9px] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
               >
-                {hermesConsoleCollapsed ? "Expand" : "Minimize"}
+                {hermesConsoleCollapsed ? "펼치기" : "접기"}
               </button>
             </div>
           </div>
@@ -5065,7 +5067,7 @@ export function OfficeScreen({
                   onChange={(event) =>
                     setHermesConsoleSearch(event.target.value)
                   }
-                  placeholder="Search logs, payloads, thinking, user text."
+                  placeholder="로그, payload, thinking, 사용자 입력 검색"
                   className="min-w-0 flex-1 rounded border border-cyan-500/20 bg-black/35 px-2 py-1 text-[10px] normal-case tracking-normal text-cyan-50 placeholder:text-cyan-100/30 focus:border-cyan-400/40 focus:outline-none"
                 />
                 {hermesConsoleSearch ? (
@@ -5074,7 +5076,7 @@ export function OfficeScreen({
                     onClick={() => setHermesConsoleSearch("")}
                     className="rounded border border-cyan-500/20 px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
                   >
-                    Reset
+                    초기화
                   </button>
                 ) : null}
               </div>
@@ -5082,7 +5084,7 @@ export function OfficeScreen({
             {hermesLiveStateMatchesSearch ? (
               <div className="rounded border border-cyan-500/10 bg-cyan-950/10 p-2">
                 <div className="mb-1 text-[9px] uppercase tracking-[0.16em] text-cyan-300/70">
-                  Live Hermes State
+                  실시간 Hermes 상태
                 </div>
                 <pre className="whitespace-pre-wrap break-words text-cyan-100/80">
                   {renderHermesHighlightedText(
@@ -5093,17 +5095,17 @@ export function OfficeScreen({
               </div>
             ) : (
               <div className="rounded border border-cyan-500/10 bg-cyan-950/10 p-2 text-cyan-100/45">
-                Live Hermes state does not match the current search.
+                실시간 Hermes 상태가 현재 검색어와 일치하지 않습니다.
               </div>
             )}
             <div className="text-[9px] uppercase tracking-[0.16em] text-cyan-300/70">
-              Raw Hermes Gateway Events
+              Hermes 게이트웨이 원본 이벤트
             </div>
             {filteredHermesLogEntries.length === 0 ? (
               <div className="rounded border border-cyan-500/10 bg-cyan-950/10 p-2 text-cyan-100/45">
                 {hermesLogEntries.length === 0
-                  ? "No Hermes gateway events received yet."
-                  : "No Hermes events match the current search."}
+                  ? "아직 받은 Hermes 게이트웨이 이벤트가 없습니다."
+                  : "현재 검색어와 일치하는 Hermes 이벤트가 없습니다."}
               </div>
             ) : (
               filteredHermesLogEntries.map((entry) => {
@@ -5190,7 +5192,7 @@ export function OfficeScreen({
                     {entry.toolText ? (
                       <div className="mt-2 rounded border border-violet-400/15 bg-violet-950/15 px-2 py-1 text-violet-100/90">
                         <div className="text-[9px] uppercase tracking-[0.16em] text-violet-300/70">
-                          Tool Output
+                          도구 출력
                         </div>
                         <div className="mt-1 whitespace-pre-wrap break-words">
                           {renderHermesHighlightedText(
@@ -5462,12 +5464,12 @@ export function OfficeScreen({
           {chatOpen ? (
             <>
               <ChevronDown className="h-3.5 w-3.5" />
-              <span>HIDE CHAT</span>
+              <span>채팅 숨기기</span>
             </>
           ) : (
             <>
               <MessageSquare className="h-3.5 w-3.5" />
-              <span>CHAT</span>
+              <span>채팅</span>
               {runningCount > 0 ? (
                 <span className="rounded bg-amber-500/20 px-1 text-[10px] text-amber-400">
                   {runningCount}

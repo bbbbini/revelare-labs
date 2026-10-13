@@ -26,11 +26,11 @@ type HQSidebarProps = {
 };
 
 const TAB_LABELS: Record<HQSidebarTab, string> = {
-  inbox: "Inbox",
-  history: "History",
-  kanban: "Kanban",
-  playbooks: "Playbooks",
-  analytics: "Analytics",
+  inbox: "받은 항목",
+  history: "기록",
+  kanban: "칸반",
+  playbooks: "플레이북",
+  analytics: "분석",
 };
 
 const PRIMARY_TABS: HQSidebarTab[] = ["inbox", "history", "kanban", "playbooks"];
@@ -72,10 +72,10 @@ export function HQSidebar({
           onClick={onToggle}
           className="rounded-l-md border border-r-0 border-cyan-500/30 bg-[#06090d]/90 px-1.5 py-2.5 font-mono text-[10px] font-semibold tracking-[0.2em] text-cyan-300 shadow-xl backdrop-blur transition-colors hover:border-cyan-400/50 hover:text-cyan-100"
           aria-expanded={open}
-          aria-label={open ? "Collapse headquarters sidebar" : "Open headquarters sidebar"}
+          aria-label={open ? "본부 사이드바 접기" : "본부 사이드바 열기"}
         >
           <span className="block leading-none [writing-mode:vertical-rl]">
-            {open ? "COLLAPSE HQ" : "OPEN HQ"}
+            {open ? "본부 접기" : "본부 열기"}
           </span>
         </button>
 
@@ -85,10 +85,10 @@ export function HQSidebar({
             onOpenMarketplace();
           }}
           className="rounded-l-md border border-r-0 border-fuchsia-500/25 bg-[#100611]/90 px-1.5 py-2.5 font-mono text-[10px] font-semibold tracking-[0.2em] text-fuchsia-300/80 shadow-xl backdrop-blur transition-colors hover:border-fuchsia-400/45 hover:text-fuchsia-100"
-          aria-label="Open marketplace"
+          aria-label="마켓플레이스 열기"
         >
           <span className="block leading-none [writing-mode:vertical-rl]">
-            MARKETPLACE
+            마켓플레이스
           </span>
         </button>
 
@@ -106,10 +106,10 @@ export function HQSidebar({
               : "border-amber-500/25 bg-[#120d06]/90 text-amber-300/80 hover:border-amber-400/45 hover:text-amber-100"
           }`}
           aria-pressed={analyticsOnly}
-          aria-label="Open analytics sidebar"
+          aria-label="분석 사이드바 열기"
         >
           <span className="block leading-none [writing-mode:vertical-rl]">
-            ANALYTICS
+            분석
           </span>
         </button>
       </div>
@@ -122,7 +122,7 @@ export function HQSidebar({
         >
           <div className="border-b border-cyan-500/15 px-4 py-3">
             <div className="font-mono text-[10px] font-semibold tracking-[0.32em] text-cyan-300/80">
-              {analyticsOnly ? "ANALYTICS" : "HEADQUARTERS"}
+              {analyticsOnly ? "분석" : "본부"}
             </div>
             <div className="mt-1 font-mono text-[11px] text-white/45">
               {analyticsOnly
@@ -135,7 +135,7 @@ export function HQSidebar({
                 onClick={onAddAgent}
                 className="mt-3 rounded border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-cyan-200 transition-colors hover:border-cyan-400/40 hover:text-cyan-100"
               >
-                Add Agent
+                에이전트 추가
               </button>
             ) : null}
             {!railOnly && onOpenCompanyBuilder ? (
@@ -144,7 +144,7 @@ export function HQSidebar({
                 onClick={onOpenCompanyBuilder}
                 className="mt-2 rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200 transition-colors hover:border-emerald-400/40 hover:text-emerald-100"
               >
-                Build Company
+                회사 구성
               </button>
             ) : null}
             {railOnly ? (
@@ -153,7 +153,7 @@ export function HQSidebar({
                 onClick={() => onTabChange("inbox")}
                 className="mt-3 rounded border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-cyan-200 transition-colors hover:border-cyan-400/40 hover:text-cyan-100"
               >
-                Back To HQ
+                본부로 돌아가기
               </button>
             ) : null}
           </div>
@@ -161,7 +161,7 @@ export function HQSidebar({
           {!railOnly ? (
             <div
               role="tablist"
-              aria-label="Headquarters panels"
+              aria-label="본부 패널"
               className="grid grid-cols-4 border-b border-cyan-500/15"
             >
               {PRIMARY_TABS.map((tab) => {

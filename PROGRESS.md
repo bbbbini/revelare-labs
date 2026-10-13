@@ -48,10 +48,18 @@ HOST=127.0.0.1 HERMES_STATE_DIR=~/security-labs-private/hermes3d-state \
 
 ## 후속 K — 한국어 UI
 
-- [ ] K1 (리뷰 중) `html lang="ko"`, 메타, 상단 브랜드 `REVELARE Security Labs`, 온보딩 6단계, 연결 화면, 연결 오류 문구. 온보딩 준비 단계는 Labs Runtime 준비(`labs-runtime:init`, `labs-runtime`, claude CLI 로그인, 토큰 자동 주입)만 안내한다. 연결 단계에 백엔드 선택(Labs Runtime 권장/데모/Hermes)을 두었다. 저장된 adapter와 URL은 자동으로 바꾸지 않는다. Labs Runtime 주소(`http://127.0.0.1:7770`)는 사용자가 'Labs Runtime 주소 넣기'를 눌렀을 때만 채운다(리뷰 지적 반영, 회귀 테스트 `tests/unit/onboardingConnectStep.test.ts`). Hermes 준비는 Hermes를 고른 경우에만 보인다. 연결 화면에서는 커스텀 백엔드일 때 hermes-adapter 명령 대신 Labs Runtime 안내를 보여 준다. 연결 오버레이는 배경이 항상 어두우므로 `dark` 토큰을 적용해 라이트 테마에서도 글자가 읽히게 했다.
-  - 관측: fresh 브라우저 기본 렌더러인 2D 픽셀 모드에서 연결 후 'Maximum update depth exceeded'가 반복되었다. 2D 코드는 변경하지 않았고 3D 경로에서는 나타나지 않았다. 변경 전 코드에서는 재현하지 않았다.
+- [x] K1 (커밋 4a54d22, dev-review 재리뷰 승인) `html lang="ko"`, 메타, 상단 브랜드 `REVELARE Security Labs`, 온보딩 6단계, 연결 화면, 연결 오류 문구. 온보딩 준비 단계는 Labs Runtime 준비(`labs-runtime:init`, `labs-runtime`, claude CLI 로그인, 토큰 자동 주입)만 안내한다. 연결 단계에 백엔드 선택(Labs Runtime 권장/데모/Hermes)을 두었다. 저장된 adapter와 URL은 자동으로 바꾸지 않는다. Labs Runtime 주소(`http://127.0.0.1:7770`)는 사용자가 'Labs Runtime 주소 넣기'를 눌렀을 때만 채운다(리뷰 지적 반영, 회귀 테스트 `tests/unit/onboardingConnectStep.test.ts`). Hermes 준비는 Hermes를 고른 경우에만 보인다. 연결 화면에서는 커스텀 백엔드일 때 hermes-adapter 명령 대신 Labs Runtime 안내를 보여 준다. 연결 오버레이는 배경이 항상 어두우므로 `dark` 토큰을 적용해 라이트 테마에서도 글자가 읽히게 했다.
+  - 관측(원인 미확정, 보류): 2D 픽셀 모드에서 연결 후 'Maximum update depth exceeded' 반복을 1회 관측했다. 이후 격리 서버에서 변경 전 코드(b7d6ff5)와 K1 코드로 같은 조건(데모 연결 후 커스텀 전환 순서 포함)을 각 3회 재현했지만 양쪽 모두 0건이었다. 3D 경로에서는 관측되지 않았다.
   - 영어로 남긴 것: 업스트림 URL 진단 메시지(`upstreamUrlDiagnostics.ts`)는 CLI doctor(`scripts/lib/hermes3doctor-core.mjs`)와 문자열 일치를 테스트가 검사하므로 원문을 유지했다. 게이트웨이가 보낸 원본 오류 메시지는 접두어만 한국어이다.
-- [ ] K2 3D 오피스와 채팅
+- [ ] K2 (리뷰 중) 3D 오피스와 채팅
+  - 3D 상단: 추가, 2D 전환, 런타임 상태(`custom • 연결됨`), 히트맵/경로/편집/음성 설정 툴팁, 카메라(전체 보기/안내 데스크/라운지), 칸반 보드, 스탠드업, 에이전트 수, 팀 명단, 책상 동작, 편집 모드, 하단 상태(작업 중/대기/오류, 조용함/활발함/분주함, 조작 안내).
+  - 2D 상단과 룸 라벨도 같은 문구로 바꿨다.
+  - 사무실 제목: 새 기본값은 `REVELARE Security Labs`이다. 저장된 제목이 원본 기본값 `Luke Headquarters`와 정확히 같을 때만 화면에 REVELARE로 표시하며, 저장값은 바꾸지 않는다. 사용자가 정한 다른 제목은 그대로 둔다.
+  - 연구원 표시명: `runtime/config.js`의 name을 `연구원 1`로 바꿨다(id `researcher-1` 유지). 실행 중인 labs-runtime을 재시작해야 반영된다.
+  - HQ 사이드바(본부 열기/마켓플레이스/분석, 탭 이름), 에이전트 이벤트 콘솔(JSON 복사/다운로드, 지우기, 펼치기/접기, 검색, 빈 상태), 채팅 열기/숨기기.
+  - 채팅: 빈 대화 안내, 입력 placeholder, 전송/중지/첨부/마이크, 새 대화, 모델·생각 수준, 실행 승인, 기록 불러오기, 오류 문구. 기존 채팅 테스트의 선택자를 한국어로 바꿨다.
+  - 3D 이름표는 troika `<Text>`로 그린다. 한글 글리프는 troika가 jsdelivr CDN에서 내려받으므로 외부 네트워크가 필요하다.
+  - 영어로 남긴 것: QA 랩, GitHub, ATM, 전화/문자 부스 같은 몰입형 화면 내부 문구, 마켓플레이스와 분석 패널 본문, 런타임/adapter 식별자(`custom`, `hermes`), 모델 이름.
 - [ ] K3 설정, 테스트, 브라우저 검증
 
-NEXT: K1 리뷰 후 커밋, 이어서 K2(3D 오피스·채팅 한국어화)
+NEXT: K2 리뷰 후 커밋, 사용자 연결 복구 후 3000 화면 확인, 이어서 K3(설정 탭·도움말)

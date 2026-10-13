@@ -258,6 +258,7 @@ import {
   TrailSystem as AgentTrailSystem,
 } from "@/features/retro-office/systems/visualSystems";
 import type { OfficeCleaningCue } from "@/lib/office/janitorReset";
+import { GATEWAY_STATUS_LABELS } from "@/features/office/statusLabels";
 
 type OfficeDeskMonitorMap = Record<string, OfficeDeskMonitor>;
 type RenderAgentUiSnapshot = Pick<
@@ -2570,7 +2571,7 @@ export function RetroOffice3D({
   githubSkill = null,
   taskManagerEnabled = false,
   soundhermesEnabled = false,
-  officeTitle = "Luke Headquarters",
+  officeTitle = "REVELARE Security Labs",
   officeTitleLoaded = false,
   remoteOfficeEnabled = false,
   remoteOfficeSourceKind = "presence_endpoint",
@@ -6438,17 +6439,17 @@ export function RetroOffice3D({
                 {
                   key: "overview",
                   icon: <Maximize size={12} />,
-                  title: "Overview",
+                  title: "전체 보기",
                 },
                 {
                   key: "frontDesk",
                   icon: <Monitor size={12} />,
-                  title: "Front desk",
+                  title: "안내 데스크",
                 },
                 {
                   key: "lounge",
                   icon: <Armchair size={12} />,
-                  title: "Lounge",
+                  title: "라운지",
                 },
               ] as const
             ).map(({ key, icon, title }) => (
@@ -6471,18 +6472,18 @@ export function RetroOffice3D({
               className="rounded-xl border border-emerald-500/20 bg-[#0b1410]/90 px-3 py-2 text-left shadow-lg backdrop-blur-sm transition-colors hover:border-emerald-400/35 hover:bg-[#102017]/95"
             >
               <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200/80">
-                Standup
+                스탠드업
               </div>
               <div className="mt-1 text-[11px] font-semibold text-white/90">
                 {standupMeeting.phase === "gathering"
-                  ? "Gathering in meeting room."
+                  ? "회의실에 모이는 중입니다."
                   : standupMeeting.phase === "in_progress"
-                    ? `Speaking: ${standupSpeakerCard?.agentName ?? "Team"}`
+                    ? `발표 중: ${standupSpeakerCard?.agentName ?? "팀"}`
                     : ""}
               </div>
               <div className="mt-1 font-mono text-[10px] text-white/50">
                 {standupMeeting.arrivedAgentIds.length}/
-                {standupMeeting.participantOrder.length} arrived
+                {standupMeeting.participantOrder.length} 도착
               </div>
             </button>
           ) : null}
@@ -6493,7 +6494,7 @@ export function RetroOffice3D({
               className="rounded-xl border border-cyan-500/22 bg-[#09111a]/90 px-3 py-2 text-left shadow-lg backdrop-blur-sm transition-colors hover:border-cyan-300/40 hover:bg-[#0d1b28]/95"
             >
               <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-cyan-200/80">
-                Kanban board
+                칸반 보드
               </div>
             </button>
           ) : null}
@@ -6599,7 +6600,7 @@ export function RetroOffice3D({
             >
               <Users className="h-3.5 w-3.5" />
               <span>{agents.length}</span>
-              <span className="hidden sm:inline">agents</span>
+              <span className="hidden sm:inline">에이전트</span>
             </button>
           </div>
 
@@ -6608,17 +6609,17 @@ export function RetroOffice3D({
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-500/70">
-                    Team roster
+                    팀 명단
                   </div>
                   <div className="mt-1 text-sm font-semibold text-amber-100">
-                    Compact view for larger fleets.
+                    에이전트가 많을 때 보는 간단한 목록입니다.
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setAgentRosterOpen(false)}
                   className="rounded-full border border-amber-900/25 p-2 text-amber-200 transition-colors hover:border-amber-500/35 hover:text-white"
-                  aria-label="Close roster"
+                  aria-label="명단 닫기"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -6676,8 +6677,8 @@ export function RetroOffice3D({
                         type="button"
                         title={
                           followAgentId === agent.id
-                            ? "Exit follow cam"
-                            : "Follow cam"
+                            ? "따라가기 카메라 끄기"
+                            : "따라가기 카메라"
                         }
                         onClick={() =>
                           setFollowAgentId((prev) =>
@@ -6696,10 +6697,10 @@ export function RetroOffice3D({
                         type="button"
                         title={
                           isRemoteAgent
-                            ? "Remote office is view only"
+                            ? "원격 오피스는 보기 전용입니다"
                             : monitorAgentId === agent.id
-                              ? "Close desk monitor"
-                              : "Open desk monitor"
+                              ? "책상 모니터 닫기"
+                              : "책상 모니터 열기"
                         }
                         disabled={isRemoteAgent}
                         onClick={() => {
@@ -6722,7 +6723,7 @@ export function RetroOffice3D({
                       {onAgentDelete && !isRemoteAgent ? (
                         <button
                           type="button"
-                          title="Delete agent"
+                          title="에이전트 삭제"
                           onClick={() => {
                             onAgentDelete(agent.id);
                             setAgentRosterOpen(false);
@@ -6862,7 +6863,7 @@ export function RetroOffice3D({
                   setContextMenu(null);
                 }}
               >
-                Copy ID
+                ID 복사
               </button>
             </div>
           );
@@ -6876,7 +6877,7 @@ export function RetroOffice3D({
           >
             <div className="flex items-center justify-between">
               <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-500/70">
-                Desk actions
+                책상 동작
               </div>
               <button
                 type="button"
@@ -6886,7 +6887,7 @@ export function RetroOffice3D({
                 }}
                 className="rounded border border-amber-900/25 px-2 py-0.5 text-[10px] text-amber-200/70 transition-colors hover:border-amber-600/40 hover:text-amber-100"
               >
-                Close
+                닫기
               </button>
             </div>
             <div className="mt-2 rounded-md border border-amber-900/20 bg-[#1a120b] px-2.5 py-2 text-[11px] text-amber-100/90">
@@ -6909,7 +6910,7 @@ export function RetroOffice3D({
                 disabled={!selectedDeskActionAssignedAgentId}
                 className="rounded-md border border-emerald-700/35 bg-emerald-900/20 px-2 py-2 text-[11px] font-semibold text-emerald-100 transition-colors hover:bg-emerald-800/30 disabled:cursor-not-allowed disabled:opacity-45"
               >
-                Go to desk
+                책상으로 이동
               </button>
               <button
                 type="button"
@@ -6917,7 +6918,7 @@ export function RetroOffice3D({
                 disabled={!onDeskAssignmentChange}
                 className="rounded-md border border-amber-700/35 bg-amber-900/18 px-2 py-2 text-[11px] font-semibold text-amber-100 transition-colors hover:bg-amber-800/30 disabled:cursor-not-allowed disabled:opacity-45"
               >
-                Assign agent
+                에이전트 배정
               </button>
             </div>
             {deskAssignPickerOpen && onDeskAssignmentChange ? (
@@ -6933,7 +6934,7 @@ export function RetroOffice3D({
                   }}
                   className="w-full rounded-md border border-amber-800/25 bg-[#1c1610] px-2 py-2 text-[11px] text-amber-100 outline-none transition-colors focus:border-amber-500/50"
                 >
-                  <option value="">Unassigned desk.</option>
+                  <option value="">배정되지 않은 책상</option>
                   {agents.map((agent) => (
                     <option key={agent.id} value={agent.id}>
                       {agent.name}
@@ -6955,7 +6956,7 @@ export function RetroOffice3D({
             <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-[#120e08]/90 backdrop-blur-sm border border-amber-700/40 rounded-full px-3 py-1 z-20 pointer-events-none select-none">
               <Camera size={10} className="text-amber-400" />
               <span className="text-[10px] font-bold text-amber-300 tracking-widest uppercase">
-                {followed?.name ?? "Agent"}
+                {followed?.name ?? "에이전트"}
               </span>
               <span className="text-[9px] text-amber-600/60">
                 · click 📷 to exit
@@ -6969,7 +6970,7 @@ export function RetroOffice3D({
       !githubCommandArrived ? (
         <div className="pointer-events-none absolute top-16 left-1/2 z-20 -translate-x-1/2">
           <div className="rounded-full border border-cyan-300/18 bg-[#06101f]/88 px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-cyan-100/78 backdrop-blur-sm">
-            Agent walking to the Code Review room.
+            에이전트가 코드 리뷰실로 이동하는 중입니다.
           </div>
         </div>
       ) : null}
@@ -6977,7 +6978,7 @@ export function RetroOffice3D({
       {!immersiveOverlayActive && qaTestingAgentId && !qaCommandArrived ? (
         <div className="pointer-events-none absolute top-28 left-1/2 z-20 -translate-x-1/2">
           <div className="rounded-full border border-violet-300/20 bg-[#12091d]/88 px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-violet-100/80 backdrop-blur-sm">
-            Agent walking to the QA Lab.
+            에이전트가 QA 랩으로 이동하는 중입니다.
           </div>
         </div>
       ) : null}
@@ -7010,14 +7011,14 @@ export function RetroOffice3D({
           <div className="pointer-events-auto absolute right-[7vw] top-[7vh] flex items-center gap-3 rounded-full border border-white/10 bg-black/60 px-4 py-2 backdrop-blur-sm">
             <div className="h-2 w-2 rounded-full bg-emerald-400" />
             <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-200/90">
-              Monitor View
+              모니터 보기
             </div>
             <button
               type="button"
               onClick={() => onMonitorSelect?.(null)}
               className="rounded-full border border-white/10 px-3 py-1 text-[11px] text-white/70 transition-colors hover:border-white/20 hover:text-white"
             >
-              Exit
+              나가기
             </button>
           </div>
         </div>
@@ -7405,7 +7406,7 @@ export function RetroOffice3D({
       {/* Edit mode badge. */}
       {!immersiveOverlayActive && editMode && (
         <div className="absolute top-3 left-3 px-3 py-1 rounded-md bg-amber-500/90 text-[#1a1008] text-xs font-bold uppercase tracking-widest pointer-events-none z-10">
-          Edit Mode
+          편집 모드
         </div>
       )}
 
@@ -7414,7 +7415,7 @@ export function RetroOffice3D({
           <div className="mb-3 flex items-start justify-between gap-3">
             <div>
               <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-500/65">
-                Selected
+                선택됨
               </div>
               <div className="mt-1 text-xs font-semibold text-amber-100">
                 {PALETTE.find((entry) => entry.type === selectedItem.type)
@@ -7428,7 +7429,7 @@ export function RetroOffice3D({
             </div>
             <button
               onClick={closeSelectedEditor}
-              title="Close object editor"
+              title="오브젝트 편집 닫기"
               className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-800/25 bg-[#1c1610] text-amber-300/80 transition-colors hover:bg-[#261e16] hover:text-amber-200"
             >
               <X size={12} />
@@ -7436,7 +7437,7 @@ export function RetroOffice3D({
           </div>
           <div className="mb-3">
             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-amber-500/65">
-              Move
+              이동
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               <div />
@@ -7444,33 +7445,33 @@ export function RetroOffice3D({
                 onClick={() => moveSelectedItem(0, -SNAP_GRID)}
                 className="rounded-md border border-amber-800/25 bg-[#1c1610] px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200/85 hover:bg-[#261e16]"
               >
-                Forward
+                앞
               </button>
               <div />
               <button
                 onClick={() => moveSelectedItem(-SNAP_GRID, 0)}
                 className="rounded-md border border-amber-800/25 bg-[#1c1610] px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200/85 hover:bg-[#261e16]"
               >
-                Left
+                왼쪽
               </button>
               <button
                 onClick={() => moveSelectedItem(0, 0, ELEVATION_STEP)}
                 className="rounded-md border border-amber-800/25 bg-[#1c1610] px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200/85 hover:bg-[#261e16]"
               >
-                Up
+                위
               </button>
               <button
                 onClick={() => moveSelectedItem(SNAP_GRID, 0)}
                 className="rounded-md border border-amber-800/25 bg-[#1c1610] px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200/85 hover:bg-[#261e16]"
               >
-                Right
+                오른쪽
               </button>
               <div />
               <button
                 onClick={() => moveSelectedItem(0, SNAP_GRID)}
                 className="rounded-md border border-amber-800/25 bg-[#1c1610] px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200/85 hover:bg-[#261e16]"
               >
-                Back
+                뒤
               </button>
               <div />
               <div />
@@ -7478,14 +7479,14 @@ export function RetroOffice3D({
                 onClick={() => moveSelectedItem(0, 0, -ELEVATION_STEP)}
                 className="rounded-md border border-amber-800/25 bg-[#1c1610] px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-200/85 hover:bg-[#261e16]"
               >
-                Down
+                아래
               </button>
               <div />
             </div>
           </div>
           <div>
             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-amber-500/65">
-              Rotate
+              회전
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <button
@@ -7509,7 +7510,7 @@ export function RetroOffice3D({
           {selectedItem.type === "desk_cubicle" ? (
             <div className="mt-3 border-t border-amber-900/20 pt-3">
               <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-amber-500/65">
-                Desk Assignment
+                책상 배정
               </div>
               <select
                 value={selectedDeskAssignmentAgentId}
@@ -7522,7 +7523,7 @@ export function RetroOffice3D({
                 }}
                 className="w-full rounded-md border border-amber-800/25 bg-[#1c1610] px-2 py-2 text-[11px] text-amber-100 outline-none transition-colors focus:border-amber-500/50"
               >
-                <option value="">Unassigned desk.</option>
+                <option value="">배정되지 않은 책상</option>
                 {agents.map((agent) => (
                   <option key={agent.id} value={agent.id}>
                     {agent.name}
@@ -7541,7 +7542,7 @@ export function RetroOffice3D({
       {!immersiveOverlayActive && editMode && drawerOpen && !selectedItem && (
         <div className="absolute bottom-14 right-3 w-52 max-h-[calc(100vh-100px)] overflow-y-auto rounded-lg bg-[#1c1610]/95 border border-amber-800/20 p-3 shadow-xl backdrop-blur-sm z-20">
           <div className="text-[10px] text-amber-500/70 font-bold uppercase tracking-widest mb-3">
-            Objects
+            오브젝트
           </div>
           <div className="grid grid-cols-2 gap-2">
             {PALETTE.map((entry) => (
@@ -7584,17 +7585,17 @@ export function RetroOffice3D({
           {onAddAgent ? (
             <button
               onClick={onAddAgent}
-              title="Add agent"
+              title="에이전트 추가"
               className="flex h-7 items-center justify-center gap-1 rounded-md border border-cyan-500/35 bg-[#071018]/92 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-cyan-200 transition-all backdrop-blur-sm hover:border-cyan-400/55 hover:text-white"
             >
               <UserPlus size={12} />
-              <span>Add</span>
+              <span>추가</span>
             </button>
           ) : null}
           {onRenderModeChange ? (
             <button
               onClick={() => onRenderModeChange("2d")}
-              title="Switch to the 2D pixel office"
+              title="2D 픽셀 오피스로 전환"
               className="flex h-7 items-center justify-center gap-1 rounded-md border border-white/15 bg-[#120e08]/92 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/75 transition-all backdrop-blur-sm hover:border-cyan-400/45 hover:text-cyan-100"
             >
               <span>2D</span>
@@ -7608,21 +7609,21 @@ export function RetroOffice3D({
                   ? "border-amber-400/25 bg-amber-500/10 text-amber-100"
                   : "border-rose-400/25 bg-rose-500/10 text-rose-100"
             }`}
-            title={`Runtime: ${activeAdapterType} (${gatewayStatus})`}
+            title={`런타임: ${activeAdapterType} (${GATEWAY_STATUS_LABELS[gatewayStatus] ?? gatewayStatus})`}
           >
-            {activeAdapterType} • {gatewayStatus}
+            {activeAdapterType} • {GATEWAY_STATUS_LABELS[gatewayStatus] ?? gatewayStatus}
           </div>
           {/* New Idea 7: Heatmap toggle. */}
           <button
             onClick={() => setHeatmapMode((p) => !p)}
-            title="Toggle heatmap"
+            title="히트맵 켜기/끄기"
             className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${heatmapMode ? "bg-amber-500/30 text-amber-300 border-amber-500/50" : "bg-[#1c1610]/80 text-amber-500/40 border-amber-900/20 hover:text-amber-400"}`}
           >
             <MapIcon size={12} />
           </button>
           <button
             onClick={() => setTrailMode((p) => !p)}
-            title="Toggle trails"
+            title="이동 경로 켜기/끄기"
             className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${trailMode ? "bg-amber-500/30 text-amber-300 border-amber-500/50" : "bg-[#1c1610]/80 text-amber-500/40 border-amber-900/20 hover:text-amber-400"}`}
           >
             <Maximize size={12} />
@@ -7630,7 +7631,7 @@ export function RetroOffice3D({
           {/* Edit office toggle. */}
           <button
             onClick={toggleEdit}
-            title={editMode ? "Done editing" : "Edit office"}
+            title={editMode ? "편집 완료" : "오피스 편집"}
             className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${editMode ? "bg-amber-500/30 text-amber-300 border-amber-500/50" : "bg-[#1c1610]/80 text-amber-500/40 border-amber-900/20 hover:text-amber-400"}`}
           >
             {editMode ? (
@@ -7641,7 +7642,7 @@ export function RetroOffice3D({
           </button>
           <button
             onClick={() => setSettingsModalOpen(true)}
-            title="Voice reply settings"
+            title="음성 답변 설정"
             className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${settingsModalOpen ? "bg-amber-500/30 text-amber-300 border-amber-500/50" : "bg-[#1c1610]/80 text-amber-500/40 border-amber-900/20 hover:text-amber-400"}`}
           >
             <Settings2 size={12} />
@@ -7652,30 +7653,30 @@ export function RetroOffice3D({
                 <span className="text-[10px] text-amber-400/70">
                   {drag.itemType === "wall"
                     ? wallDrawStart
-                      ? "Click the end point to finish the wall."
-                      : "Click a start point, then click again to finish the wall."
-                    : "Click floor to place. Esc cancels."}
+                      ? "끝점을 클릭하면 벽이 완성됩니다."
+                      : "시작점을 클릭한 뒤 다시 클릭하면 벽이 완성됩니다."
+                    : "바닥을 클릭해 배치합니다. Esc로 취소합니다."}
                 </span>
               )}
               <button
                 onClick={handleReset}
                 className="px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider bg-[#2a1e14]/90 text-amber-400/60 border border-amber-800/20 hover:bg-[#3a2a1a] backdrop-blur-sm"
               >
-                Reset
+                초기화
               </button>
               {selectedUid && (
                 <button
                   onClick={handleDelete}
                   className="px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider bg-red-900/40 text-red-400 border border-red-800/30 hover:bg-red-900/60 backdrop-blur-sm"
                 >
-                  Delete
+                  삭제
                 </button>
               )}
               <button
                 onClick={() => setDrawerOpen((p) => !p)}
                 className="px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider bg-[#2a1e14]/90 text-amber-400 border border-amber-800/30 hover:bg-[#3a2a1a] backdrop-blur-sm"
               >
-                {drawerOpen ? "Hide Objects" : "Show Objects"}
+                {drawerOpen ? "오브젝트 숨기기" : "오브젝트 보기"}
               </button>
             </>
           )}
@@ -7687,17 +7688,17 @@ export function RetroOffice3D({
             <div className="flex items-start justify-between border-b border-cyan-500/10 px-4 py-3">
               <div>
                 <div className="font-mono text-[10px] font-semibold tracking-[0.28em] text-cyan-300/75">
-                  STUDIO SETTINGS
+                  Studio 설정
                 </div>
                 <div className="mt-1 text-[11px] text-white/45">
-                  Customize the office banner and spoken replies across the app.
+                  오피스 배너와 앱 전체의 음성 답변을 설정합니다.
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setSettingsModalOpen(false)}
                 className="flex h-7 w-7 items-center justify-center rounded-md border border-cyan-500/10 bg-black/20 text-cyan-100/70 transition-colors hover:border-cyan-400/30 hover:text-cyan-100"
-                aria-label="Close studio settings"
+                aria-label="Studio 설정 닫기"
               >
                 <X size={12} />
               </button>
@@ -7798,15 +7799,15 @@ export function RetroOffice3D({
             {/* Ideas 6 + 8: Gateway status, agent counts, vibe score. */}
             <div className="flex items-center gap-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1 text-[10px] font-mono">
               <span className="text-amber-500/60">
-                {agents.filter((a) => a.status === "working").length} working
+                작업 중 {agents.filter((a) => a.status === "working").length}
               </span>
               <span className="opacity-30">·</span>
               <span className="text-amber-500/60">
-                {agents.filter((a) => a.status === "idle").length} idle
+                대기 {agents.filter((a) => a.status === "idle").length}
               </span>
               <span className="opacity-30">·</span>
               <span className="text-amber-500/60">
-                {agents.filter((a) => a.status === "error").length} error
+                오류 {agents.filter((a) => a.status === "error").length}
               </span>
               {/* New Idea 6: Vibe score with animated EQ bars. */}
               {(() => {
@@ -7815,7 +7816,7 @@ export function RetroOffice3D({
                 ).length;
                 const ratio = workingCount / Math.max(agents.length, 1);
                 const label =
-                  ratio < 0.2 ? "quiet" : ratio < 0.6 ? "active" : "buzzing";
+                  ratio < 0.2 ? "조용함" : ratio < 0.6 ? "활발함" : "분주함";
                 const animDur = ratio < 0.2 ? "1.8s" : ratio < 0.6 ? "1s" : "0.5s";
                 return (
                   <>
@@ -7843,14 +7844,14 @@ export function RetroOffice3D({
                 <>
                   <span className="opacity-30">·</span>
                   <span className="text-amber-400/40">
-                    drag · scroll · space+drag · dbl-click
+                    드래그 · 스크롤 · 스페이스+드래그 · 더블클릭
                   </span>
                 </>
               )}
               {spaceDown && (
                 <>
                   <span className="opacity-30">·</span>
-                  <span className="text-amber-300/80">pan mode</span>
+                  <span className="text-amber-300/80">이동 모드</span>
                 </>
               )}
             </div>

@@ -59,11 +59,11 @@ const CHAT_SELECT_STYLE = {
   color: "#ffffff",
 } as const;
 const EMPTY_CHAT_INTRO_MESSAGES = [
-  "How can I help you today?",
-  "What should we accomplish today?",
-  "Ready when you are. What do you want to tackle?",
-  "What are we working on today?",
-  "I'm here and ready. What's the plan?",
+  "오늘 무엇을 도와드릴까요?",
+  "오늘은 무엇을 해 볼까요?",
+  "준비됐습니다. 어떤 일부터 시작할까요?",
+  "오늘 어떤 작업을 하나요?",
+  "준비되어 있습니다. 계획을 알려 주세요.",
 ];
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
@@ -84,7 +84,7 @@ const stableStringHash = (value: string): number => {
 };
 
 const resolveEmptyChatIntroMessage = (agentId: string, sessionEpoch: number | undefined): string => {
-  if (EMPTY_CHAT_INTRO_MESSAGES.length === 0) return "How can I help you today?";
+  if (EMPTY_CHAT_INTRO_MESSAGES.length === 0) return "오늘 무엇을 도와드릴까요?";
   const normalizedEpoch =
     typeof sessionEpoch === "number" && Number.isFinite(sessionEpoch)
       ? Math.max(0, Math.trunc(sessionEpoch))
@@ -176,14 +176,14 @@ const ExecApprovalCard = memo(function ExecApprovalCard({
       data-testid={`exec-approval-card-${approval.id}`}
     >
       <div className="type-meta">
-        Exec approval required
+        실행 승인 필요
       </div>
       <div className="mt-2 rounded-md bg-surface-3 px-2 py-1.5 shadow-2xs">
         <div className="font-mono text-[10px] font-semibold text-foreground">{approval.command}</div>
       </div>
       <div className="mt-2 grid gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">
-        <div>Host: {approval.host ?? "unknown"}</div>
-        <div>Expires: {formatApprovalExpiry(approval.expiresAtMs)}</div>
+        <div>호스트: {approval.host ?? "알 수 없음"}</div>
+        <div>만료: {formatApprovalExpiry(approval.expiresAtMs)}</div>
         {approval.cwd ? <div className="sm:col-span-2">CWD: {approval.cwd}</div> : null}
       </div>
       {approval.error ? (
@@ -197,27 +197,27 @@ const ExecApprovalCard = memo(function ExecApprovalCard({
           className="rounded-md border border-border/70 bg-surface-3 px-2.5 py-1 font-mono text-[12px] font-medium tracking-[0.02em] text-foreground transition hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-60"
           onClick={() => onResolve?.(approval.id, "allow-once")}
           disabled={disabled}
-          aria-label={`Allow once for exec approval ${approval.id}`}
+          aria-label={`실행 승인 ${approval.id} 한 번 허용`}
         >
-          Allow once
+          한 번 허용
         </button>
         <button
           type="button"
           className="rounded-md border border-border/70 bg-surface-3 px-2.5 py-1 font-mono text-[12px] font-medium tracking-[0.02em] text-foreground transition hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-60"
           onClick={() => onResolve?.(approval.id, "allow-always")}
           disabled={disabled}
-          aria-label={`Always allow for exec approval ${approval.id}`}
+          aria-label={`실행 승인 ${approval.id} 항상 허용`}
         >
-          Always allow
+          항상 허용
         </button>
         <button
           type="button"
           className="ui-btn-danger rounded-md px-2.5 py-1 font-mono text-[12px] font-medium tracking-[0.02em] transition disabled:cursor-not-allowed disabled:opacity-60"
           onClick={() => onResolve?.(approval.id, "deny")}
           disabled={disabled}
-          aria-label={`Deny exec approval ${approval.id}`}
+          aria-label={`실행 승인 ${approval.id} 거부`}
         >
-          Deny
+          거부
         </button>
       </div>
     </div>
@@ -307,7 +307,7 @@ const ThinkingDetailsRow = memo(function ThinkingDetailsRow({
         <ChevronRight className="h-3 w-3 shrink-0 transition group-open:rotate-90" />
         <span className="flex min-w-0 items-center gap-2">
           <span className="font-mono text-[10px] font-medium tracking-[0.02em]">
-            Thinking (internal)
+            생각 과정 (내부)
           </span>
           {typeof durationMs === "number" ? (
             <span className="inline-flex items-center gap-1 font-mono text-[10px] font-medium tracking-[0.02em] text-muted-foreground/80">
@@ -359,7 +359,7 @@ const UserMessageCard = memo(function UserMessageCard({
     <div className="ui-chat-user-card w-full max-w-[70ch] self-end overflow-hidden rounded-[var(--radius-small)] bg-[color:var(--chat-user-bg)]">
       <div className="flex items-center justify-between gap-3 bg-[color:var(--chat-user-header-bg)] px-3 py-2 dark:px-3.5 dark:py-2.5">
         <div className="type-meta min-w-0 truncate font-mono text-foreground/90">
-          You
+          나
         </div>
         {typeof timestampMs === "number" ? (
           <time className="type-meta shrink-0 rounded-md bg-surface-3 px-2 py-0.5 font-mono text-muted-foreground/70">
@@ -442,7 +442,7 @@ const AssistantMessageCard = memo(function AssistantMessageCard({
             data-testid="agent-typing-indicator"
           >
             <span className="font-mono text-[10px] font-medium tracking-[0.02em]">
-              Thinking
+              생각 과정
             </span>
             <span className="typing-dots" aria-hidden="true">
               <span />
@@ -460,7 +460,7 @@ const AssistantMessageCard = memo(function AssistantMessageCard({
                 data-testid="agent-typing-indicator"
               >
                 <span className="font-mono text-[10px] font-medium tracking-[0.02em]">
-                  Thinking
+                  생각 과정
                 </span>
                 <span className="typing-dots" aria-hidden="true">
                   <span />
@@ -554,7 +554,7 @@ const AssistantIntroCard = memo(function AssistantIntroCard({
         <div className="ui-chat-assistant-card mt-2">
           <div className="text-[14px] leading-[1.65] text-foreground">{title}</div>
           <div className="mt-2 font-mono text-[10px] tracking-[0.03em] text-muted-foreground/80">
-            Try describing a task, bug, or question to get started.
+            작업, 버그, 질문을 설명하면 시작할 수 있습니다.
           </div>
         </div>
       </div>
@@ -787,15 +787,15 @@ const AgentChatTranscript = memo(function AgentChatTranscript({
           {historyMaybeTruncated && isAtTop ? (
             <div className="-mx-1 flex items-center justify-between gap-3 rounded-md bg-surface-2 px-3 py-2 shadow-2xs">
               <div className="type-meta min-w-0 truncate font-mono text-muted-foreground">
-                Showing most recent {typeof historyFetchedCount === "number" ? historyFetchedCount : "?"} messages
-                {typeof historyFetchLimit === "number" ? ` (limit ${historyFetchLimit})` : ""}
+                최근 메시지 {typeof historyFetchedCount === "number" ? historyFetchedCount : "?"}개 표시 중
+                {typeof historyFetchLimit === "number" ? ` (최대 ${historyFetchLimit})` : ""}
               </div>
               <button
                 type="button"
                 className="shrink-0 rounded-md border border-border/70 bg-surface-3 px-3 py-1.5 font-mono text-[12px] font-medium tracking-[0.02em] text-foreground transition hover:bg-surface-2"
                 onClick={onLoadMoreHistory}
               >
-                Load more
+                더 불러오기
               </button>
             </div>
           ) : null}
@@ -857,9 +857,9 @@ const AgentChatTranscript = memo(function AgentChatTranscript({
             setPinned(true);
             scrollChatToBottom();
           }}
-          aria-label="Jump to latest"
+          aria-label="최신 메시지로 이동"
         >
-          Jump to latest
+          최신 메시지로 이동
         </button>
       ) : null}
     </div>
@@ -958,30 +958,30 @@ const AgentChatComposer = memo(function AgentChatComposer({
 }) {
   const stopReason = stopDisabledReason?.trim() ?? "";
   const stopDisabled = !canSend || stopBusy || Boolean(stopReason);
-  const stopAriaLabel = stopReason ? `Stop unavailable: ${stopReason}` : "Stop";
+  const stopAriaLabel = stopReason ? `중지 불가: ${stopReason}` : "중지";
   const voiceBusy = voiceState === "requesting" || voiceState === "transcribing";
   const voiceRecording = voiceState === "recording";
   const voiceDisabled = voiceRecording ? false : !voiceEnabled || !voiceSupported || !canSend || voiceBusy;
   const voiceLabel =
     voiceState === "recording"
-      ? "Stop"
+      ? "중지"
       : voiceState === "transcribing"
         ? "..."
         : voiceState === "requesting"
-          ? "Mic..."
-          : "Mic";
+          ? "마이크..."
+          : "마이크";
   const voiceStatusText =
     voiceState === "recording"
-      ? "Recording. Tap stop to send."
+      ? "녹음 중입니다. 중지를 누르면 전송됩니다."
       : voiceState === "transcribing"
-        ? "Transcribing your voice note."
+        ? "음성 메모를 받아쓰는 중입니다."
         : voiceState === "requesting"
-          ? "Requesting microphone access."
+          ? "마이크 권한을 요청하는 중입니다."
           : !voiceSupported && voiceEnabled
-            ? "This browser does not support microphone recording."
+            ? "이 브라우저는 마이크 녹음을 지원하지 않습니다."
             : null;
   const modelSelectedLabel = useMemo(() => {
-    if (modelOptions.length === 0) return "No models found";
+    if (modelOptions.length === 0) return "모델 없음";
     return modelOptions.find((option) => option.value === modelValue)?.label ?? modelValue;
   }, [modelOptions, modelValue]);
   const modelSelectWidthCh = Math.max(11, Math.min(44, modelSelectedLabel.length + 6));
@@ -1008,10 +1008,10 @@ const AgentChatComposer = memo(function AgentChatComposer({
     <>
       <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
         <div className="flex min-w-0 items-center gap-2">
-          <InlineHoverTooltip text="Choose model">
+          <InlineHoverTooltip text="모델 선택">
             <select
               className="ui-input ui-control-important h-6 min-w-0 rounded-md border-white/10 px-1.5 text-[10px] font-semibold text-white"
-              aria-label="Model"
+              aria-label="모델"
               value={modelValue}
               style={{ ...CHAT_SELECT_STYLE, width: `${modelSelectWidthCh}ch` }}
               onChange={(event) => {
@@ -1021,7 +1021,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
               }}
             >
               {modelOptions.length === 0 ? (
-                <option value="">No models found</option>
+                <option value="">모델 없음</option>
               ) : null}
               {modelOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -1031,10 +1031,10 @@ const AgentChatComposer = memo(function AgentChatComposer({
             </select>
           </InlineHoverTooltip>
           {allowThinking ? (
-            <InlineHoverTooltip text="Select reasoning effort">
+            <InlineHoverTooltip text="추론 수준 선택">
               <select
                 className="ui-input ui-control-important h-6 rounded-md border-white/10 px-1.5 text-[10px] font-semibold text-white"
-                aria-label="Thinking"
+                aria-label="생각 수준"
                 value={thinkingValue}
                 style={{ ...CHAT_SELECT_STYLE, width: `${thinkingSelectWidthCh}ch` }}
                 onChange={(event) => {
@@ -1042,23 +1042,23 @@ const AgentChatComposer = memo(function AgentChatComposer({
                   onThinkingChange(nextValue ? nextValue : null);
                 }}
               >
-                <option value="">Default</option>
-                <option value="off">Off</option>
-                <option value="minimal">Minimal</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="xhigh">XHigh</option>
+                <option value="">기본</option>
+                <option value="off">끔</option>
+                <option value="minimal">최소</option>
+                <option value="low">낮음</option>
+                <option value="medium">보통</option>
+                <option value="high">높음</option>
+                <option value="xhigh">매우 높음</option>
               </select>
             </InlineHoverTooltip>
           ) : null}
         </div>
         <div className="hidden">
-          <span className="font-mono tracking-[0.02em]">Show</span>
+          <span className="font-mono tracking-[0.02em]">표시</span>
           <button
             type="button"
             role="switch"
-            aria-label="Show tool calls"
+            aria-label="도구 호출 표시"
             aria-checked={toolCallingEnabled}
             className={`inline-flex h-5 items-center rounded-sm border px-1.5 font-mono text-[10px] tracking-[0.01em] transition ${
               toolCallingEnabled
@@ -1067,12 +1067,12 @@ const AgentChatComposer = memo(function AgentChatComposer({
             }`}
             onClick={() => onToolCallingToggle(!toolCallingEnabled)}
           >
-            Tools
+            도구
           </button>
           <button
             type="button"
             role="switch"
-            aria-label="Show thinking"
+            aria-label="생각 과정 표시"
             aria-checked={showThinkingTraces}
             className={`inline-flex h-5 items-center rounded-sm border px-1.5 font-mono text-[10px] tracking-[0.01em] transition ${
               showThinkingTraces
@@ -1081,7 +1081,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
             }`}
             onClick={() => onThinkingTracesToggle(!showThinkingTraces)}
           >
-            Thinking
+            생각 과정
           </button>
         </div>
       </div>
@@ -1095,7 +1095,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
             <div
               className="min-w-0 max-w-full space-y-1 overflow-hidden"
               data-testid="queued-messages-bar"
-              aria-label="Queued messages"
+              aria-label="대기 중인 메시지"
             >
               {queuedMessages.map((queuedMessage, index) => (
                 <div
@@ -1103,7 +1103,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
                   className="flex w-full min-w-0 max-w-full items-center gap-1 overflow-hidden rounded-md border border-border/70 bg-card/80 px-2 py-1 text-[11px] text-foreground"
                 >
                   <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-muted-foreground">
-                    Queued
+                    대기 중
                   </span>
                   <span
                     className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
@@ -1114,7 +1114,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
                   <button
                     type="button"
                     className="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-muted-foreground transition hover:bg-surface-2 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                    aria-label={`Remove queued message ${index + 1}`}
+                    aria-label={`대기 메시지 ${index + 1} 삭제`}
                     onClick={() => onRemoveQueuedMessage?.(index)}
                     disabled={!onRemoveQueuedMessage}
                   >
@@ -1131,7 +1131,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
                 disabled
                 className="invisible rounded-md border border-border/70 bg-surface-3 px-3 py-2 font-mono text-[12px] font-medium tracking-[0.02em] text-foreground"
               >
-                {stopBusy ? "Stopping" : "Stop"}
+                {stopBusy ? "중지 중" : "중지"}
               </button>
             ) : null}
             <button
@@ -1141,7 +1141,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
               disabled
               className="ui-btn-primary ui-btn-send invisible px-3 py-2 font-mono text-[12px] font-medium tracking-[0.02em]"
             >
-              Send
+              전송
             </button>
           </div>
         ) : null}
@@ -1162,7 +1162,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
                     />
                   ) : (
                     <div className="flex h-16 w-16 items-center justify-center px-2 text-center font-mono text-[10px] text-muted-foreground">
-                      File
+                      파일
                     </div>
                   )}
                   <button
@@ -1209,19 +1209,19 @@ const AgentChatComposer = memo(function AgentChatComposer({
             className="chat-composer-input min-h-[64px] flex-1 resize-none border-0 bg-transparent px-0 py-1 text-[15px] leading-6 text-foreground outline-none shadow-none transition placeholder:text-muted-foreground/65 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
             onChange={onChange}
             onKeyDown={onKeyDown}
-            placeholder="type a message"
+            placeholder="메시지를 입력하세요"
           />
           <button
             className="rounded-md border border-border/70 bg-surface-3 px-2.5 py-2 font-mono text-[11px] font-medium tracking-[0.02em] text-white transition hover:bg-surface-2 hover:text-white disabled:cursor-not-allowed disabled:border-border/30 disabled:bg-muted/20 disabled:text-muted-foreground"
             type="button"
             onClick={() => attachmentInputRef.current?.click()}
             disabled={!canSend}
-            aria-label="Attach files"
-            title="Attach files"
+            aria-label="파일 첨부"
+            title="파일 첨부"
           >
             <span className="inline-flex items-center gap-1.5">
               <Paperclip className="h-3.5 w-3.5" />
-              <span>Attach</span>
+              <span>첨부</span>
             </span>
           </button>
           {voiceEnabled ? (
@@ -1235,8 +1235,8 @@ const AgentChatComposer = memo(function AgentChatComposer({
               onClick={onVoiceToggle}
               disabled={voiceDisabled}
               data-testid="agent-voice-toggle"
-              aria-label={voiceRecording ? "Stop voice recording" : "Start voice recording"}
-              title={voiceRecording ? "Stop voice recording" : "Start voice recording"}
+              aria-label={voiceRecording ? "음성 녹음 중지" : "음성 녹음 시작"}
+              title={voiceRecording ? "음성 녹음 중지" : "음성 녹음 시작"}
             >
               <span className="inline-flex items-center gap-1.5">
                 {voiceRecording ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
@@ -1253,7 +1253,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
                 disabled={stopDisabled}
                 aria-label={stopAriaLabel}
               >
-                {stopBusy ? "Stopping" : "Stop"}
+                {stopBusy ? "중지 중" : "중지"}
               </button>
             </span>
           ) : null}
@@ -1263,7 +1263,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
             onClick={onSend}
             disabled={sendDisabled}
           >
-            Send
+            전송
           </button>
         </div>
       </div>
@@ -1495,7 +1495,7 @@ export const AgentChatPanel = ({
       const oversized = files.filter((file) => file.size > MAX_UPLOAD_BYTES);
       const supported = files.filter((file) => file.size <= MAX_UPLOAD_BYTES);
       if (supported.length === 0) {
-        setAttachmentStatus("All selected files exceeded the 10 MB upload limit.");
+        setAttachmentStatus("선택한 파일이 모두 10 MB 업로드 제한을 넘었습니다.");
         return;
       }
       try {
@@ -1526,15 +1526,15 @@ export const AgentChatPanel = ({
           })
         );
         setAttachments((current) => [...current, ...uploaded]);
-        const statusParts = [`Uploaded ${uploaded.length} file${uploaded.length === 1 ? "" : "s"}.`];
+        const statusParts = [`파일 ${uploaded.length}개를 올렸습니다.`];
         if (oversized.length > 0) {
-          statusParts.push(`${oversized.length} oversized file${oversized.length === 1 ? "" : "s"} skipped.`);
+          statusParts.push(`크기 제한을 넘은 파일 ${oversized.length}개는 건너뛰었습니다.`);
         }
         setAttachmentStatus(statusParts.join(" "));
         scrollToBottomNextOutputRef.current = true;
       } catch (error) {
         setAttachmentStatus(
-          error instanceof Error ? error.message : "Failed to read one or more attachments."
+          error instanceof Error ? error.message : "첨부 파일을 읽지 못했습니다."
         );
       }
     },
@@ -1586,7 +1586,7 @@ export const AgentChatPanel = ({
     const nextName = renameDraft.trim();
     const currentName = agent.name.trim();
     if (!nextName) {
-      setRenameError("Agent name is required.");
+      setRenameError("에이전트 이름을 입력하세요.");
       return;
     }
     if (nextName === currentName) {
@@ -1600,7 +1600,7 @@ export const AgentChatPanel = ({
     try {
       const ok = await onRename(nextName);
       if (!ok) {
-        setRenameError("Failed to rename agent.");
+        setRenameError("에이전트 이름을 바꾸지 못했습니다.");
         return;
       }
       setRenameEditing(false);
@@ -1655,7 +1655,7 @@ export const AgentChatPanel = ({
                 className="nodrag ui-btn-icon ui-btn-icon-xs agent-avatar-shuffle-btn absolute bottom-0 right-0"
                 style={{ "--ui-btn-icon-size": "1.1rem" } as React.CSSProperties}
                 type="button"
-                aria-label="Customize avatar"
+                aria-label="아바타 꾸미기"
                 data-testid="agent-avatar-customize"
                 onClick={(event) => {
                   event.preventDefault();
@@ -1675,7 +1675,7 @@ export const AgentChatPanel = ({
                       <input
                         ref={renameInputRef}
                         className="ui-input agent-rename-input h-8 min-w-0 flex-1 rounded-md px-2 text-[12px] font-semibold text-foreground"
-                        aria-label="Edit agent name"
+                        aria-label="에이전트 이름 편집"
                         data-testid="agent-rename-input"
                         value={renameDraft}
                         disabled={renameSaving}
@@ -1688,7 +1688,7 @@ export const AgentChatPanel = ({
                       <button
                         className="ui-btn-icon ui-btn-icon-sm agent-rename-control"
                         type="button"
-                        aria-label="Save agent name"
+                        aria-label="에이전트 이름 저장"
                         data-testid="agent-rename-save"
                         onClick={() => {
                           void submitRename();
@@ -1700,7 +1700,7 @@ export const AgentChatPanel = ({
                       <button
                         className="ui-btn-icon ui-btn-icon-sm agent-rename-control"
                         type="button"
-                        aria-label="Cancel agent rename"
+                        aria-label="이름 변경 취소"
                         data-testid="agent-rename-cancel"
                         onClick={cancelRename}
                         disabled={renameSaving}
@@ -1717,7 +1717,7 @@ export const AgentChatPanel = ({
                         <button
                           className="ui-btn-icon ui-btn-icon-xs agent-rename-control shrink-0"
                           type="button"
-                          aria-label="Rename agent"
+                          aria-label="에이전트 이름 변경"
                           data-testid="agent-rename-toggle"
                           onClick={beginRename}
                         >
@@ -1740,8 +1740,8 @@ export const AgentChatPanel = ({
                 className="nodrag ui-btn-icon ui-btn-icon-sm shrink-0"
                 type="button"
                 data-testid="agent-settings-toggle"
-                aria-label="Open behavior"
-                title="Open behavior"
+                aria-label="동작 설정 열기"
+                title="동작 설정 열기"
                 onClick={onOpenSettings}
               >
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -1751,14 +1751,14 @@ export const AgentChatPanel = ({
               className="nodrag inline-flex items-center whitespace-nowrap rounded border border-[color:var(--status-approval-border)] bg-[color:var(--status-approval-bg)] px-2 py-0.5 font-mono text-[9px] font-medium tracking-[0.02em] text-white transition hover:bg-[color:var(--status-approval-bg)] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
               type="button"
               data-testid="agent-new-session-toggle"
-              aria-label="Start new session"
-              title="Start new session"
+              aria-label="새 대화 시작"
+              title="새 대화 시작"
               onClick={() => {
                 void handleNewSession();
               }}
               disabled={newSessionDisabled}
             >
-              {newSessionBusy ? "Starting..." : "New session"}
+              {newSessionBusy ? "시작 중..." : "새 대화"}
             </button>
           </div>
         </div>
