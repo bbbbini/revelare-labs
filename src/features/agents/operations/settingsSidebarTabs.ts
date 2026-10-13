@@ -6,12 +6,12 @@ export type SettingsSidebarEntry = {
 };
 
 const BASE_SETTINGS_SIDEBAR_ENTRIES: readonly SettingsSidebarEntry[] = [
-  { id: "personality", label: "Behavior" },
-  { id: "capabilities", label: "Capabilities" },
-  { id: "skills", label: "Skills" },
-  { id: "system", label: "System setup" },
-  { id: "automations", label: "Automations" },
-  { id: "advanced", label: "Advanced" },
+  { id: "personality", label: "동작" },
+  { id: "capabilities", label: "권한" },
+  { id: "skills", label: "스킬" },
+  { id: "system", label: "시스템 설정" },
+  { id: "automations", label: "자동화" },
+  { id: "advanced", label: "고급" },
 ];
 
 export const resolveSettingsSidebarEntries = (runtimeSupportsCron: boolean) =>

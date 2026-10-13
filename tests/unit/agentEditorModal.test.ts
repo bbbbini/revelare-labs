@@ -112,7 +112,7 @@ describe("AgentEditorModal", () => {
       }),
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Tools/i }));
+    fireEvent.click(screen.getByRole("button", { name: /도구/ }));
 
     expect(screen.getByTestId("brain-panel")).toHaveTextContent("brain:agent-1:TOOLS.md");
   });

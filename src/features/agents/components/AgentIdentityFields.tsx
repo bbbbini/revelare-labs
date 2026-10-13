@@ -24,11 +24,11 @@ export function AgentIdentityFields({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <label className="flex flex-col gap-2 text-xs text-muted-foreground">
-        Name
+        이름
         <input
           className={inputClassName}
           value={values.name}
-          placeholder="e.g. Luke"
+          placeholder="예: 연구원 1"
           disabled={disabled}
           onChange={(event) => {
             onChange("name", event.target.value);
@@ -36,11 +36,11 @@ export function AgentIdentityFields({
         />
       </label>
       <label className="flex flex-col gap-2 text-xs text-muted-foreground">
-        Role
+        역할
         <input
           className={inputClassName}
           value={values.creature}
-          placeholder="e.g. Product Designer"
+          placeholder="예: 보안 연구원"
           disabled={disabled}
           onChange={(event) => {
             onChange("creature", event.target.value);
@@ -48,11 +48,11 @@ export function AgentIdentityFields({
         />
       </label>
       <label className="flex flex-col gap-2 text-xs text-muted-foreground">
-        Vibe
+        분위기
         <input
           className={inputClassName}
           value={values.vibe}
-          placeholder="e.g. Calm, sharp, and helpful"
+          placeholder="예: 차분하고 정확하며 친절함"
           disabled={disabled}
           onChange={(event) => {
             onChange("vibe", event.target.value);
@@ -60,11 +60,11 @@ export function AgentIdentityFields({
         />
       </label>
       <label className="flex flex-col gap-2 text-xs text-muted-foreground">
-        Emoji
+        이모지
         <input
           className={inputClassName}
           value={values.emoji}
-          placeholder="e.g. ✨"
+          placeholder="예: ✨"
           disabled={disabled}
           onChange={(event) => {
             onChange("emoji", event.target.value);

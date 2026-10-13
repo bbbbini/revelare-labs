@@ -210,15 +210,15 @@ describe("AgentSettingsPanel", () => {
       })
     );
 
-    expect(screen.queryByText("Capabilities")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Run commands off" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Run commands ask" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Run commands auto" })).toBeInTheDocument();
-    expect(screen.getByRole("switch", { name: "Web access" })).toHaveAttribute(
+    expect(screen.queryByText("권한")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "명령 실행 끔" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "명령 실행 묻기" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "명령 실행 자동" })).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "웹 접근" })).toHaveAttribute(
       "aria-checked",
       "false"
     );
-    expect(screen.getByRole("switch", { name: "File tools" })).toHaveAttribute(
+    expect(screen.getByRole("switch", { name: "파일 도구" })).toHaveAttribute(
       "aria-checked",
       "false"
     );
@@ -242,7 +242,7 @@ describe("AgentSettingsPanel", () => {
       })
     );
 
-    const webSwitch = screen.getByRole("switch", { name: "Web access" });
+    const webSwitch = screen.getByRole("switch", { name: "웹 접근" });
     fireEvent.click(webSwitch);
     expect(webSwitch).toHaveAttribute("aria-checked", "true");
   });
@@ -272,9 +272,9 @@ describe("AgentSettingsPanel", () => {
       })
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Run commands auto" }));
-    fireEvent.click(screen.getByRole("switch", { name: "Web access" }));
-    fireEvent.click(screen.getByRole("switch", { name: "File tools" }));
+    fireEvent.click(screen.getByRole("button", { name: "명령 실행 자동" }));
+    fireEvent.click(screen.getByRole("switch", { name: "웹 접근" }));
+    fireEvent.click(screen.getByRole("switch", { name: "파일 도구" }));
 
     await waitFor(
       () => {
@@ -318,9 +318,9 @@ describe("AgentSettingsPanel", () => {
       })
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Run commands auto" }));
-    fireEvent.click(screen.getByRole("switch", { name: "Web access" }));
-    fireEvent.click(screen.getByRole("switch", { name: "File tools" }));
+    fireEvent.click(screen.getByRole("button", { name: "명령 실행 자동" }));
+    fireEvent.click(screen.getByRole("switch", { name: "웹 접근" }));
+    fireEvent.click(screen.getByRole("switch", { name: "파일 도구" }));
 
     rerender(
       createElement(AgentSettingsPanel, {
@@ -333,11 +333,11 @@ describe("AgentSettingsPanel", () => {
       })
     );
 
-    expect(screen.getByRole("switch", { name: "Web access" })).toHaveAttribute(
+    expect(screen.getByRole("switch", { name: "웹 접근" })).toHaveAttribute(
       "aria-checked",
       "true"
     );
-    expect(screen.getByRole("switch", { name: "File tools" })).toHaveAttribute(
+    expect(screen.getByRole("switch", { name: "파일 도구" })).toHaveAttribute(
       "aria-checked",
       "true"
     );

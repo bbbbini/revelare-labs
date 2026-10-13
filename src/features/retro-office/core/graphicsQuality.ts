@@ -12,18 +12,18 @@ export const GRAPHICS_QUALITY_OPTIONS: Array<{
 }> = [
   {
     id: "low",
-    label: "Low",
-    description: "Fastest. No post-processing, small shadow maps.",
+    label: "낮음",
+    description: "가장 빠릅니다. 후처리 없이 작은 그림자 맵을 씁니다.",
   },
   {
     id: "balanced",
-    label: "Balanced",
-    description: "Ambient occlusion, bloom and soft shadows.",
+    label: "균형",
+    description: "주변광 차폐, 블룸, 부드러운 그림자를 씁니다.",
   },
   {
     id: "ultra",
-    label: "Ultra",
-    description: "Maximum fidelity. Large shadow maps and full effects.",
+    label: "최고",
+    description: "최고 화질입니다. 큰 그림자 맵과 모든 효과를 씁니다.",
   },
 ];
 

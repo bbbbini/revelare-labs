@@ -319,7 +319,7 @@ export const AgentSettingsPanel = ({
         await onUpdateAgentPermissions(draft);
         setPermissionsSaveState("saved");
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to save permissions.";
+        const message = err instanceof Error ? err.message : "권한을 저장하지 못했습니다.";
         setPermissionsSaveState("error");
         setPermissionsSaveError(message);
       } finally {
@@ -444,11 +444,11 @@ export const AgentSettingsPanel = ({
 
   const panelLabel =
     mode === "advanced"
-      ? "Advanced"
+      ? "고급"
       : mode === "skills"
-        ? "Skills"
+        ? "스킬"
         : mode === "system"
-          ? "System setup"
+          ? "시스템 설정"
           : "";
   const timedAutomationStepMeta =
     TIMED_AUTOMATION_STEP_META[cronCreateStep] ??
@@ -475,17 +475,17 @@ export const AgentSettingsPanel = ({
             <div className="mt-2 flex flex-col gap-8">
               <div className="px-1 py-1">
                 <div className="sidebar-copy flex flex-col gap-1 text-[11px] text-muted-foreground">
-                  <span className="font-medium text-foreground/88">Run commands</span>
+                  <span className="font-medium text-foreground/88">명령 실행</span>
                   <div
                     className="ui-segment ui-segment-command-mode mt-2 grid-cols-3"
                     role="group"
-                    aria-label="Run commands"
+                    aria-label="명령 실행"
                   >
                     {(
                       [
-                        { id: "off", label: "Off" },
-                        { id: "ask", label: "Ask" },
-                        { id: "auto", label: "Auto" },
+                        { id: "off", label: "끔" },
+                        { id: "ask", label: "묻기" },
+                        { id: "auto", label: "자동" },
                       ] as const
                     ).map((option) => {
                       const selected = permissionsDraftValue.commandMode === option.id;
@@ -493,7 +493,7 @@ export const AgentSettingsPanel = ({
                         <button
                           key={option.id}
                           type="button"
-                          aria-label={`Run commands ${option.label.toLowerCase()}`}
+                          aria-label={`명령 실행 ${option.label}`}
                           aria-pressed={selected}
                           className="ui-segment-item px-3 py-2.5 text-center font-mono text-[11px] font-semibold tracking-[0.04em]"
                           data-active={selected ? "true" : "false"}
@@ -516,7 +516,7 @@ export const AgentSettingsPanel = ({
                   <button
                     type="button"
                     role="switch"
-                    aria-label="Web access"
+                    aria-label="웹 접근"
                     aria-checked={permissionsDraftValue.webAccess}
                     className={`ui-switch self-center ${permissionsDraftValue.webAccess ? "ui-switch--on" : ""}`}
                     onClick={() =>
@@ -529,9 +529,9 @@ export const AgentSettingsPanel = ({
                     <span className="ui-switch-thumb" />
                   </button>
                   <div className="sidebar-copy flex flex-col">
-                    <span className="text-[11px] font-medium text-foreground/88">Web access</span>
+                    <span className="text-[11px] font-medium text-foreground/88">웹 접근</span>
                     <span className="text-[10px] text-muted-foreground/70">
-                      Allows this agent to fetch live web results.
+                      이 에이전트가 실시간 웹 검색 결과를 가져올 수 있습니다.
                     </span>
                   </div>
                 </div>
@@ -542,7 +542,7 @@ export const AgentSettingsPanel = ({
                   <button
                     type="button"
                     role="switch"
-                    aria-label="File tools"
+                    aria-label="파일 도구"
                     aria-checked={permissionsDraftValue.fileTools}
                     className={`ui-switch self-center ${permissionsDraftValue.fileTools ? "ui-switch--on" : ""}`}
                     onClick={() =>
@@ -555,9 +555,9 @@ export const AgentSettingsPanel = ({
                     <span className="ui-switch-thumb" />
                   </button>
                   <div className="sidebar-copy flex flex-col">
-                    <span className="text-[11px] font-medium text-foreground/88">File tools</span>
+                    <span className="text-[11px] font-medium text-foreground/88">파일 도구</span>
                     <span className="text-[10px] text-muted-foreground/70">
-                      Lets this agent read and edit files in its workspace.
+                      이 에이전트가 작업 공간의 파일을 읽고 수정할 수 있습니다.
                     </span>
                   </div>
                 </div>
@@ -568,7 +568,7 @@ export const AgentSettingsPanel = ({
                   <button
                     type="button"
                     role="switch"
-                    aria-label="Browser automation"
+                    aria-label="브라우저 자동화"
                     aria-checked="false"
                     className="ui-switch self-center"
                     disabled
@@ -576,19 +576,19 @@ export const AgentSettingsPanel = ({
                     <span className="ui-switch-thumb" />
                   </button>
                   <div className="sidebar-copy flex flex-col">
-                    <span className="text-[11px] font-medium text-foreground/88">Browser automation</span>
-                    <span className="text-[10px] text-muted-foreground/70">Coming soon</span>
+                    <span className="text-[11px] font-medium text-foreground/88">브라우저 자동화</span>
+                    <span className="text-[10px] text-muted-foreground/70">준비 중</span>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground/55" aria-hidden="true" />
               </div>
             </div>
             <div className="sidebar-copy mt-3 text-[11px] text-muted-foreground">
-              {permissionsSaveState === "saving" ? "Saving..." : null}
-              {permissionsSaveState === "saved" ? "Saved." : null}
+              {permissionsSaveState === "saving" ? "저장 중..." : null}
+              {permissionsSaveState === "saved" ? "저장했습니다." : null}
               {permissionsSaveState === "error" && permissionsSaveError ? (
                 <span>
-                  Couldn&apos;t save. {permissionsSaveError}{" "}
+                  저장하지 못했습니다. {permissionsSaveError}{" "}
                   <button
                     type="button"
                     className="underline underline-offset-2"
@@ -596,7 +596,7 @@ export const AgentSettingsPanel = ({
                       void runPermissionsSave(permissionsDraftValue);
                     }}
                   >
-                    Retry
+                    다시 시도
                   </button>
                 </span>
               ) : null}

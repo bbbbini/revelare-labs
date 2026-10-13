@@ -32,42 +32,42 @@ export const isAgentFileName = (value: string): value is AgentFileName =>
 export const AGENT_FILE_META: Record<AgentFileName, { title: string; hint: string }> = {
   "AGENTS.md": {
     title: "AGENTS.md",
-    hint: "Operating instructions, priorities, and rules.",
+    hint: "작업 지침, 우선순위, 규칙.",
   },
   "SOUL.md": {
     title: "SOUL.md",
-    hint: "Persona, tone, and boundaries.",
+    hint: "페르소나, 말투, 한계.",
   },
   "IDENTITY.md": {
     title: "IDENTITY.md",
-    hint: "Name, vibe, and emoji.",
+    hint: "이름, 분위기, 이모지.",
   },
   "USER.md": {
     title: "USER.md",
-    hint: "User profile and preferences.",
+    hint: "사용자 정보와 선호.",
   },
   "TOOLS.md": {
     title: "TOOLS.md",
-    hint: "Local tool notes and conventions.",
+    hint: "로컬 도구 메모와 규칙.",
   },
   "HEARTBEAT.md": {
     title: "HEARTBEAT.md",
-    hint: "Small checklist for heartbeat runs.",
+    hint: "주기 실행용 짧은 체크리스트.",
   },
   "MEMORY.md": {
     title: "MEMORY.md",
-    hint: "Durable memory for this agent.",
+    hint: "이 에이전트가 오래 기억할 내용.",
   },
 };
 
 export const AGENT_FILE_PLACEHOLDERS: Record<AgentFileName, string> = {
-  "AGENTS.md": "How should this agent work? Priorities, rules, and habits.",
-  "SOUL.md": "Tone, personality, boundaries, and how it should sound.",
-  "IDENTITY.md": "Name, vibe, emoji, and a one-line identity.",
-  "USER.md": "How should it address you? Preferences and context.",
-  "TOOLS.md": "Local tool notes, conventions, and shortcuts.",
-  "HEARTBEAT.md": "A tiny checklist for periodic runs.",
-  "MEMORY.md": "Durable facts, decisions, and preferences to remember.",
+  "AGENTS.md": "이 에이전트는 어떻게 일해야 하나요? 우선순위, 규칙, 습관.",
+  "SOUL.md": "말투, 성격, 한계, 말하는 방식.",
+  "IDENTITY.md": "이름, 분위기, 이모지, 한 줄 소개.",
+  "USER.md": "사용자를 어떻게 부를까요? 선호와 맥락.",
+  "TOOLS.md": "로컬 도구 메모, 규칙, 단축 방법.",
+  "HEARTBEAT.md": "주기 실행용 짧은 체크리스트.",
+  "MEMORY.md": "기억해 둘 사실, 결정, 선호.",
 };
 
 export const createAgentFilesState = () =>

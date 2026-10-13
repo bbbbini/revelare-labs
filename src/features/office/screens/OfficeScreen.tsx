@@ -5012,9 +5012,9 @@ export function OfficeScreen({
 
       {showHermesConsole ? (
         <section className="pointer-events-auto fixed bottom-3 left-3 z-30 flex w-[520px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded border border-cyan-500/25 bg-black/78 shadow-2xl backdrop-blur">
-          <div className="flex items-center justify-between border-b border-cyan-500/15 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-cyan-200/80">
-            <span>에이전트 이벤트 콘솔</span>
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-cyan-500/15 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-cyan-200/80">
+            <span className="whitespace-nowrap">에이전트 이벤트 콘솔</span>
+            <div className="flex flex-wrap items-center gap-2 [&>*]:shrink-0 [&>*]:whitespace-nowrap">
               <span className="text-[10px] text-cyan-100/45">
                 에이전트 {state.agents.length} | 이벤트{" "}
                 {filteredHermesLogEntries.length}/{hermesLogEntries.length}
@@ -5246,7 +5246,7 @@ export function OfficeScreen({
                 {!chatRosterCollapsed ? (
                   <>
                     <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-white/60">
-                      Agents
+                      에이전트
                     </span>
                     <span className="font-mono text-[10px] text-white/40">
                       {chatRosterEntries.length}

@@ -11,6 +11,7 @@ import {
   OFFICE_RENDER_MODE_OPTIONS,
   type OfficeRenderMode,
 } from "@/features/office/renderMode";
+import { GATEWAY_STATUS_LABELS } from "@/features/office/statusLabels";
 
 type SettingsPanelProps = {
   gatewayStatus?: string;
@@ -96,8 +97,8 @@ export function SettingsPanel({
   const normalizedGatewayUrl = gatewayUrl?.trim() ?? "";
   const normalizedGatewayToken = gatewayToken ?? "";
   const gatewayStateLabel = gatewayStatus
-    ? gatewayStatus.charAt(0).toUpperCase() + gatewayStatus.slice(1)
-    : "Unknown";
+    ? GATEWAY_STATUS_LABELS[gatewayStatus] ?? gatewayStatus
+    : "알 수 없음";
   const isGatewayConnected = gatewayStatus === "connected";
   const gatewayDisconnectDisabled = !isGatewayConnected;
   const gatewayConnectDisabled = normalizedGatewayUrl.length === 0;
@@ -114,13 +115,13 @@ export function SettingsPanel({
       <div className="rounded-lg border border-cyan-500/10 bg-black/20 px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] font-medium text-white">Studio title</div>
+            <div className="text-[11px] font-medium text-white">Studio 제목</div>
             <div className="mt-1 text-[10px] text-white/75">
-              Customize the banner shown at the top of the office.
+              오피스 상단에 보이는 배너 문구를 정합니다.
             </div>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
-            {officeTitleLoaded ? "Ready" : "Loading"}
+            {officeTitleLoaded ? "준비됨" : "불러오는 중"}
           </span>
         </div>
         <input
@@ -133,15 +134,15 @@ export function SettingsPanel({
           className="mt-3 w-full rounded-md border border-cyan-500/10 bg-black/25 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-cyan-100 outline-none transition-colors placeholder:text-cyan-100/30 focus:border-cyan-400/30 disabled:cursor-not-allowed disabled:opacity-50"
         />
         <div className="mt-2 text-[10px] text-white/50">
-          Used in the office scene header.
+          오피스 화면 머리글에 쓰입니다.
         </div>
       </div>
       <div className="mt-3 rounded-lg border border-cyan-500/10 bg-black/20 px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] font-medium text-white">Gateway</div>
+            <div className="text-[11px] font-medium text-white">게이트웨이</div>
             <div className="mt-1 text-[10px] text-white/75">
-              Switch the active backend and update its saved endpoint details.
+              사용할 백엔드를 바꾸고 저장된 연결 정보를 수정합니다.
             </div>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
@@ -151,11 +152,11 @@ export function SettingsPanel({
         <div className="mt-3 flex flex-wrap gap-2">
           {(
             [
-              ["demo", "Demo"],
+              ["demo", "데모"],
               ["hermes", "Hermes"],
-              ["local", "Local"],
+              ["local", "로컬"],
               ["hermes3d", "Hermes3D"],
-              ["custom", "Custom"],
+              ["custom", "커스텀"],
             ] as const
           ).map(([adapterType, label]) => {
             const selected = selectedAdapterType === adapterType;
@@ -178,7 +179,7 @@ export function SettingsPanel({
         <div className="mt-3 grid gap-3">
           <div>
             <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-cyan-100/65">
-              Upstream URL
+              업스트림 URL
             </div>
             <input
               type="text"
@@ -187,7 +188,7 @@ export function SettingsPanel({
               placeholder={
                 selectedAdapterType === "custom" ||
                 selectedAdapterType === "local"
-                  ? "http://localhost:7770"
+                  ? "http://127.0.0.1:7770"
                   : selectedAdapterType === "hermes3d"
                     ? "http://localhost:3000/api/runtime/custom"
                   : "ws://localhost:18789"
@@ -197,29 +198,29 @@ export function SettingsPanel({
           </div>
           <div>
             <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-cyan-100/65">
-              {tokenOptional ? "Upstream token (optional)" : "Upstream token"}
+              {tokenOptional ? "업스트림 토큰 (선택)" : "업스트림 토큰"}
             </div>
             <input
               type="password"
               value={normalizedGatewayToken}
               onChange={(event) => onGatewayTokenChange?.(event.target.value)}
-              placeholder={tokenOptional ? "optional token" : "gateway token"}
+              placeholder={tokenOptional ? "토큰 (선택)" : "게이트웨이 토큰"}
               className="w-full rounded-md border border-cyan-500/10 bg-black/25 px-3 py-2 text-[11px] text-cyan-100 outline-none transition-colors placeholder:text-cyan-100/30 focus:border-cyan-400/30"
             />
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] text-white/60">
           <span className="font-mono">
-            Selected backend: {selectedAdapterType}
+            선택한 백엔드: {selectedAdapterType}
           </span>
           <span className="font-mono">
-            Active backend: {activeAdapterType}
+            사용 중인 백엔드: {activeAdapterType}
           </span>
-          <span>Each backend keeps its own saved URL and token.</span>
+          <span>백엔드마다 URL과 토큰이 따로 저장됩니다.</span>
         </div>
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="text-[10px] text-white/60">
-            Connect to apply the selected backend, or disconnect to return to the connection screen.
+            연결하면 선택한 백엔드가 적용되고, 연결을 끊으면 연결 화면으로 돌아갑니다.
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -228,7 +229,7 @@ export function SettingsPanel({
               disabled={gatewayConnectDisabled}
               className="rounded-md border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-cyan-50 transition-colors hover:border-cyan-400/40 hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {gatewayStatus === "connecting" ? "Connecting..." : "Connect"}
+              {gatewayStatus === "connecting" ? "연결 중..." : "연결"}
             </button>
             <button
               type="button"
@@ -236,7 +237,7 @@ export function SettingsPanel({
               disabled={gatewayDisconnectDisabled}
               className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-rose-100 transition-colors hover:border-rose-400/40 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Disconnect gateway
+              게이트웨이 연결 끊기
             </button>
           </div>
         </div>
@@ -244,13 +245,13 @@ export function SettingsPanel({
       <div className="mt-3 rounded-lg border border-cyan-500/10 bg-black/20 px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] font-medium text-white">Remote office</div>
+            <div className="text-[11px] font-medium text-white">원격 오피스</div>
             <div className="mt-1 text-[10px] text-white/75">
-              Attach a second read-only office from either another Hermes3D or a remote Hermes gateway.
+              다른 Hermes3D나 원격 Hermes 게이트웨이의 오피스를 읽기 전용으로 하나 더 붙입니다.
             </div>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
-            {remoteOfficeEnabled ? "Enabled" : "Disabled"}
+            {remoteOfficeEnabled ? "켜짐" : "꺼짐"}
           </span>
         </div>
         <div className="ui-settings-row mt-3 flex min-h-[72px] items-center justify-between gap-6 rounded-lg border border-cyan-500/10 bg-black/15 px-4 py-3">
@@ -258,7 +259,7 @@ export function SettingsPanel({
             <button
               type="button"
               role="switch"
-              aria-label="Remote office"
+              aria-label="원격 오피스"
               aria-checked={remoteOfficeEnabled}
               className={`ui-switch self-center ${remoteOfficeEnabled ? "ui-switch--on" : ""}`}
               onClick={() => onRemoteOfficeEnabledChange(!remoteOfficeEnabled)}
@@ -266,20 +267,20 @@ export function SettingsPanel({
               <span className="ui-switch-thumb" />
             </button>
             <div className="flex flex-col">
-              <span className="text-[11px] font-medium text-white">Show second office</span>
+              <span className="text-[11px] font-medium text-white">두 번째 오피스 표시</span>
               <span className="text-[10px] text-white/80">
-                Remote agents stay visible but non-interactive.
+                원격 에이전트는 보이지만 상호작용할 수 없습니다.
               </span>
             </div>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
-            {remoteOfficeTokenConfigured ? "Token set" : "No token"}
+            {remoteOfficeTokenConfigured ? "토큰 설정됨" : "토큰 없음"}
           </span>
         </div>
         <div className="mt-3 grid gap-3">
           <div>
             <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-cyan-100/65">
-              Source type
+              소스 유형
             </div>
             <select
               value={remoteOfficeSourceKind}
@@ -290,23 +291,23 @@ export function SettingsPanel({
               }
               className="w-full rounded-md border border-cyan-500/10 bg-black/25 px-3 py-2 text-[11px] text-cyan-100 outline-none transition-colors focus:border-cyan-400/30"
             >
-              <option value="presence_endpoint">Remote Hermes3D presence endpoint</option>
-              <option value="hermes_gateway">Remote Hermes gateway</option>
+              <option value="presence_endpoint">원격 Hermes3D presence endpoint</option>
+              <option value="hermes_gateway">원격 Hermes 게이트웨이</option>
             </select>
             <div className="mt-1 text-[10px] text-white/50">
-              Use a presence endpoint when the other machine runs Hermes3D. Use gateway mode when the other machine only runs Hermes.
+              다른 컴퓨터가 Hermes3D를 실행하면 presence endpoint를, Hermes만 실행하면 게이트웨이 모드를 사용하세요.
             </div>
           </div>
           <div>
             <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-cyan-100/65">
-              Label
+              이름
             </div>
             <input
               type="text"
               value={remoteOfficeLabel}
               maxLength={48}
               onChange={(event) => onRemoteOfficeLabelChange(event.target.value)}
-              placeholder="Remote Office"
+              placeholder="원격 오피스"
               className="w-full rounded-md border border-cyan-500/10 bg-black/25 px-3 py-2 text-[11px] uppercase tracking-[0.14em] text-cyan-100 outline-none transition-colors placeholder:text-cyan-100/30 focus:border-cyan-400/30"
             />
           </div>
@@ -324,19 +325,19 @@ export function SettingsPanel({
                   className="w-full rounded-md border border-cyan-500/10 bg-black/25 px-3 py-2 text-[11px] text-cyan-100 outline-none transition-colors placeholder:text-cyan-100/30 focus:border-cyan-400/30"
                 />
                 <div className="mt-1 text-[10px] text-white/50">
-                  Studio polls this endpoint server-side when the other machine is also running Hermes3D.
+                  다른 컴퓨터도 Hermes3D를 실행 중이면 Studio 서버가 이 endpoint를 주기적으로 조회합니다.
                 </div>
               </div>
               <div>
                 <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-cyan-100/65">
-                  Optional token
+                  토큰 (선택)
                 </div>
                 <div className="flex items-center gap-2">
                   <input
                     type="password"
                     value={remoteOfficeTokenDraft}
                     onChange={(event) => setRemoteOfficeTokenDraft(event.target.value)}
-                    placeholder={remoteOfficeTokenConfigured ? "Token configured. Enter a new one to replace it." : "Enter token"}
+                    placeholder={remoteOfficeTokenConfigured ? "토큰이 설정되어 있습니다. 바꾸려면 새 토큰을 입력하세요." : "토큰 입력"}
                     className="min-w-0 flex-1 rounded-md border border-cyan-500/10 bg-black/25 px-3 py-2 text-[11px] text-cyan-100 outline-none transition-colors placeholder:text-cyan-100/30 focus:border-cyan-400/30"
                   />
                   <button
@@ -347,7 +348,7 @@ export function SettingsPanel({
                     }}
                     className="rounded-md border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.14em] text-cyan-100 transition-colors hover:border-cyan-400/40 hover:bg-cyan-500/15"
                   >
-                    Save
+                    저장
                   </button>
                   {remoteOfficeTokenConfigured ? (
                     <button
@@ -358,7 +359,7 @@ export function SettingsPanel({
                       }}
                       className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.14em] text-rose-100 transition-colors hover:border-rose-400/40 hover:bg-rose-500/15"
                     >
-                      Clear
+                      지우기
                     </button>
                   ) : null}
                 </div>
@@ -368,7 +369,7 @@ export function SettingsPanel({
             <>
               <div>
                 <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-cyan-100/65">
-                  Gateway URL
+                  게이트웨이 URL
                 </div>
                 <input
                   type="text"
@@ -378,19 +379,19 @@ export function SettingsPanel({
                   className="w-full rounded-md border border-cyan-500/10 bg-black/25 px-3 py-2 text-[11px] text-cyan-100 outline-none transition-colors placeholder:text-cyan-100/30 focus:border-cyan-400/30"
                 />
                 <div className="mt-1 text-[10px] text-white/50">
-                  Hermes3D connects from the browser directly to the remote Hermes gateway and derives a read-only presence snapshot.
+                  브라우저가 원격 Hermes 게이트웨이에 직접 연결해 읽기 전용 상태를 가져옵니다.
                 </div>
               </div>
               <div>
                 <div className="mb-1 text-[10px] uppercase tracking-[0.14em] text-cyan-100/65">
-                  Shared gateway token
+                  공유 게이트웨이 토큰
                 </div>
                 <div className="flex items-center gap-2">
                   <input
                     type="password"
                     value={remoteOfficeTokenDraft}
                     onChange={(event) => setRemoteOfficeTokenDraft(event.target.value)}
-                    placeholder={remoteOfficeTokenConfigured ? "Token configured. Enter a new one to replace it." : "Enter token"}
+                    placeholder={remoteOfficeTokenConfigured ? "토큰이 설정되어 있습니다. 바꾸려면 새 토큰을 입력하세요." : "토큰 입력"}
                     className="min-w-0 flex-1 rounded-md border border-cyan-500/10 bg-black/25 px-3 py-2 text-[11px] text-cyan-100 outline-none transition-colors placeholder:text-cyan-100/30 focus:border-cyan-400/30"
                   />
                   <button
@@ -401,7 +402,7 @@ export function SettingsPanel({
                     }}
                     className="rounded-md border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.14em] text-cyan-100 transition-colors hover:border-cyan-400/40 hover:bg-cyan-500/15"
                   >
-                    Save
+                    저장
                   </button>
                   {remoteOfficeTokenConfigured ? (
                     <button
@@ -412,12 +413,12 @@ export function SettingsPanel({
                       }}
                       className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.14em] text-rose-100 transition-colors hover:border-rose-400/40 hover:bg-rose-500/15"
                     >
-                      Clear
+                      지우기
                     </button>
                   ) : null}
                 </div>
                 <div className="mt-1 text-[10px] text-white/50">
-                  Optional. Browser-based remote presence and messaging can work without it when the remote gateway already allows your Control UI origin.
+                  선택 사항입니다. 원격 게이트웨이가 이 Control UI origin을 이미 허용하면 토큰 없이도 동작합니다.
                 </div>
               </div>
             </>
@@ -427,9 +428,9 @@ export function SettingsPanel({
       <div className="mt-3 rounded-lg border border-cyan-500/10 bg-black/20 px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] font-medium text-white">Onboarding</div>
+            <div className="text-[11px] font-medium text-white">온보딩</div>
             <div className="mt-1 text-[10px] text-white/75">
-              Re-open the onboarding wizard to test the new-user flow.
+              온보딩 안내를 다시 열어 처음 사용자 흐름을 확인합니다.
             </div>
           </div>
           <button
@@ -437,15 +438,15 @@ export function SettingsPanel({
             onClick={() => onOpenOnboarding?.()}
             className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-emerald-100 transition-colors hover:border-emerald-400/40 hover:bg-emerald-500/15"
           >
-            Launch wizard
+            안내 시작
           </button>
         </div>
       </div>
       {renderMode && onRenderModeChange ? (
         <div className="mt-3 rounded-lg border border-cyan-500/10 bg-black/20 px-4 py-3">
-          <div className="text-[11px] font-medium text-white">Office renderer</div>
+          <div className="text-[11px] font-medium text-white">오피스 렌더러</div>
           <div className="mt-1 text-[10px] text-white/75">
-            Pick the immersive 3D office or the lightweight 2D pixel office.
+            몰입형 3D 오피스와 가벼운 2D 픽셀 오피스 중에서 고릅니다.
           </div>
           <div className="mt-3 grid gap-2">
             {OFFICE_RENDER_MODE_OPTIONS.map((option) => {
@@ -465,7 +466,7 @@ export function SettingsPanel({
                     <span className="text-[11px] font-medium">{option.label}</span>
                     {selected ? (
                       <span className="rounded-full border border-cyan-400/35 bg-cyan-500/15 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-cyan-100">
-                        Active
+                        사용 중
                       </span>
                     ) : null}
                   </div>
@@ -478,9 +479,9 @@ export function SettingsPanel({
       ) : null}
       {graphicsQuality && onGraphicsQualityChange ? (
         <div className="mt-3 rounded-lg border border-cyan-500/10 bg-black/20 px-4 py-3">
-          <div className="text-[11px] font-medium text-white">Graphics quality</div>
+          <div className="text-[11px] font-medium text-white">그래픽 품질</div>
           <div className="mt-1 text-[10px] text-white/75">
-            Balance visual fidelity against performance in the 3D office.
+            3D 오피스의 화질과 성능 사이 균형을 정합니다.
           </div>
           <div className="mt-3 grid gap-2">
             {GRAPHICS_QUALITY_OPTIONS.map((option) => {
@@ -511,7 +512,7 @@ export function SettingsPanel({
           <button
             type="button"
             role="switch"
-            aria-label="Voice replies"
+            aria-label="음성 답변"
             aria-checked={voiceRepliesEnabled}
             className={`ui-switch self-center ${voiceRepliesEnabled ? "ui-switch--on" : ""}`}
             onClick={() => onVoiceRepliesToggle(!voiceRepliesEnabled)}
@@ -520,20 +521,20 @@ export function SettingsPanel({
             <span className="ui-switch-thumb" />
           </button>
           <div className="flex flex-col">
-            <span className="text-[11px] font-medium text-white">Voice replies</span>
+            <span className="text-[11px] font-medium text-white">음성 답변</span>
             <span className="text-[10px] text-white/80">
-              Play finalized assistant replies with a natural voice.
+              완성된 답변을 자연스러운 음성으로 읽어 줍니다.
             </span>
           </div>
         </div>
         <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
-          {voiceRepliesLoaded ? (voiceRepliesEnabled ? "On" : "Off") : "Loading"}
+          {voiceRepliesLoaded ? (voiceRepliesEnabled ? "켜짐" : "꺼짐") : "불러오는 중"}
         </span>
       </div>
       <div className="mt-3 rounded-lg border border-cyan-500/10 bg-black/20 px-4 py-3">
-        <div className="text-[11px] font-medium text-white">Voice</div>
+        <div className="text-[11px] font-medium text-white">음성</div>
         <div className="mt-1 text-[10px] text-white/75">
-          Choose the voice used for spoken agent replies.
+          에이전트 답변을 읽을 음성을 고릅니다.
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {CURATED_ELEVENLABS_VOICES.map((voice) => {
@@ -563,9 +564,9 @@ export function SettingsPanel({
       <div className="mt-3 rounded-lg border border-cyan-500/10 bg-black/20 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-[11px] font-medium text-white">Speed</div>
+            <div className="text-[11px] font-medium text-white">속도</div>
             <div className="mt-1 text-[10px] text-white/75">
-              Adjust how fast the selected voice speaks.
+              선택한 음성의 말하기 속도를 조절합니다.
             </div>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-200/70">
@@ -585,8 +586,8 @@ export function SettingsPanel({
           className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-full bg-cyan-500/15 accent-cyan-400"
         />
         <div className="mt-1 flex items-center justify-between text-[10px] text-white/45">
-          <span>Slower</span>
-          <span>Faster</span>
+          <span>느리게</span>
+          <span>빠르게</span>
         </div>
       </div>
     </div>

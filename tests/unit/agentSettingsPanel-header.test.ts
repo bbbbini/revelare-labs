@@ -62,7 +62,7 @@ describe("AgentSettingsPanel header", () => {
       })
     );
 
-    expect(screen.queryByText("Capabilities")).not.toBeInTheDocument();
+    expect(screen.queryByText("권한")).not.toBeInTheDocument();
     expect(screen.getByText("Web Researcher")).toBeInTheDocument();
     expect(screen.getByLabelText("Close panel")).toBeInTheDocument();
   });
