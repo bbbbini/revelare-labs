@@ -85,7 +85,7 @@ HOST=127.0.0.1 HERMES_STATE_DIR=~/security-labs-private/hermes3d-state \
   - 수정: custom 백엔드의 `127.0.0.1` 주소는 포트와 상관없이 입력한 그대로 저장한다. 예전 기본값 `localhost:7770`만 127로 바꾼다. 사용자가 입력한 `localhost:<port>`는 그대로 두고, 다른 백엔드는 기존 정규화를 쓴다. 자동 연결과 오프라인 안내는 custom + 이 컴퓨터의 loopback http 주소(모든 포트)에 적용하며 안내에 실제 주소를 표시한다. 허용 목록은 넓히지 않았다.
   - 리뷰어 확인: live /api/studio가 custom http://127.0.0.1:7772를 유지했고, 읽기 전용 프록시 /health는 200이었다. 7772에서 처음 접속과 새로고침 시 자동 연결, 오프라인 재시도, 3D 화면은 이 후보로 독립 실행하지 않았다.
 
-- [ ] K5 (리뷰 중) 새로고침 후 대화 유지(사용자 요청 12:31Z)
+- [x] K5 (커밋 a1d4f0f, dev-review 재리뷰 승인) 새로고침 후 대화 유지(사용자 요청 12:31Z)
   - 원인 1: runtime은 conversation_id를 쓰지 않는 무상태 서버이고, 대화는 브라우저 메모리(CustomRuntimeProvider.sessions)에만 있었다.
   - 원인 2: custom provider의 `sessions.list`가 세션 키를 `researcher-1`로 돌려줘서, 오피스 초기화가 `agent:researcher-1:main` 세션이 없다고 판단했다.
   - 원인 3: 오피스 화면에는 연결 직후 기록을 불러오는 단계가 없었다(에이전트 페이지에만 있었다).
@@ -107,6 +107,8 @@ HOST=127.0.0.1 HERMES_STATE_DIR=~/security-labs-private/hermes3d-state \
     - 보관 파일 이름은 시각과 UUID로 만들고 linkSync로 생성해 기존 파일을 덮어쓰지 않는다(반복 reset에서도 모두 보존).
     - 메시지 하나는 200,000자로 자르고 안내 문구를 붙인다. 그래도 1MB를 넘으면 저장 실패로 보고한다.
     - 저장 실패(`history_saved:false`)는 답변을 그대로 보여 주면서 대화창에 '알림: 이 대화는 저장하지 못했습니다…' 줄로 알린다(모델에게 보내는 대화에는 넣지 않음).
-  - 운영 반영: 사용자용 7772 runtime은 재시작해야 반영된다(operator 수행).
+  - 검증 완료(임시 7771): 질문·답변 저장, 새로고침 후 복원, runtime 재시작 후 복원(builder 실행).
+  - 사용자용 7772: operator가 queue running 0과 waiting 0을 확인한 뒤 재시작했다(2026-10-13 13:23Z, 같은 isolated-runtime 비공개 폴더, 요청 qitem-20261013132255-8643930f). 사용자가 실제로 새 대화를 나누고 새로고침·재시작한 뒤 기록이 유지되는지는 아직 확인하지 않았다(검증 대기).
+  - 미검증(리뷰어 기록 유지): 7772 운영 반영과 사용자 실화면, 두 브라우저 동시 채팅과 reset race, 네트워크 abort와 서버 완료 교차, 실제 디스크 오류의 UI 안내(unit만). 리뷰어는 독립 브라우저와 실제 CLI provider를 실행하지 않았고, 실새로고침 검증은 builder가 임시 7771로 했다. 콘솔 오류 0을 주장하지 않는다(Next dev Issues 1, 기존 config.get 1).
 
-NEXT: K4b·K5 리뷰 후 커밋, 사용자용 7772 runtime 재시작 뒤 사용자 Chrome에서 새로고침 후 대화 유지 확인
+NEXT: 사용자용 7772(재시작 완료)에서 사용자 Chrome으로 새로고침 후 대화 유지와 영속 저장을 확인하면 한국어 UI 작업 최종 보고. 디자인 시안(A/B/C)은 사용자 선택 전이라 구현하지 않음
