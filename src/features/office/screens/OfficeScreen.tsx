@@ -5035,11 +5035,11 @@ export function OfficeScreen({
       ) : null}
 
       {showHermesConsole ? (
-        <section className="pointer-events-auto fixed bottom-3 left-3 z-30 flex w-[520px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded border border-cyan-500/25 bg-black/78 shadow-2xl backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-cyan-500/15 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-cyan-200/80">
+        <section className="pointer-events-auto fixed bottom-3 left-3 z-30 flex w-[520px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-xl border border-[#e2dccf] bg-[#fbf8f2]/95 shadow-lg backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-[#e2dccf] px-3 py-2 text-[12px] font-semibold text-[#2f3133]">
             <span className="whitespace-nowrap">에이전트 이벤트 콘솔</span>
             <div className="flex flex-wrap items-center gap-2 [&>*]:shrink-0 [&>*]:whitespace-nowrap">
-              <span className="text-[10px] text-cyan-100/45">
+              <span className="font-mono text-[10px] font-normal text-[#8a847a]">
                 에이전트 {state.agents.length} | 이벤트{" "}
                 {filteredHermesLogEntries.length}/{hermesLogEntries.length}
               </span>
@@ -5048,7 +5048,7 @@ export function OfficeScreen({
                 onClick={() => {
                   void handleCopyHermesConsoleJson();
                 }}
-                className="rounded border border-cyan-500/20 px-2 py-0.5 text-[9px] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
+                className="rounded-full border border-[#e2dccf] bg-white px-2 py-0.5 text-[10px] font-medium text-[#4f4c47] transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
               >
                 {hermesConsoleCopyStatus === "copied"
                   ? "복사됨"
@@ -5059,14 +5059,14 @@ export function OfficeScreen({
               <button
                 type="button"
                 onClick={handleDownloadHermesConsoleJson}
-                className="rounded border border-cyan-500/20 px-2 py-0.5 text-[9px] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
+                className="rounded-full border border-[#e2dccf] bg-white px-2 py-0.5 text-[10px] font-medium text-[#4f4c47] transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
               >
                 JSON 다운로드
               </button>
               <button
                 type="button"
                 onClick={handleClearHermesConsole}
-                className="rounded border border-cyan-500/20 px-2 py-0.5 text-[9px] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
+                className="rounded-full border border-[#e2dccf] bg-white px-2 py-0.5 text-[10px] font-medium text-[#4f4c47] transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
               >
                 지우기
               </button>
@@ -5075,7 +5075,7 @@ export function OfficeScreen({
                 onClick={() =>
                   setHermesConsoleCollapsed((previous) => !previous)
                 }
-                className="rounded border border-cyan-500/20 px-2 py-0.5 text-[9px] text-cyan-100/70 transition-colors hover:border-cyan-400/45 hover:text-cyan-50"
+                className="rounded-full border border-[#e2dccf] bg-white px-2 py-0.5 text-[10px] font-medium text-[#4f4c47] transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
               >
                 {hermesConsoleCollapsed ? "펼치기" : "접기"}
               </button>
@@ -5253,7 +5253,7 @@ export function OfficeScreen({
       >
         {chatOpen && (
           <div
-            className="flex overflow-hidden rounded border border-white/10 bg-[#0e0a04] shadow-2xl"
+            className="lab-theme flex overflow-hidden rounded-2xl border border-[#e2dccf] bg-[#f7f3ec] shadow-2xl"
             style={{
               width: chatRosterCollapsed
                 ? "min(680px, calc(100vw - 1.5rem))"
@@ -5262,22 +5262,22 @@ export function OfficeScreen({
             }}
           >
             <div
-              className={`flex shrink-0 flex-col border-r border-white/10 transition-[width] ${
+              className={`flex shrink-0 flex-col border-r border-[#e2dccf] bg-[#f3eee5] transition-[width] ${
                 chatRosterCollapsed ? "w-12" : "w-52"
               }`}
             >
-              <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
+              <div className="flex items-center justify-between border-b border-[#e2dccf] px-3 py-2">
                 {!chatRosterCollapsed ? (
                   <>
-                    <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-white/60">
+                    <span className="text-[12px] font-semibold text-[#2f3133]">
                       에이전트
                     </span>
-                    <span className="font-mono text-[10px] text-white/40">
+                    <span className="font-mono text-[10px] text-[#8a847a]">
                       {chatRosterEntries.length}
                     </span>
                   </>
                 ) : (
-                  <span className="mx-auto font-mono text-[10px] text-white/45">
+                  <span className="mx-auto font-mono text-[10px] text-[#8a847a]">
                     {chatRosterEntries.length}
                   </span>
                 )}
@@ -5285,7 +5285,7 @@ export function OfficeScreen({
               <button
                 type="button"
                 onClick={() => setChatRosterCollapsed((current) => !current)}
-                className="mx-2 mt-2 inline-flex items-center justify-center rounded border border-white/10 bg-white/5 px-2 py-2 text-white/65 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                className="mx-2 mt-2 inline-flex items-center justify-center rounded-lg border border-[#e2dccf] bg-white px-2 py-2 text-[#6f6a62] transition hover:border-[#b8c6ab] hover:text-[#2f3133]"
                 aria-label={chatRosterCollapsed ? "Expand agent list" : "Collapse agent list"}
                 title={chatRosterCollapsed ? "Expand agent list" : "Collapse agent list"}
               >
@@ -5307,8 +5307,8 @@ export function OfficeScreen({
                           onClick={() => handleOpenAgentChat(agent.id)}
                           className={`inline-flex h-8 w-8 items-center justify-center rounded border font-mono text-[10px] transition ${
                             isSelected
-                              ? "border-cyan-400/45 bg-cyan-950/50 text-cyan-100"
-                              : "border-white/10 bg-white/5 text-white/55 hover:border-white/20 hover:bg-white/10 hover:text-white/80"
+                              ? "border-[#b8c6ab] bg-[#e3e9dc] text-[#2f3133]"
+                              : "border-[#e2dccf] bg-white text-[#6f6a62] hover:border-[#b8c6ab] hover:text-[#2f3133]"
                           }`}
                           title={agent.name}
                         >
@@ -5318,7 +5318,7 @@ export function OfficeScreen({
                     })}
                   </div>
                 ) : chatRosterEntries.length === 0 ? (
-                  <div className="px-3 py-4 font-mono text-[11px] text-white/30">
+                  <div className="px-3 py-4 text-[11px] text-[#8a847a]">
                     No agents.
                   </div>
                 ) : (
@@ -5332,18 +5332,18 @@ export function OfficeScreen({
                         onClick={() => handleOpenAgentChat(agent.id)}
                         className={`flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors ${
                           isSelected
-                            ? "bg-white/10 text-white"
-                            : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                            ? "bg-[#e3e9dc] text-[#2f3133]"
+                            : "text-[#6f6a62] hover:bg-[#ece6da] hover:text-[#2f3133]"
                         }`}
                       >
                         <span
-                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${isRunning ? "bg-emerald-400" : "bg-white/20"}`}
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${isRunning ? "bg-[#6f8762]" : "bg-[#cfc8bb]"}`}
                         />
-                        <span className="min-w-0 flex-1 truncate font-mono text-[11px]">
+                        <span className="min-w-0 flex-1 truncate text-[12px]">
                           {agent.name}
                         </span>
                         {agent.kind === "remote" ? (
-                          <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.14em] text-cyan-300/60">
+                          <span className="shrink-0 text-[10px] text-[#6f8762]">
                             Remote
                           </span>
                         ) : null}
@@ -5394,6 +5394,7 @@ export function OfficeScreen({
                       value,
                     )
                   }
+                  onVoiceSend={handleVoiceSend}
                   onSend={(message) => {
                     void handleChatSend(
                       focusedChatAgent.agentId,
@@ -5416,7 +5417,6 @@ export function OfficeScreen({
                   onAvatarShuffle={() =>
                     openAgentEditor(focusedChatAgent.agentId, "avatar")
                   }
-                  onVoiceSend={handleVoiceSend}
                 />
               ) : focusedRemoteChatTarget && focusedRemoteChatState ? (
                 <RemoteAgentChatPanel
@@ -5483,7 +5483,7 @@ export function OfficeScreen({
         <button
           type="button"
           onClick={() => setChatOpen((prev) => !prev)}
-          className="flex items-center gap-1.5 rounded border border-amber-700/50 bg-[#0e0a04]/90 px-3 py-1.5 font-mono text-[11px] font-medium tracking-wider text-amber-500/80 shadow-lg backdrop-blur transition-colors hover:border-amber-600/70 hover:text-amber-400"
+          className="flex items-center gap-1.5 rounded-full border border-[#e2dccf] bg-[#fbf8f2]/95 px-3.5 py-1.5 text-[12px] font-medium text-[#2f3133] shadow-lg backdrop-blur transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
         >
           {chatOpen ? (
             <>
@@ -5495,7 +5495,7 @@ export function OfficeScreen({
               <MessageSquare className="h-3.5 w-3.5" />
               <span>채팅</span>
               {runningCount > 0 ? (
-                <span className="rounded bg-amber-500/20 px-1 text-[10px] text-amber-400">
+                <span className="rounded-full bg-[#6f8762] px-1.5 text-[10px] text-white">
                   {runningCount}
                 </span>
               ) : null}

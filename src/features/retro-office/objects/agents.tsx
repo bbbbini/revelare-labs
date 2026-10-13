@@ -13,6 +13,10 @@ import type {
   RenderAgent,
 } from "@/features/retro-office/core/types";
 import { AgentModelProps } from "@/features/retro-office/objects/types";
+import { AGENT_STATUS_LABELS } from "@/features/office/statusLabels";
+
+/** Tee shown under the open "overshirt" top (research-lab look). */
+const OVERSHIRT_TEE_COLOR = "#efe9dc";
 
 const MAX_NAMEPLATE_TEXT_LENGTH = 10;
 const MAX_SUBTITLE_TEXT_LENGTH = 20;
@@ -77,7 +81,8 @@ export const AgentModel = memo(function AgentModel({
   name,
   subtitle,
   status,
-  color,
+  // The agent color no longer tints the lab nameplate.
+  color: _color,
   appearance,
   agentsRef,
   agentLookupRef,
@@ -362,7 +367,7 @@ export const AgentModel = memo(function AgentModel({
 
     if (statusDotMatRef.current) {
       statusDotMatRef.current.color.set(
-        isError ? "#ef4444" : working ? "#22c55e" : "#f59e0b",
+        isError ? "#c0564b" : working ? "#5f9a5a" : "#b9b2a3",
       );
     }
 
@@ -714,10 +719,16 @@ export const AgentModel = memo(function AgentModel({
   // Drop the role line there and step each seat's plate to its own height so
   // the names read as a list instead of a pile.
   const inHuddle = huddleSeatIndex !== null;
-  const subtitleText =
-    !inHuddle && typeof subtitle === "string"
-      ? formatAgentSubtitleText(subtitle)
-      : "";
+  // The lab nameplate shows what the agent is doing (from its live runtime
+  // status) rather than its role id; the role is still used elsewhere.
+  const statusSubtitle = AGENT_STATUS_LABELS[status] ?? null;
+  const subtitleText = inHuddle
+    ? ""
+    : statusSubtitle
+      ? statusSubtitle
+      : typeof subtitle === "string"
+        ? formatAgentSubtitleText(subtitle)
+        : "";
   const nameplateHeight =
     1.05 + (inHuddle ? ((huddleSeatIndex ?? 0) % 4) * 0.17 : 0);
   const nameplateFontSize =
@@ -837,6 +848,19 @@ export const AgentModel = memo(function AgentModel({
           <mesh position={[0, 0.22, 0.056]}>
             <boxGeometry args={[0.11, 0.03, 0.012]} />
             <meshStandardMaterial color={cuffColor} roughness={0.75} />
+          </mesh>
+        </>
+      ) : null}
+      {topStyle === "overshirt" ? (
+        <>
+          {/* Open overshirt: an ivory tee shows between the front panels. */}
+          <mesh position={[0, 0.29, 0.053]}>
+            <boxGeometry args={[0.07, 0.19, 0.008]} />
+            <meshStandardMaterial color={OVERSHIRT_TEE_COLOR} roughness={0.8} />
+          </mesh>
+          <mesh position={[0, 0.375, 0.02]} castShadow>
+            <boxGeometry args={[0.19, 0.03, 0.08]} />
+            <meshStandardMaterial color={topColor} roughness={0.8} />
           </mesh>
         </>
       ) : null}
@@ -1170,11 +1194,11 @@ export const AgentModel = memo(function AgentModel({
         <Billboard position={[0, nameplateHeight, 0]}>
           <mesh position={[0, 0, -0.001]}>
             <planeGeometry args={[0.82, subtitleText ? 0.34 : 0.24]} />
-            <meshBasicMaterial color="#080c14" transparent opacity={0.9} />
+            <meshBasicMaterial color="#fbf8f2" transparent opacity={0.96} />
           </mesh>
-          <mesh position={[-0.392, 0, 0]}>
-            <planeGeometry args={[0.028, subtitleText ? 0.34 : 0.24]} />
-            <meshBasicMaterial color={color} />
+          <mesh position={[0, 0, -0.002]}>
+            <planeGeometry args={[0.84, subtitleText ? 0.36 : 0.26]} />
+            <meshBasicMaterial color="#d9d2c4" transparent opacity={0.9} />
           </mesh>
           <mesh position={[0.355, subtitleText ? 0.05 : 0, 0]}>
             <circleGeometry args={[0.052, 14]} />
@@ -1183,7 +1207,7 @@ export const AgentModel = memo(function AgentModel({
           <Text
             position={[-0.02, subtitleText ? 0.05 : 0, 0.001]}
             fontSize={nameplateFontSize}
-            color="#e8dfc0"
+            color="#2f3133"
             anchorX="center"
             anchorY="middle"
             maxWidth={0.68}
@@ -1195,7 +1219,7 @@ export const AgentModel = memo(function AgentModel({
             <Text
               position={[-0.02, -0.085, 0.001]}
               fontSize={0.062}
-              color="#8ab4ff"
+              color="#6f8762"
               anchorX="center"
               anchorY="middle"
               maxWidth={0.68}

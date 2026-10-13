@@ -6459,7 +6459,7 @@ export function RetroOffice3D({
                 onClick={() => {
                   cameraPresetRef.current = CAMERA_PRESET_MAP[key];
                 }}
-                className="w-7 h-7 flex items-center justify-center rounded-md bg-[#1c1610]/80 text-amber-500/60 border border-amber-900/20 hover:bg-[#2a1e14] hover:text-amber-400 backdrop-blur-sm transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded-md bg-[#fbf8f2]/95 text-[#6f6a62] border border-[#e2dccf] hover:bg-white hover:text-[#2f3133] backdrop-blur-sm transition-colors shadow-sm"
               >
                 {icon}
               </button>
@@ -6491,9 +6491,9 @@ export function RetroOffice3D({
             <button
               type="button"
               onClick={() => openKanbanBoard(kanbanBoardItem)}
-              className="rounded-xl border border-cyan-500/22 bg-[#09111a]/90 px-3 py-2 text-left shadow-lg backdrop-blur-sm transition-colors hover:border-cyan-300/40 hover:bg-[#0d1b28]/95"
+              className="rounded-xl border border-[#e2dccf] bg-[#fbf8f2]/95 px-3 py-2 text-left shadow-sm backdrop-blur-sm transition-colors hover:border-[#b8c6ab] hover:bg-white"
             >
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-cyan-200/80">
+              <div className="text-[11px] font-semibold tracking-[0.04em] text-[#2f3133]">
                 칸반 보드
               </div>
             </button>
@@ -6505,11 +6505,9 @@ export function RetroOffice3D({
       {!immersiveOverlayActive ? (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none z-10">
           <div className="flex items-center gap-3">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500/40" />
-            <span className="text-sm tracking-[0.3em] text-amber-300/80 font-bold uppercase">
+            <span className="rounded-full border border-[#e2dccf] bg-[#fbf8f2]/95 px-4 py-1.5 text-[13px] font-bold uppercase tracking-[0.16em] text-[#2f3133] shadow-sm backdrop-blur-sm">
               {officeTitle}
             </span>
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500/40" />
           </div>
         </div>
       ) : null}
@@ -6530,7 +6528,7 @@ export function RetroOffice3D({
             .sort()
             .join("|")}
         >
-          <div className="flex items-center gap-2 rounded-full border border-amber-900/25 bg-[#1c1610]/92 px-2 py-2 shadow-lg backdrop-blur-sm">
+          <div className="flex items-center gap-2 rounded-full border border-[#e2dccf] bg-[#fbf8f2]/95 px-2 py-2 shadow-sm backdrop-blur-sm">
             <div className="flex items-center -space-x-1.5">
               {compactRosterAgents.map((agent) => {
                 const status = agentStatusLookup[agent.id];
@@ -6596,7 +6594,7 @@ export function RetroOffice3D({
             <button
               type="button"
               onClick={() => setAgentRosterOpen((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-full border border-amber-900/25 bg-black/20 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-100 transition-colors hover:border-amber-500/35 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-full border border-[#e2dccf] bg-white px-3 py-1.5 text-[11px] font-medium text-[#2f3133] transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
             >
               <Users className="h-3.5 w-3.5" />
               <span>{agents.length}</span>
@@ -7577,7 +7575,7 @@ export function RetroOffice3D({
             <button
               onClick={() => setSettingsModalOpen(true)}
               title={remoteOfficeStatusText}
-              className="flex h-7 items-center justify-center gap-1 rounded-md border border-white/15 bg-[#120e08]/92 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/75 transition-all backdrop-blur-sm hover:border-cyan-400/45 hover:text-cyan-100"
+              className="flex h-7 items-center justify-center gap-1 rounded-md border border-[#e2dccf] bg-[#fbf8f2]/95 px-2.5 text-[11px] font-semibold tracking-[0.04em] text-[#2f3133] shadow-sm transition-all backdrop-blur-sm hover:border-[#b8c6ab] hover:text-[#4f6545]"
             >
               <span>{remoteOfficeLabel}</span>
             </button>
@@ -7586,7 +7584,7 @@ export function RetroOffice3D({
             <button
               onClick={onAddAgent}
               title="에이전트 추가"
-              className="flex h-7 items-center justify-center gap-1 rounded-md border border-cyan-500/35 bg-[#071018]/92 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-cyan-200 transition-all backdrop-blur-sm hover:border-cyan-400/55 hover:text-white"
+              className="flex h-7 items-center justify-center gap-1 rounded-md border border-[#6f8762] bg-[#6f8762] px-2.5 text-[11px] font-semibold tracking-[0.04em] text-white shadow-sm transition-all backdrop-blur-sm hover:bg-[#61785a]"
             >
               <UserPlus size={12} />
               <span>추가</span>
@@ -7596,7 +7594,7 @@ export function RetroOffice3D({
             <button
               onClick={() => onRenderModeChange("2d")}
               title="2D 픽셀 오피스로 전환"
-              className="flex h-7 items-center justify-center gap-1 rounded-md border border-white/15 bg-[#120e08]/92 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/75 transition-all backdrop-blur-sm hover:border-cyan-400/45 hover:text-cyan-100"
+              className="flex h-7 items-center justify-center gap-1 rounded-md border border-[#e2dccf] bg-[#fbf8f2]/95 px-2.5 text-[11px] font-semibold tracking-[0.04em] text-[#2f3133] shadow-sm transition-all backdrop-blur-sm hover:border-[#b8c6ab] hover:text-[#4f6545]"
             >
               <span>2D</span>
             </button>
@@ -7604,10 +7602,10 @@ export function RetroOffice3D({
           <div
             className={`flex h-7 items-center rounded-md border px-2 text-[10px] font-mono uppercase tracking-[0.12em] ${
               gatewayStatus === "connected"
-                ? "border-emerald-400/25 bg-emerald-500/10 text-emerald-100"
+                ? "border-[#b8c6ab] bg-[#fbf8f2]/95 text-[#4f6545] shadow-sm"
                 : gatewayStatus === "connecting"
-                  ? "border-amber-400/25 bg-amber-500/10 text-amber-100"
-                  : "border-rose-400/25 bg-rose-500/10 text-rose-100"
+                  ? "border-[#e2d3b0] bg-[#fbf8f2]/95 text-[#8a6a2f] shadow-sm"
+                  : "border-[#e8c9c4] bg-[#fbf8f2]/95 text-[#a3483e] shadow-sm"
             }`}
             title={`런타임: ${activeAdapterType} (${GATEWAY_STATUS_LABELS[gatewayStatus] ?? gatewayStatus})`}
           >
@@ -7617,14 +7615,14 @@ export function RetroOffice3D({
           <button
             onClick={() => setHeatmapMode((p) => !p)}
             title="히트맵 켜기/끄기"
-            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${heatmapMode ? "bg-amber-500/30 text-amber-300 border-amber-500/50" : "bg-[#1c1610]/80 text-amber-500/40 border-amber-900/20 hover:text-amber-400"}`}
+            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${heatmapMode ? "bg-[#e3e9dc] text-[#4f6545] border-[#b8c6ab]" : "bg-[#fbf8f2]/95 text-[#6f6a62] border-[#e2dccf] hover:text-[#2f3133] shadow-sm"}`}
           >
             <MapIcon size={12} />
           </button>
           <button
             onClick={() => setTrailMode((p) => !p)}
             title="이동 경로 켜기/끄기"
-            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${trailMode ? "bg-amber-500/30 text-amber-300 border-amber-500/50" : "bg-[#1c1610]/80 text-amber-500/40 border-amber-900/20 hover:text-amber-400"}`}
+            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${trailMode ? "bg-[#e3e9dc] text-[#4f6545] border-[#b8c6ab]" : "bg-[#fbf8f2]/95 text-[#6f6a62] border-[#e2dccf] hover:text-[#2f3133] shadow-sm"}`}
           >
             <Maximize size={12} />
           </button>
@@ -7632,7 +7630,7 @@ export function RetroOffice3D({
           <button
             onClick={toggleEdit}
             title={editMode ? "편집 완료" : "오피스 편집"}
-            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${editMode ? "bg-amber-500/30 text-amber-300 border-amber-500/50" : "bg-[#1c1610]/80 text-amber-500/40 border-amber-900/20 hover:text-amber-400"}`}
+            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${editMode ? "bg-[#e3e9dc] text-[#4f6545] border-[#b8c6ab]" : "bg-[#fbf8f2]/95 text-[#6f6a62] border-[#e2dccf] hover:text-[#2f3133] shadow-sm"}`}
           >
             {editMode ? (
               <Check size={12} strokeWidth={2.5} />
@@ -7643,7 +7641,7 @@ export function RetroOffice3D({
           <button
             onClick={() => setSettingsModalOpen(true)}
             title="음성 답변 설정"
-            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${settingsModalOpen ? "bg-amber-500/30 text-amber-300 border-amber-500/50" : "bg-[#1c1610]/80 text-amber-500/40 border-amber-900/20 hover:text-amber-400"}`}
+            className={`w-7 h-7 flex items-center justify-center rounded-md transition-all backdrop-blur-sm border ${settingsModalOpen ? "bg-[#e3e9dc] text-[#4f6545] border-[#b8c6ab]" : "bg-[#fbf8f2]/95 text-[#6f6a62] border-[#e2dccf] hover:text-[#2f3133] shadow-sm"}`}
           >
             <Settings2 size={12} />
           </button>
@@ -7797,16 +7795,16 @@ export function RetroOffice3D({
                 </div>
               ))}
             {/* Ideas 6 + 8: Gateway status, agent counts, vibe score. */}
-            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1 text-[10px] font-mono">
-              <span className="text-amber-500/60">
+            <div className="flex items-center gap-3 rounded-full border border-[#e2dccf] bg-[#fbf8f2]/95 px-3 py-1 text-[11px] text-[#6f6a62] shadow-sm backdrop-blur-sm">
+              <span className="text-[#4f4c47]">
                 작업 중 {agents.filter((a) => a.status === "working").length}
               </span>
               <span className="opacity-30">·</span>
-              <span className="text-amber-500/60">
+              <span className="text-[#4f4c47]">
                 대기 {agents.filter((a) => a.status === "idle").length}
               </span>
               <span className="opacity-30">·</span>
-              <span className="text-amber-500/60">
+              <span className="text-[#4f4c47]">
                 오류 {agents.filter((a) => a.status === "error").length}
               </span>
               {/* New Idea 6: Vibe score with animated EQ bars. */}
@@ -7828,7 +7826,7 @@ export function RetroOffice3D({
                       {[0.6, 1, 0.7].map((h, i) => (
                         <span
                           key={i}
-                          className="w-[3px] bg-amber-500/60 rounded-sm"
+                          className="w-[3px] bg-[#8a9b7c] rounded-sm"
                           style={{
                             height: `${h * 100}%`,
                             animation: `eq-bar ${animDur} ${i * 0.15}s infinite ease-in-out alternate`,
@@ -7836,14 +7834,14 @@ export function RetroOffice3D({
                         />
                       ))}
                     </span>
-                    <span className="text-amber-500/50">{label}</span>
+                    <span className="text-[#6f8762]">{label}</span>
                   </>
                 );
               })()}
               {!editMode && !spaceDown && (
                 <>
                   <span className="opacity-30">·</span>
-                  <span className="text-amber-400/40">
+                  <span className="text-[#8a847a]">
                     드래그 · 스크롤 · 스페이스+드래그 · 더블클릭
                   </span>
                 </>
@@ -7851,7 +7849,7 @@ export function RetroOffice3D({
               {spaceDown && (
                 <>
                   <span className="opacity-30">·</span>
-                  <span className="text-amber-300/80">이동 모드</span>
+                  <span className="text-[#4f6545]">이동 모드</span>
                 </>
               )}
             </div>

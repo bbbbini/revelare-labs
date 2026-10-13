@@ -54,9 +54,10 @@ const ASSISTANT_GUTTER_CLASS = "pl-[44px]";
 const ASSISTANT_MAX_WIDTH_DEFAULT_CLASS = "max-w-[68ch]";
 const ASSISTANT_MAX_WIDTH_EXPANDED_CLASS = "max-w-[1120px]";
 const CHAT_TOP_THRESHOLD_PX = 8;
+// Overridable per surface (the research-lab chat sets these variables).
 const CHAT_SELECT_STYLE = {
-  backgroundColor: "#17120a",
-  color: "#ffffff",
+  backgroundColor: "var(--chat-select-bg, #17120a)",
+  color: "var(--chat-select-fg, #ffffff)",
 } as const;
 const EMPTY_CHAT_INTRO_MESSAGES = [
   "오늘 무엇을 도와드릴까요?",
@@ -1258,7 +1259,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
             </span>
           ) : null}
           <button
-            className="rounded border border-[color:var(--status-approval-border)] bg-[#0e0a04]/90 px-3 py-2 font-mono text-[12px] font-medium tracking-wider text-[color:var(--status-approval-fg)] shadow-lg backdrop-blur transition-colors hover:border-[color:var(--status-approval-border)] hover:text-[color:var(--status-approval-fg)] disabled:cursor-not-allowed disabled:border-border/30 disabled:bg-muted/20 disabled:text-muted-foreground"
+            className="ui-chat-send rounded border border-[color:var(--status-approval-border)] bg-[#0e0a04]/90 px-3 py-2 font-mono text-[12px] font-medium tracking-wider text-[color:var(--status-approval-fg)] shadow-lg backdrop-blur transition-colors hover:border-[color:var(--status-approval-border)] hover:text-[color:var(--status-approval-fg)] disabled:cursor-not-allowed disabled:border-border/30 disabled:bg-muted/20 disabled:text-muted-foreground"
             type="button"
             onClick={onSend}
             disabled={sendDisabled}

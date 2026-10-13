@@ -1365,3 +1365,129 @@ textarea:focus::-webkit-scrollbar {
   word-break: keep-all;
   overflow-wrap: break-word;
 }
+
+/*
+ * Research-lab surface: ivory panels, charcoal text and sage accents. Scoped
+ * to the office chat so the rest of the app keeps its theme; it wins over
+ * the dark theme tokens when both apply.
+ */
+.lab-theme,
+.dark .lab-theme {
+  --background: #f7f3ec;
+  --foreground: #2f3133;
+  --card: #fbf8f2;
+  --card-foreground: #2f3133;
+  --popover: #fbf8f2;
+  --popover-foreground: #2f3133;
+  --primary: #6f8762;
+  --primary-foreground: #ffffff;
+  --secondary: #ece6da;
+  --secondary-foreground: #2f3133;
+  --muted: #efe9de;
+  --muted-foreground: #6f6a62;
+  --accent: #e3e9dc;
+  --accent-foreground: #2f3133;
+  --border: #e2dccf;
+  --input: #e2dccf;
+  --ring: #6f8762;
+  --surface-0: #f7f3ec;
+  --surface-1: #fbf8f2;
+  --surface-2: #f3eee5;
+  --surface-3: #ece6da;
+  --surface-selected: #e3e9dc;
+  --surface-selected-border: #b8c6ab;
+  --elev-overlay-1: rgb(255 255 255 / 0.5);
+  --elev-overlay-2: rgb(255 255 255 / 0.7);
+  --chat-surface-bg: #f7f3ec;
+  --chat-assistant-bg: #ffffff;
+  --chat-assistant-border: #e6e0d4;
+  --chat-user-bg: #dfe7d6;
+  --chat-user-border: #cdd8c2;
+  --chat-user-header-bg: #d3dec9;
+  color-scheme: light;
+  color: var(--foreground);
+}
+
+.lab-theme .ui-chat-scroll,
+.dark .lab-theme .ui-chat-scroll {
+  --foreground: #2f3133;
+  border-color: var(--border);
+  background: var(--chat-surface-bg);
+}
+
+.lab-theme .ui-chat-assistant-card,
+.dark .lab-theme .ui-chat-assistant-card {
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgb(47 49 51 / 0.06);
+}
+
+.lab-theme .ui-chat-user-card {
+  border-radius: 14px;
+}
+
+.lab-theme .ui-btn-primary,
+.dark .lab-theme .ui-btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Controls inside the lab surface that hard-code light-on-dark colors. */
+.lab-theme .text-white,
+.lab-theme .hover\:text-white:hover {
+  color: var(--foreground);
+}
+
+.lab-theme .border-white\/10 {
+  border-color: var(--border);
+}
+
+.lab-theme .ui-chat-send,
+.dark .lab-theme .ui-chat-send {
+  border-color: var(--primary);
+  border-radius: 9999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: none;
+}
+
+.lab-theme .ui-chat-send:hover {
+  background: #61785a;
+  color: var(--primary-foreground);
+}
+
+/* The lab chat does not offer voice input yet (brief: no microphone). */
+.lab-theme [data-testid="agent-voice-toggle"] {
+  display: none;
+}
+
+.lab-theme .type-agent-name {
+  color: var(--foreground);
+}
+
+.lab-theme,
+.dark .lab-theme {
+  --sidebar-input-bg: #ffffff;
+  --sidebar-input-border: #e2dccf;
+  --model-control-border: #d6cfc1;
+  --status-approval-bg: #e3e9dc;
+  --status-approval-border: #b8c6ab;
+  --status-approval-fg: #4f6545;
+}
+
+.lab-theme .ui-input,
+.lab-theme .sidebar-input,
+.lab-theme .ui-control-important {
+  background: #ffffff;
+  color: var(--foreground);
+}
+
+.lab-theme .ui-input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.lab-theme,
+.dark .lab-theme {
+  --chat-select-bg: #ffffff;
+  --chat-select-fg: #2f3133;
+}

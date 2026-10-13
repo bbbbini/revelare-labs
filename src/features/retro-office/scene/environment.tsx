@@ -24,7 +24,6 @@ import {
   getConcreteTextures,
   getGrassTextures,
   getPlasterTextures,
-  getWoodFloorTextures,
   withRepeat,
 } from "@/features/retro-office/core/proceduralTextures";
 
@@ -209,7 +208,7 @@ function PerimeterWall({
       <mesh position={[0, wallHeight / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={dims(length, wallHeight, thickness)} />
         <meshStandardMaterial
-          color="#e9dfd0"
+          color="#ece6da"
           map={plaster.map}
           roughnessMap={plaster.roughnessMap}
           normalMap={plaster.normalMap}
@@ -220,7 +219,7 @@ function PerimeterWall({
       </mesh>
       <mesh position={[0, wallHeight + capHeight / 2, 0]} castShadow>
         <boxGeometry args={dims(length, capHeight, thickness)} />
-        <meshStandardMaterial color="#2b2f33" roughness={0.42} metalness={0.68} />
+        <meshStandardMaterial color="#3d3f42" roughness={0.6} metalness={0.4} />
       </mesh>
     </group>
   );
@@ -309,7 +308,8 @@ export const FloorAndWalls = memo(function FloorAndWalls({
   const groundCenterZ = showRemoteOffice ? districtCenterZ : localOfficeCenterZ;
   const groundWidth = showRemoteOffice ? districtWidth : localOfficeWidth;
   const groundHeight = showRemoteOffice ? districtHeight : localOfficeHeight;
-  const woodFloor = useMemo(() => withRepeat(getWoodFloorTextures(), 12, 5), []);
+  // Warm grey polished-concrete floor for the research lab.
+  const labFloor = useMemo(() => withRepeat(getConcreteTextures(), 12, 5), []);
   const districtConcrete = useMemo(
     () => withRepeat(getConcreteTextures(), 10, 10),
     [],
@@ -361,13 +361,12 @@ export const FloorAndWalls = memo(function FloorAndWalls({
       >
         <planeGeometry args={[localOfficeWidth, localOfficeHeight, 22, 14]} />
         <meshPhysicalMaterial
-          color="#e8d5b8"
-          map={woodFloor.map}
-          roughnessMap={woodFloor.roughnessMap}
-          normalMap={woodFloor.normalMap}
-          normalScale={[0.6, 0.6]}
-          clearcoat={0.2}
-          clearcoatRoughness={0.6}
+          color="#c2bbb0"
+          roughnessMap={labFloor.roughnessMap}
+          normalMap={labFloor.normalMap}
+          normalScale={[0.25, 0.25]}
+          clearcoat={0.15}
+          clearcoatRoughness={0.7}
           metalness={0.02}
         />
       </mesh>
@@ -381,10 +380,9 @@ export const FloorAndWalls = memo(function FloorAndWalls({
           >
             <planeGeometry args={[localOfficeWidth, localOfficeHeight, 22, 14]} />
             <meshPhysicalMaterial
-              color="#e8d5b8"
-              map={woodFloor.map}
-              roughnessMap={woodFloor.roughnessMap}
-              normalMap={woodFloor.normalMap}
+              color="#c2bbb0"
+              roughnessMap={labFloor.roughnessMap}
+              normalMap={labFloor.normalMap}
               normalScale={[0.6, 0.6]}
               clearcoat={0.2}
               clearcoatRoughness={0.6}

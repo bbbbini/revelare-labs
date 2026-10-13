@@ -168,7 +168,7 @@ test("server binds only routes behind the token and serves state/registry", asyn
     assert.deepEqual(await health.json(), { ok: true, status: "ok" });
     const state = await (await request("/state")).json();
     assert.equal(state.identity.lane, "researcher-1");
-    assert.equal(state.identity.name, "연구원 1");
+    assert.equal(state.identity.name, "보안 연구원");
     assert.equal(state.runtime.status, "idle");
     const registry = await (await request("/registry")).json();
     assert.deepEqual(Object.keys(registry.models), ["claude-cli"]);

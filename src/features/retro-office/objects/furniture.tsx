@@ -93,6 +93,37 @@ export const FURNITURE_TINT: Record<string, string | null> = {
   printer: "#404858",
 };
 
+/**
+ * Research-lab palette by GLB material name: warm oak wood, charcoal metal,
+ * sage fabric and muted greens. Applied directly so a desk reads as an oak top
+ * on a charcoal frame instead of one flat tint.
+ */
+const LAB_MATERIAL_COLORS: Record<string, string> = {
+  wood: "#b48a5e",
+  woodDark: "#7d5d40",
+  metal: "#3d3f42",
+  metalMedium: "#4a4d50",
+  metalDark: "#2f3133",
+  carpet: "#8a9b7c",
+  plant: "#6a8a57",
+  lamp: "#f2e6c8",
+};
+
+/** Per-type exceptions to the lab palette (by GLB material name). */
+const LAB_MATERIAL_OVERRIDES: Record<string, Record<string, string>> = {
+  bookshelf: { wood: "#45484b" },
+  whiteboard: { wood: "#f1ede4" },
+  cabinet: { metal: "#45484b", wood: "#b48a5e", woodDark: "#45484b" },
+  couch: { carpet: "#9aa88c", wood: "#7d5d40" },
+  couch_v: { carpet: "#b9b2a3" },
+  chair: { carpet: "#8a9b7c", metalMedium: "#3d3f42" },
+  computer: { metal: "#3d3f42", metalDark: "#26282a" },
+  plant: { wood: "#d9d3c7", woodDark: "#bdb6aa" },
+};
+
+const resolveLabMaterialColor = (itemType: string, materialName: string) =>
+  LAB_MATERIAL_OVERRIDES[itemType]?.[materialName] ?? LAB_MATERIAL_COLORS[materialName] ?? null;
+
 const furnitureTemplateCache = new Map<string, THREE.Object3D>();
 
 type InstancedFurnitureMeshDef = {
@@ -129,7 +160,13 @@ const resolveFurnitureTemplate = (params: {
     const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     const templateMats = mats.map((material, materialIndex) => {
       const nextMaterial = material.clone() as THREE.MeshStandardMaterial;
-      if (tintColor && "color" in nextMaterial) {
+      // A per-item color (beanbags) keeps the old tint; everything else uses
+      // the lab palette when the GLB material is one it knows.
+      const labColor =
+        params.itemType === "beanbag" ? null : resolveLabMaterialColor(params.itemType, material.name);
+      if (labColor && "color" in nextMaterial) {
+        nextMaterial.color.set(labColor);
+      } else if (tintColor && "color" in nextMaterial) {
         // Strong lerp toward the tint keeps the color rich instead of letting
         // the pale GLB base albedo wash it out.
         nextMaterial.color.lerp(tintColor, 0.92);

@@ -1,5 +1,5 @@
 export type AgentAvatarHairStyle = "short" | "parted" | "spiky" | "bun";
-export type AgentAvatarTopStyle = "tee" | "hoodie" | "jacket";
+export type AgentAvatarTopStyle = "tee" | "hoodie" | "jacket" | "overshirt";
 export type AgentAvatarBottomStyle = "pants" | "shorts" | "cuffed";
 export type AgentAvatarHatStyle = "none" | "cap" | "beanie";
 
@@ -70,6 +70,7 @@ export const AGENT_AVATAR_TOP_STYLE_OPTIONS: EnumOption<AgentAvatarTopStyle>[] =
   { id: "tee", label: "Tee" },
   { id: "hoodie", label: "Hoodie" },
   { id: "jacket", label: "Jacket" },
+  { id: "overshirt", label: "Overshirt" },
 ];
 
 export const AGENT_AVATAR_BOTTOM_STYLE_OPTIONS: EnumOption<AgentAvatarBottomStyle>[] = [
@@ -93,6 +94,9 @@ export const AGENT_AVATAR_CLOTHING_COLOR_OPTIONS: ColorOption[] = [
   { id: "violet", label: "Violet", color: "#8b5cf6" },
   { id: "cream", label: "Cream", color: "#f5f5f4" },
   { id: "slate", label: "Slate", color: "#64748b" },
+  { id: "sage", label: "Sage", color: "#7f9472" },
+  { id: "ivory", label: "Ivory", color: "#efe9dc" },
+  { id: "charcoal", label: "Charcoal", color: "#3a3b3d" },
 ];
 
 export const AGENT_AVATAR_SHOE_COLOR_OPTIONS: ColorOption[] = [
@@ -100,6 +104,7 @@ export const AGENT_AVATAR_SHOE_COLOR_OPTIONS: ColorOption[] = [
   { id: "navy", label: "Navy", color: "#1e3a8a" },
   { id: "brown", label: "Brown", color: "#7c4a2d" },
   { id: "white", label: "White", color: "#e5e7eb" },
+  { id: "offwhite", label: "Off-white", color: "#ece7dc" },
 ];
 
 const AGENT_AVATAR_VERSION = 1 as const;
@@ -139,18 +144,27 @@ const resolveEnumOption = <T extends string>(
   return match?.id ?? fallback;
 };
 
+// Unsaved avatars wear the research-lab look: a sage overshirt over an ivory
+// tee, charcoal trousers, off-white shoes and short dark parted hair, with no
+// glasses or hats. Only skin tone and the dark hair shade vary by seed. A
+// profile the user saved is kept as it is (normalizeAgentAvatarProfile).
+const LAB_SKIN_TONES = AGENT_AVATAR_SKIN_TONE_OPTIONS.slice(0, 3);
+const LAB_HAIR_COLORS = AGENT_AVATAR_HAIR_COLOR_OPTIONS.slice(0, 2);
+const optionColor = (options: ColorOption[], id: string) =>
+  options.find((option) => option.id === id)?.color ?? options[0].color;
+
 export const createAgentAvatarProfileFromSeed = (seed: string): AgentAvatarProfile => {
   const normalizedSeed = seed.trim() || "agent";
   const hash = hashSeed(normalizedSeed);
-  const skinTone = pick(AGENT_AVATAR_SKIN_TONE_OPTIONS, hash).color;
-  const hairStyle = pick(AGENT_AVATAR_HAIR_STYLE_OPTIONS, hash >>> 3).id;
-  const hairColor = pick(AGENT_AVATAR_HAIR_COLOR_OPTIONS, hash >>> 5).color;
-  const topStyle = pick(AGENT_AVATAR_TOP_STYLE_OPTIONS, hash >>> 7).id;
-  const topColor = pick(AGENT_AVATAR_CLOTHING_COLOR_OPTIONS, hash >>> 9).color;
-  const bottomStyle = pick(AGENT_AVATAR_BOTTOM_STYLE_OPTIONS, hash >>> 11).id;
-  const bottomColor = pick(AGENT_AVATAR_CLOTHING_COLOR_OPTIONS, hash >>> 13).color;
-  const shoesColor = pick(AGENT_AVATAR_SHOE_COLOR_OPTIONS, hash >>> 15).color;
-  const hatStyle = pick(AGENT_AVATAR_HAT_STYLE_OPTIONS, hash >>> 17).id;
+  const skinTone = pick(LAB_SKIN_TONES, hash).color;
+  const hairStyle: AgentAvatarHairStyle = "parted";
+  const hairColor = pick(LAB_HAIR_COLORS, hash >>> 5).color;
+  const topStyle: AgentAvatarTopStyle = "overshirt";
+  const topColor = optionColor(AGENT_AVATAR_CLOTHING_COLOR_OPTIONS, "sage");
+  const bottomStyle: AgentAvatarBottomStyle = "pants";
+  const bottomColor = optionColor(AGENT_AVATAR_CLOTHING_COLOR_OPTIONS, "charcoal");
+  const shoesColor = optionColor(AGENT_AVATAR_SHOE_COLOR_OPTIONS, "offwhite");
+  const hatStyle: AgentAvatarHatStyle = "none";
 
   return {
     version: AGENT_AVATAR_VERSION,
@@ -170,10 +184,10 @@ export const createAgentAvatarProfileFromSeed = (seed: string): AgentAvatarProfi
       shoesColor,
     },
     accessories: {
-      glasses: Boolean((hash >>> 19) % 2),
-      headset: Boolean((hash >>> 20) % 2),
+      glasses: false,
+      headset: false,
       hatStyle,
-      backpack: Boolean((hash >>> 21) % 2),
+      backpack: false,
     },
   };
 };

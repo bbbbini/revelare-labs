@@ -121,6 +121,18 @@ const PreviewFigure = ({
           </mesh>
         </>
       ) : null}
+      {profile.clothing.topStyle === "overshirt" ? (
+        <>
+          <mesh position={[0, 0.31, 0.053]}>
+            <boxGeometry args={[0.078, 0.21, 0.008]} />
+            <meshLambertMaterial color="#efe9dc" />
+          </mesh>
+          <mesh position={[0, 0.405, 0.02]}>
+            <boxGeometry args={[0.21, 0.032, 0.085]} />
+            <meshLambertMaterial color={topColor} />
+          </mesh>
+        </>
+      ) : null}
       {profile.clothing.topStyle === "jacket" ? (
         <>
           <mesh position={[0, 0.3, 0.056]}>

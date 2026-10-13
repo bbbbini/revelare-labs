@@ -11,7 +11,7 @@ const RUNTIME_HOST = "127.0.0.1";
 const DEFAULT_PORT = 7770;
 const PROVIDER_IDS = ["claude", "codex"];
 const DEFAULT_PROVIDER = "claude";
-const RESEARCHERS = [{ id: "researcher-1", name: "연구원 1" }];
+const RESEARCHERS = [{ id: "researcher-1", name: "보안 연구원" }];
 
 const DEFAULT_LIMITS = Object.freeze({
   cliTimeoutMs: 180_000,
