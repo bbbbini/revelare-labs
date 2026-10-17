@@ -7,6 +7,7 @@ import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { Home, Settings, CircleHelp, Menu, PanelsTopLeft, Users, Move, RotateCcw, RotateCw, Trash2, Plus, Save, X, Camera } from "lucide-react";
 import * as THREE from "three";
+import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 import type { OfficeAgent } from "./core/types";
 import { BlenderResearchCharacter } from "./objects/BlenderResearchCharacter";
 import { SavedResearchAvatar } from "./objects/SavedResearchAvatar";
@@ -20,6 +21,8 @@ import { defaultResearchLayout, moveResearchItem, parseResearchLayout, RESEARCH_
 const CAMERA: [number, number, number] = [4.6, 4.75, 5.5];
 const TARGET: [number, number, number] = [-0.75, 0.6, 0.45];
 const FLOOR = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+// Reuse Three's shared lookup textures across room mounts and hot reloads.
+if (!Object.hasOwn(THREE.UniformsLib, "LTC_FLOAT_1")) RectAreaLightUniformsLib.init();
 
 function RendererStatus({ onInterrupted }: { onInterrupted: (value: boolean) => void }) {
   const gl = useThree(state => state.gl);
@@ -80,7 +83,7 @@ function PlacedFurniture({ item, agent, editing, selected, onSelect, onMove, onA
   };
   return <group position={[item.x, 0, item.z]} rotation={[0, item.rotation, 0]} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
     onClick={event => { event.stopPropagation(); if (editing) onSelect(item.id); else if (agent) onAgentSelect?.(agent.id); }}>
-    <ResearchFurniture type={item.type} booksOnly={item.id === "back-cabinet"} />
+    <ResearchFurniture type={item.type} booksOnly={item.id === "back-cabinet"} sharedDesk={item.id === "foreground-desk"} />
     {!editing && agent && <Researcher agent={agent} onSelect={onAgentSelect} />}
     {selected && editing && <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[1.05, 1.08, 48]} /><meshBasicMaterial color="#5b865e" transparent opacity={0.8} depthWrite={false} /></mesh>}
   </group>;
@@ -134,7 +137,7 @@ export function ResearchLabScene({ agents, chatOpen, gatewayStatus, officeTitle,
         <hemisphereLight args={["#f4f1eb", "#b9bab6", 1.5]} />
         <directionalLight position={[-3, 9, 3]} intensity={1.7} color="#fff1de" castShadow shadow-mapSize={[512, 512]} shadow-radius={4} shadow-blurSamples={8} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={6} shadow-camera-bottom={-6} shadow-camera-near={1} shadow-camera-far={20} shadow-normalBias={0.025} shadow-bias={-0.0002} />
         <directionalLight position={[5, 3, -1]} intensity={0.65} color="#f0f2eb" />
-        <spotLight position={[-1.8, 4, 3]} angle={0.9} penumbra={1} intensity={18} distance={12} decay={2} color="#fff0d8" />
+        <rectAreaLight position={[0, 3.3, 2]} rotation={[-0.85, 0.35, 0]} width={4} height={2.5} intensity={3.5} color="#fff0db" />
         <pointLight position={[-3.1, 2, 0.4]} intensity={0.18} distance={2.6} decay={2} color="#fff4e5" />
         <Suspense fallback={<Html center><p className="research-loading" role="status">연구실을 불러오는 중…</p></Html>}>
           <ResearchMaterials>

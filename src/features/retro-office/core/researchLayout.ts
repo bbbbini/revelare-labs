@@ -15,7 +15,7 @@ export const researchLayoutKey = (namespace: string) => `hermes3d:research-layou
 export function defaultResearchLayout(): ResearchLayoutItem[] {
   return [
     { id: "research-desk", type: "workstation", x: 0, z: 0, rotation: -Math.PI / 2 },
-    { id: "foreground-desk", type: "workstation", x: 0.6, z: 2.95, rotation: 0 },
+    { id: "foreground-desk", type: "workstation", x: 0, z: 2.65, rotation: Math.PI },
     { id: "right-workbench", type: "workbench", x: 2.2, z: -0.15, rotation: Math.PI / 2 },
     { id: "foreground-divider", type: "divider", x: 1.8, z: 1.7, rotation: 0 },
     { id: "left-cabinet", type: "cabinet", x: -3.22, z: 0.35, rotation: Math.PI / 2 },

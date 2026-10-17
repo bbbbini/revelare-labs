@@ -155,14 +155,14 @@ function Chair() {
   </group>;
 }
 
-function Workstation() {
+function Workstation({ shared = false }: { shared?: boolean }) {
   const fabric = useMemo(() => surface("fabric"), []);
   useEffect(() => () => fabric.dispose(), [fabric]);
   return <group>
-    <LabBox size={[1.96, 0.055, 0.94]} at={[0, 0.79, 0]} wood radius={0.012} />
+    <LabBox size={[1.96, 0.055, shared ? 1.5 : 0.94]} at={[0, 0.79, shared ? -0.28 : 0]} wood radius={0.012} />
     {[-0.91, 0.91].map(x => <group key={x}>
-      {[-0.39, 0.39].map(z => <LabBox key={z} size={[0.045, 0.76, 0.045]} at={[x, 0.38, z]} />)}
-      <LabBox size={[0.045, 0.04, 0.82]} at={[x, 0.035, 0]} />
+      {[shared ? -0.95 : -0.39, 0.39].map(z => <LabBox key={z} size={[0.045, 0.76, 0.045]} at={[x, 0.38, z]} />)}
+      <LabBox size={[0.045, 0.04, shared ? 1.38 : 0.82]} at={[x, 0.035, shared ? -0.28 : 0]} />
     </group>)}
     <LabBox size={[1.8, 0.065, 0.035]} at={[0, 0.7, -0.38]} />
     <LabBox size={[0.39, 0.63, 0.58]} at={[-0.61, 0.34, -0.05]} />
@@ -170,12 +170,26 @@ function Workstation() {
     <LabBox size={[0.27, 0.49, 0.45]} at={[-0.28, 0.28, -0.22]} color="#343834" />
     <RoundedBox args={[1.34, 0.39, 0.043]} position={[-0.25, 1.03, -0.33]} radius={0.012} smoothness={2} castShadow receiveShadow><meshStandardMaterial map={fabric} roughness={1} /></RoundedBox>
     <Monitor x={-0.25} tilt={0.08} /><Monitor x={0.36} tilt={-0.12} />
+    {shared && <group position={[0, 0, -0.76]} rotation={[0, Math.PI, 0]}>
+      <Monitor x={0.1} tilt={-0.1} />
+      <LabBox size={[0.47, 0.019, 0.16]} at={[0.1, 0.831, 0.13]} color="#303630" />
+      {Array.from({ length: 4 }, (_, row) => Array.from({ length: 13 }, (_, col) => <LabBox key={`${row}:${col}`} size={[0.026, 0.004, 0.024]} at={[-0.107 + col * 0.034, 0.843, 0.075 + row * 0.034]} color="#7c8176" radius={0.001} />))}
+      <LabBox size={[0.24, 0.024, 0.28]} at={[-0.55, 0.835, 0.08]} color="#748064" />
+      <LabBox size={[0.21, 0.012, 0.255]} at={[-0.55, 0.837, 0.085]} color="#e8e1d2" />
+      <LabPlant at={[0.78, 0.82, 0]} scale={0.35} />
+    </group>}
     <LabBox size={[0.47, 0.019, 0.16]} at={[0.6, 0.831, 0.32]} color="#303630" />
     {Array.from({ length: 4 }, (_, row) => Array.from({ length: 13 }, (_, col) => <LabBox key={`${row}:${col}`} size={[0.026, 0.004, 0.024]} at={[0.393 + col * 0.034, 0.843, 0.265 + row * 0.034]} color="#7c8176" radius={0.001} />))}
     <LabBox size={[0.07, 0.025, 0.1]} at={[0.88, 0.838, 0.31]} color="#969a8d" radius={0.018} />
     <LabBox size={[0.23, 0.024, 0.29]} at={[0.75, 0.835, 0.08]} color="#6a7663" />
     <LabBox size={[0.214, 0.012, 0.275]} at={[0.75, 0.837, 0.084]} color="#e8e1d2" />
     <LabPlant at={[-0.79, 0.82, -0.22]} scale={0.34} />
+    <group position={[-0.63, 0.82, 0.24]}>
+      <LabBox size={[0.42, 0.018, 0.23]} at={[0, 0.009, 0]} color="#41473d" />
+      {[-0.203, 0.203].map(x => <LabBox key={x} size={[0.014, 0.14, 0.23]} at={[x, 0.075, 0]} color="#41473d" />)}
+      {[-0.108, 0.108].map(z => <LabBox key={z} size={[0.42, 0.1, 0.014]} at={[0, 0.055, z]} color="#41473d" />)}
+      {[0, 1, 2].map(i => <Book key={i} at={[-0.135 + i * 0.075, 0.018, 0]} width={0.06} height={0.23 + i % 2 * 0.035} color={["#ece4cf", "#7e886c", "#b9ae8c"][i]} />)}
+    </group>
     <mesh position={[-0.07, 0.891, 0.29]} castShadow><cylinderGeometry args={[0.044, 0.04, 0.145, 16]} /><meshStandardMaterial color="#55594c" /></mesh>
     <Chair />
   </group>;
@@ -205,8 +219,8 @@ function BookWorkbench() {
   </group>;
 }
 
-export function ResearchFurniture({ type, booksOnly = false }: { type: ResearchFurnitureType; booksOnly?: boolean }) {
-  if (type === "workstation") return <Workstation />;
+export function ResearchFurniture({ type, booksOnly = false, sharedDesk = false }: { type: ResearchFurnitureType; booksOnly?: boolean; sharedDesk?: boolean }) {
+  if (type === "workstation") return <Workstation shared={sharedDesk} />;
   if (type === "cabinet") return <group scale={[0.85, 0.83, 1]}><Cabinet booksOnly={booksOnly} /></group>;
   if (type === "shelf") return <group scale={[0.9, 0.8, 1]}><Shelf /></group>;
   if (type === "divider") return <PrivacyDivider />;
