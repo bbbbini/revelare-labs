@@ -401,8 +401,8 @@ export function ResearchArchitecture() {
     <LabBox size={[0.025, 0.09, 4.95]} at={[-3.48, 0.045, 5.675]} color="#737568" />
     <LabBox size={[3.58, 0.09, 0.025]} at={[-1.72, 0.045, -2.24]} color="#737568" />
     <group position={[-3.47, 1.65, 0.4]} rotation={[0, Math.PI / 2, 0]}>
-      <Text fontSize={0.27} fontWeight={700} color="#30342e" letterSpacing={0.025}>REVELARE</Text>
-      <Text position={[0, -0.245, 0]} fontSize={0.105} color="#41463a" letterSpacing={0.12}>SECURITY LABS</Text>
+      <Text font="/office-assets/fonts/Roboto-Bold.ttf" characters="REVELARE" fontSize={0.27} fontWeight={700} color="#30342e" letterSpacing={0.025}>REVELARE</Text>
+      <Text font="/office-assets/fonts/Roboto-Regular.ttf" characters="SECURITY LABS" position={[0, -0.245, 0]} fontSize={0.105} color="#41463a" letterSpacing={0.12}>SECURITY LABS</Text>
       <LabBox size={[1.43, 0.055, 0.1]} at={[0, 0.3, 0.045]} color="#87966d" />
       <mesh position={[0, 0.275, 0.07]} rotation={[Math.PI / 2, 0, 0]}><planeGeometry args={[1.25, 0.07]} /><meshBasicMaterial color="#f8e5ab" /></mesh>
     </group>
