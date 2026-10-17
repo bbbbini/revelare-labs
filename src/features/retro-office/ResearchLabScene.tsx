@@ -134,22 +134,22 @@ export function ResearchLabScene({ agents, chatOpen, gatewayStatus, officeTitle,
       <Canvas key={rendererRevision} shadows={{ type: THREE.VSMShadowMap }} dpr={[1, 1.5]} camera={{ position: CAMERA, fov: 28, near: 0.1, far: 60 }} gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.25 }}>
         <RendererStatus onInterrupted={setRendererInterrupted} />
         <color attach="background" args={["#e3dacb"]} />
-        <hemisphereLight args={["#f4f1eb", "#b9bab6", 1.5]} />
-        <directionalLight position={[-3, 9, 3]} intensity={1.7} color="#fff1de" castShadow shadow-mapSize={[512, 512]} shadow-radius={4} shadow-blurSamples={8} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={6} shadow-camera-bottom={-6} shadow-camera-near={1} shadow-camera-far={20} shadow-normalBias={0.025} shadow-bias={-0.0002} />
-        <directionalLight position={[5, 3, -1]} intensity={0.65} color="#f0f2eb" />
-        <rectAreaLight position={[0, 3.3, 2]} rotation={[-0.85, 0.35, 0]} width={4} height={2.5} intensity={3.5} color="#fff0db" />
+        <hemisphereLight args={["#f4f1eb", "#b9bab6", 0.85]} />
+        <directionalLight position={[-3, 7, 4]} intensity={2.5} color="#fff0d9" castShadow shadow-mapSize={[512, 512]} shadow-radius={4} shadow-blurSamples={8} shadow-camera-left={-6} shadow-camera-right={6} shadow-camera-top={6} shadow-camera-bottom={-6} shadow-camera-near={1} shadow-camera-far={20} shadow-normalBias={0.025} shadow-bias={-0.0002} />
+        <directionalLight position={[5, 3, -1]} intensity={0.35} color="#f0f2eb" />
+        <rectAreaLight position={[0, 3.3, 2]} rotation={[-0.85, 0.35, 0]} width={4} height={2.5} intensity={2.8} color="#fff0db" />
         <pointLight position={[-3.1, 2, 0.4]} intensity={0.18} distance={2.6} decay={2} color="#fff4e5" />
         <Suspense fallback={<Html center><p className="research-loading" role="status">연구실을 불러오는 중…</p></Html>}>
           <ResearchMaterials>
             <ResearchArchitecture />
-            {!editing && <ContactShadows key={serializeResearchLayout(items)} position={[0, 0.005, 0]} opacity={0.35} scale={16} blur={2.5} far={3} resolution={512} frames={1} />}
+            {!editing && <ContactShadows key={serializeResearchLayout(items)} position={[0, 0.005, 0]} opacity={0.55} scale={16} blur={2} far={3} resolution={512} frames={1} />}
             {items.map(item => <PlacedFurniture key={item.id} item={item} agent={item.type === "workstation" ? agents[desks.findIndex(desk => desk.id === item.id)] : undefined} editing={editing} selected={selected === item.id} onSelect={setSelected} onMove={move} onAgentSelect={onSelect} />)}
             {/* Additional agents stay selectable even when there are fewer authored desks. */}
             {agents.slice(desks.length).map((agent, index) => <group key={agent.id} position={[1.2 + index * 0.7, 0, -1.2]}><Researcher agent={agent} onSelect={onSelect} /></group>)}
           </ResearchMaterials>
         </Suspense>
         <CameraControls editing={editing} revision={cameraRevision} />
-        {!rendererInterrupted && <EffectComposer multisampling={0}><N8AO halfRes quality="medium" aoRadius={0.35} intensity={1.7} /></EffectComposer>}
+        {!rendererInterrupted && <EffectComposer multisampling={0}><N8AO halfRes quality="medium" aoRadius={0.35} intensity={2.1} /></EffectComposer>}
       </Canvas>
       </SceneErrorBoundary>
       {rendererInterrupted && <div className="research-renderer-recovery" role="alert">

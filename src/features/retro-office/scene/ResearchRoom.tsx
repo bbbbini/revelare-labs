@@ -20,17 +20,17 @@ function oakSurface(): OakSurface {
   const pixels = colorContext.createImageData(width, width);
   const heights = reliefContext.createImageData(width, width);
   let seed = 137;
-  const base = [185, 155, 118];
+  const base = [175, 151, 119];
   const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   for (let y = 0; y < width; y++) for (let x = 0; x < width; x++) {
     const u = x / width * Math.PI * 2;
     const v = y / width * Math.PI * 2;
     // Periodic along both axes so a large tabletop has no texture-edge seam.
     const bend = 0.48 * Math.sin(u) + 0.17 * Math.sin(u * 2 + Math.sin(v));
-    const broad = Math.sin(v * 3 + bend) * 2.2 + Math.sin(v * 7 - bend) * 1.1;
+    const broad = Math.sin(v * 3 + bend) * 3.8 + Math.sin(v * 7 - bend) * 1.8;
     const fiber = Math.pow(0.5 + 0.5 * Math.sin(v * 37 + bend * 4), 12);
     const pore = random() > 0.993 ? 4 : 0;
-    const variation = broad - fiber * 3.4 - pore + (random() - 0.5) * 1.5;
+    const variation = broad - fiber * 5 - pore + (random() - 0.5) * 1.5;
     const offset = (y * width + x) * 4;
     for (let channel = 0; channel < 3; channel++) {
       pixels.data[offset + channel] = base[channel] + variation;
@@ -50,13 +50,13 @@ function oakSurface(): OakSurface {
 }
 
 /** Deterministic, authored surface maps. No reference bitmap is shipped with the app. */
-function fabricSurface() {
+function fabricSurface(color = "#92998a") {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 256;
   const ctx = canvas.getContext("2d")!;
   let seed = 41;
   const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-  ctx.fillStyle = "#92998a";
+  ctx.fillStyle = color;
   ctx.fillRect(0, 0, 256, 256);
   for (let y = 0; y < 256; y += 2) for (let x = 0; x < 256; x += 2) {
     ctx.fillStyle = `rgba(${random() > 0.5 ? "255,255,240" : "50,48,40"},${random() * 0.09})`;
@@ -77,7 +77,7 @@ export function ResearchMaterials({ children }: { children: ReactNode }) {
 export function LabBox({ size, at = [0, 0, 0], color = "#3f403d", wood = false, metal = false, radius = 0.008, rotation }: { size: Vec3; at?: Vec3; color?: string; wood?: boolean; metal?: boolean; radius?: number; rotation?: Vec3 }) {
   const oak = useContext(Oak);
   return <RoundedBox args={size} position={at} rotation={rotation} radius={Math.min(radius, Math.min(...size) / 3)} smoothness={2} castShadow receiveShadow>
-    <meshStandardMaterial color={wood ? "#ffffff" : color} map={wood ? oak?.color : null} bumpMap={wood ? oak?.relief : null} bumpScale={0.001} metalness={metal ? 0.25 : 0} roughness={wood ? 0.72 : metal ? 0.55 : 0.86} />
+    <meshStandardMaterial color={wood ? "#ffffff" : color} map={wood ? oak?.color : null} bumpMap={wood ? oak?.relief : null} bumpScale={0.003} metalness={metal ? 0.25 : 0} roughness={wood ? 0.72 : metal ? 0.55 : 0.86} />
   </RoundedBox>;
 }
 
@@ -192,8 +192,8 @@ function Shelf() {
 
 function Monitor({ x, tilt = 0 }: { x: number; tilt?: number }) {
   return <group position={[x, 0.82, -0.19]} rotation={[0, tilt, 0]}>
-    <mesh position={[-0.09, 0.012, -0.065]} castShadow receiveShadow><cylinderGeometry args={[0.065, 0.075, 0.024, 24]} /><meshStandardMaterial color="#363935" metalness={0.3} roughness={0.5} /></mesh>
-    <mesh position={[-0.09, 0.17, -0.065]} castShadow><cylinderGeometry args={[0.014, 0.014, 0.3, 16]} /><meshStandardMaterial color="#555951" metalness={0.45} roughness={0.4} /></mesh>
+    <mesh position={[-0.09, 0.006, -0.065]} castShadow receiveShadow><cylinderGeometry args={[0.065, 0.075, 0.012, 24]} /><meshStandardMaterial color="#363935" metalness={0.3} roughness={0.5} /></mesh>
+    <mesh position={[-0.09, 0.163, -0.065]} castShadow><cylinderGeometry args={[0.014, 0.014, 0.314, 16]} /><meshStandardMaterial color="#555951" metalness={0.45} roughness={0.4} /></mesh>
     <LabBox size={[0.12, 0.026, 0.035]} at={[-0.04, 0.28, -0.065]} metal />
     <LabBox size={[0.045, 0.085, 0.065]} at={[0, 0.305, -0.04]} metal radius={0.009} />
     <LabBox size={[0.13, 0.13, 0.015]} at={[0, 0.33, -0.022]} color="#41453f" />
@@ -203,10 +203,10 @@ function Monitor({ x, tilt = 0 }: { x: number; tilt?: number }) {
   </group>;
 }
 
-function Chair() {
-  return <group position={[0.64, 0, 0.74]} rotation={[0, Math.PI, 0]}>
-    <LabBox size={[0.49, 0.07, 0.45]} at={[0, 0.48, 0]} color="#484a44" radius={0.035} />
-    <LabBox size={[0.47, 0.48, 0.065]} at={[0, 0.78, -0.22]} color="#4b4c47" radius={0.04} rotation={[-0.09, 0, 0]} />
+function Chair({ at = [0.64, 0, 0.74], upholstery = "#4b4c47" }: { at?: Vec3; upholstery?: string }) {
+  return <group position={at} rotation={[0, Math.PI, 0]}>
+    <LabBox size={[0.49, 0.07, 0.45]} at={[0, 0.48, 0]} color={upholstery} radius={0.035} />
+    <LabBox size={[0.47, 0.48, 0.065]} at={[0, 0.78, -0.22]} color={upholstery} radius={0.04} rotation={[-0.09, 0, 0]} />
     <mesh position={[0, 0.255, 0]} castShadow><cylinderGeometry args={[0.03, 0.04, 0.43, 16]} /><meshStandardMaterial color="#454742" metalness={0.35} roughness={0.55} /></mesh>
     {Array.from({ length: 5 }, (_, i) => <group key={i} rotation={[0, i * Math.PI * 0.4, 0]}><LabBox size={[0.04, 0.03, 0.3]} at={[0, 0.07, 0.12]} /><mesh position={[0, 0.045, 0.28]} rotation={[0, 0, Math.PI / 2]} castShadow><cylinderGeometry args={[0.037, 0.037, 0.04, 12]} /><meshStandardMaterial color="#333631" /></mesh></group>)}
     {[-0.27, 0.27].map(x => <group key={x}><LabBox size={[0.028, 0.21, 0.03]} at={[x, 0.54, 0]} /><LabBox size={[0.06, 0.025, 0.3]} at={[x, 0.655, 0]} radius={0.01} /></group>)}
@@ -227,8 +227,8 @@ function Workstation({ shared = false }: { shared?: boolean }) {
     {[0.19, 0.4, 0.57].map(y => <group key={y}><LabBox size={[0.36, 0.16, 0.02]} at={[-0.61, y, 0.25]} color="#4b4d47" /><LabBox size={[0.085, 0.012, 0.015]} at={[-0.61, y + 0.045, 0.266]} color="#292e29" /></group>)}
     <LabBox size={[0.27, 0.49, 0.45]} at={[-0.28, 0.28, -0.22]} color="#343834" />
     <RoundedBox args={[1.34, 0.39, 0.043]} position={[-0.25, 1.03, -0.33]} radius={0.012} smoothness={2} castShadow receiveShadow><meshStandardMaterial map={fabric} roughness={1} /></RoundedBox>
-    <Monitor x={-0.25} tilt={0.08} /><Monitor x={0.36} tilt={-0.12} />
-    {shared && <group position={[0, 0, -0.76]} rotation={[0, Math.PI, 0]}>
+    {!shared && <><Monitor x={-0.25} tilt={0.08} /><Monitor x={0.36} tilt={-0.12} /></>}
+    {shared && <group position={[0, 0, -0.64]} rotation={[0, Math.PI, 0]}>
       <Monitor x={0.1} tilt={-0.1} />
       <LabBox size={[0.47, 0.019, 0.16]} at={[0.1, 0.831, 0.13]} color="#303630" />
       {Array.from({ length: 4 }, (_, row) => Array.from({ length: 13 }, (_, col) => <LabBox key={`${row}:${col}`} size={[0.026, 0.004, 0.024]} at={[-0.107 + col * 0.034, 0.843, 0.075 + row * 0.034]} color="#7c8176" radius={0.001} />))}
@@ -236,9 +236,11 @@ function Workstation({ shared = false }: { shared?: boolean }) {
       <LabBox size={[0.21, 0.012, 0.255]} at={[-0.55, 0.837, 0.085]} color="#e8e1d2" />
       <LabPlant at={[0.78, 0.82, 0]} scale={0.35} />
     </group>}
-    <LabBox size={[0.47, 0.019, 0.16]} at={[0.6, 0.831, 0.32]} color="#303630" />
-    {Array.from({ length: 4 }, (_, row) => Array.from({ length: 13 }, (_, col) => <LabBox key={`${row}:${col}`} size={[0.026, 0.004, 0.024]} at={[0.393 + col * 0.034, 0.843, 0.265 + row * 0.034]} color="#7c8176" radius={0.001} />))}
-    <LabBox size={[0.07, 0.025, 0.1]} at={[0.88, 0.838, 0.31]} color="#969a8d" radius={0.018} />
+    {!shared && <>
+      <LabBox size={[0.47, 0.019, 0.16]} at={[0.6, 0.831, 0.32]} color="#303630" />
+      {Array.from({ length: 4 }, (_, row) => Array.from({ length: 13 }, (_, col) => <LabBox key={`${row}:${col}`} size={[0.026, 0.004, 0.024]} at={[0.393 + col * 0.034, 0.843, 0.265 + row * 0.034]} color="#7c8176" radius={0.001} />))}
+      <LabBox size={[0.07, 0.025, 0.1]} at={[0.88, 0.838, 0.31]} color="#969a8d" radius={0.018} />
+    </>}
     <LabBox size={[0.23, 0.024, 0.29]} at={[0.75, 0.835, 0.08]} color="#6a7663" />
     <LabBox size={[0.214, 0.012, 0.275]} at={[0.75, 0.837, 0.084]} color="#e8e1d2" />
     <LabPlant at={[-0.79, 0.82, -0.22]} scale={0.34} />
@@ -250,14 +252,15 @@ function Workstation({ shared = false }: { shared?: boolean }) {
     </group>
     <mesh position={[-0.07, 0.891, 0.29]} castShadow><cylinderGeometry args={[0.044, 0.04, 0.145, 16]} /><meshStandardMaterial color="#55594c" /></mesh>
     <Chair />
+    {shared && <Chair at={[-0.45, 0, 0.74]} upholstery="#8a917b" />}
   </group>;
 }
 
 function PrivacyDivider() {
-  const fabric = useMemo(() => fabricSurface(), []);
+  const fabric = useMemo(() => fabricSurface("#c3c0b7"), []);
   useEffect(() => () => fabric.dispose(), [fabric]);
   return <group>
-    <RoundedBox args={[1.45, 1.25, 0.065]} position={[0, 0.86, 0]} radius={0.025} smoothness={3} castShadow receiveShadow><meshStandardMaterial map={fabric} color="#dedbd1" roughness={1} /></RoundedBox>
+    <RoundedBox args={[1.45, 1.25, 0.065]} position={[0, 0.86, 0]} radius={0.025} smoothness={3} castShadow receiveShadow><meshStandardMaterial map={fabric} roughness={1} /></RoundedBox>
     {[-0.55, 0.55].map(x => <group key={x}><LabBox size={[0.045, 0.3, 0.045]} at={[x, 0.15, 0]} /><LabBox size={[0.08, 0.025, 0.42]} at={[x, 0.025, 0]} /></group>)}
     <LabBox size={[1.3, 0.24, 0.29]} at={[0, 0.16, 0.26]} color="#626858" />
     {[-0.42, -0.14, 0.14, 0.42].map(x => <LabPlant key={x} at={[x, 0.14, 0.26]} scale={0.7} />)}
@@ -328,10 +331,10 @@ export function ResearchArchitecture() {
   }), [sources]);
   useEffect(() => () => floor.forEach(map => map.dispose()), [floor]);
   return <group>
-    <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow><planeGeometry args={[16, 16]} /><meshStandardMaterial map={floor[0]} normalMap={floor[1]} normalScale={[0.08, 0.08]} roughnessMap={floor[2]} roughness={0.9}
+    <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow><planeGeometry args={[16, 16]} /><meshStandardMaterial map={floor[0]} normalMap={floor[1]} normalScale={[0.12, 0.12]} roughnessMap={floor[2]} roughness={0.82}
       onBeforeCompile={shader => {
         // Keep the scanned tile variation subtle in the clean indoor palette.
-        shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", "#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(0.36), diffuseColor.rgb, 0.3);");
+        shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", "#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(0.36), diffuseColor.rgb, 0.5);");
       }} /></mesh>
     {/* Two internal glazed doors frame the room, as in the approved view. */}
     <LabBox size={[0.1, 3.6, 4.65]} at={[-3.54, 1.8, -0.525]} color="#e7e1d6" />
