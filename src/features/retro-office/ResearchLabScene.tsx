@@ -83,7 +83,7 @@ function PlacedFurniture({ item, agent, editing, selected, onSelect, onMove, onA
   };
   return <group position={[item.x, 0, item.z]} rotation={[0, item.rotation, 0]} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
     onClick={event => { event.stopPropagation(); if (editing) onSelect(item.id); else if (agent) onAgentSelect?.(agent.id); }}>
-    <ResearchFurniture type={item.type} booksOnly={item.id === "back-cabinet"} sharedDesk={item.id === "foreground-desk"} />
+    <ResearchFurniture type={item.type} booksOnly={item.id === "back-cabinet"} sharedDesk={item.id === "foreground-desk"} occupied={!!agent} />
     {!editing && agent && <Researcher agent={agent} onSelect={onAgentSelect} />}
     {selected && editing && <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[1.05, 1.08, 48]} /><meshBasicMaterial color="#5b865e" transparent opacity={0.8} depthWrite={false} /></mesh>}
   </group>;

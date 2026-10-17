@@ -108,7 +108,7 @@ function createLeafGeometry() {
   return geometry;
 }
 
-export function LabPlant({ at = [0, 0, 0], scale = 1 }: { at?: Vec3; scale?: number }) {
+export function LabPlant({ at = [0, 0, 0], scale = 1, squarePot = false }: { at?: Vec3; scale?: number; squarePot?: boolean }) {
   const leaf = useMemo(() => createLeafGeometry(), []);
   const leaves = useRef<THREE.InstancedMesh>(null);
   const stems = useRef<THREE.InstancedMesh>(null);
@@ -141,8 +141,13 @@ export function LabPlant({ at = [0, 0, 0], scale = 1 }: { at?: Vec3; scale?: num
     if (leaves.current.instanceColor) leaves.current.instanceColor.needsUpdate = true;
   }, []);
   return <group position={at} scale={scale}>
-    <mesh position={[0, 0.17, 0]} castShadow receiveShadow><cylinderGeometry args={[0.18, 0.135, 0.34, 24]} /><meshStandardMaterial color="#d9d6c9" roughness={0.95} /></mesh>
-    <mesh position={[0, 0.343, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[0.163, 24]} /><meshStandardMaterial color="#4e4738" /></mesh>
+    {squarePot ? <>
+      <LabBox size={[0.32, 0.34, 0.32]} at={[0, 0.17, 0]} color="#dedbd0" radius={0.024} />
+      <LabBox size={[0.28, 0.008, 0.28]} at={[0, 0.344, 0]} color="#4e4738" radius={0.008} />
+    </> : <>
+      <mesh position={[0, 0.17, 0]} castShadow receiveShadow><cylinderGeometry args={[0.18, 0.135, 0.34, 24]} /><meshStandardMaterial color="#d9d6c9" roughness={0.95} /></mesh>
+      <mesh position={[0, 0.343, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[0.163, 24]} /><meshStandardMaterial color="#4e4738" /></mesh>
+    </>}
     <instancedMesh ref={stems} args={[undefined, undefined, 24]} castShadow><cylinderGeometry args={[0.004, 0.007, 1, 6]} /><meshStandardMaterial color="#687e44" /></instancedMesh>
     <instancedMesh ref={leaves} args={[leaf, undefined, 24]} castShadow receiveShadow><meshStandardMaterial side={THREE.DoubleSide} roughness={0.7} /></instancedMesh>
   </group>;
@@ -191,6 +196,10 @@ function Shelf() {
 }
 
 function Monitor({ x, tilt = 0 }: { x: number; tilt?: number }) {
+  const cable = useMemo(() => new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-0.07, 0.28, -0.045), new THREE.Vector3(-0.12, 0.19, -0.075),
+    new THREE.Vector3(-0.1, 0.06, -0.075), new THREE.Vector3(-0.02, 0.006, -0.11),
+  ]), []);
   return <group position={[x, 0.82, -0.19]} rotation={[0, tilt, 0]}>
     <mesh position={[-0.09, 0.006, -0.065]} castShadow receiveShadow><cylinderGeometry args={[0.065, 0.075, 0.012, 24]} /><meshStandardMaterial color="#363935" metalness={0.3} roughness={0.5} /></mesh>
     <mesh position={[-0.09, 0.163, -0.065]} castShadow><cylinderGeometry args={[0.014, 0.014, 0.314, 16]} /><meshStandardMaterial color="#555951" metalness={0.45} roughness={0.4} /></mesh>
@@ -198,22 +207,72 @@ function Monitor({ x, tilt = 0 }: { x: number; tilt?: number }) {
     <LabBox size={[0.045, 0.085, 0.065]} at={[0, 0.305, -0.04]} metal radius={0.009} />
     <LabBox size={[0.13, 0.13, 0.015]} at={[0, 0.33, -0.022]} color="#41453f" />
     <LabBox size={[0.56, 0.35, 0.028]} at={[0, 0.33, 0]} color="#292c2b" />
+    {[-0.19, 0.19].map(side => [0, 1, 2].map(row => <LabBox key={`${side}:${row}`} size={[0.07, 0.004, 0.002]} at={[side, 0.23 + row * 0.012, -0.015]} color="#171b19" radius={0.0005} />))}
+    <mesh castShadow><tubeGeometry args={[cable, 12, 0.003, 5, false]} /><meshStandardMaterial color="#272c27" roughness={0.9} /></mesh>
     <LabBox size={[0.523, 0.313, 0.004]} at={[0, 0.33, 0.018]} color="#38413f" />
     {[0, 1, 2, 3, 4, 5].map(i => <LabBox key={i} size={[0.12 + i % 3 * 0.06, 0.007, 0.001]} at={[-0.08 + i % 2 * 0.03, 0.43 - i * 0.032, 0.022]} color={i % 3 === 0 ? "#98a48b" : "#687a76"} radius={0.0003} />)}
   </group>;
 }
 
-function Chair({ at = [0.64, 0, 0.74], upholstery = "#4b4c47" }: { at?: Vec3; upholstery?: string }) {
+function Chair({ at = [0.64, 0, 0.74], upholstery }: { at?: Vec3; upholstery?: string }) {
   return <group position={at} rotation={[0, Math.PI, 0]}>
-    <LabBox size={[0.49, 0.07, 0.45]} at={[0, 0.48, 0]} color={upholstery} radius={0.035} />
-    <LabBox size={[0.47, 0.48, 0.065]} at={[0, 0.78, -0.22]} color={upholstery} radius={0.04} rotation={[-0.09, 0, 0]} />
+    <LabBox size={[0.49, 0.07, 0.45]} at={[0, 0.48, 0]} color={upholstery ?? "#484a44"} radius={0.035} />
+    <LabBox size={[0.47, 0.48, 0.065]} at={[0, 0.78, -0.22]} color={upholstery ?? "#4b4c47"} radius={0.04} rotation={[-0.09, 0, 0]} />
     <mesh position={[0, 0.255, 0]} castShadow><cylinderGeometry args={[0.03, 0.04, 0.43, 16]} /><meshStandardMaterial color="#454742" metalness={0.35} roughness={0.55} /></mesh>
     {Array.from({ length: 5 }, (_, i) => <group key={i} rotation={[0, i * Math.PI * 0.4, 0]}><LabBox size={[0.04, 0.03, 0.3]} at={[0, 0.07, 0.12]} /><mesh position={[0, 0.045, 0.28]} rotation={[0, 0, Math.PI / 2]} castShadow><cylinderGeometry args={[0.037, 0.037, 0.04, 12]} /><meshStandardMaterial color="#333631" /></mesh></group>)}
     {[-0.27, 0.27].map(x => <group key={x}><LabBox size={[0.028, 0.21, 0.03]} at={[x, 0.54, 0]} /><LabBox size={[0.06, 0.025, 0.3]} at={[x, 0.655, 0]} radius={0.01} /></group>)}
   </group>;
 }
 
-function Workstation({ shared = false }: { shared?: boolean }) {
+function DrawerPedestal() {
+  return <group position={[-0.61, 0, -0.06]}>
+    <LabBox size={[0.43, 0.6, 0.56]} at={[0, 0.36, 0]} color="#353933" metal radius={0.012} />
+    {[[0.24, 0.25], [0.45, 0.15], [0.59, 0.11]].map(([y, height]) => <group key={y}>
+      <LabBox size={[0.408, height, 0.024]} at={[0, y, -0.292]} color="#484b44" metal radius={0.004} />
+      <LabBox size={[0.16, 0.014, 0.004]} at={[0, y + height / 2 - 0.027, -0.306]} color="#272c27" radius={0.002} />
+      <LabBox size={[0.145, 0.004, 0.008]} at={[0, y + height / 2 - 0.021, -0.31]} color="#62665d" metal radius={0.001} />
+    </group>)}
+    {[-0.16, 0.16].map(x => [-0.2, 0.2].map(z => <mesh key={`${x}:${z}`} position={[x, 0.03, z]} rotation={[0, 0, Math.PI / 2]} castShadow><cylinderGeometry args={[0.03, 0.03, 0.025, 12]} /><meshStandardMaterial color="#30342e" /></mesh>))}
+  </group>;
+}
+
+function DeskTower() {
+  return <group position={[-0.25, 0, -0.15]}>
+    <LabBox size={[0.24, 0.49, 0.42]} at={[0, 0.275, 0]} color="#30362f" radius={0.008} />
+    <LabBox size={[0.214, 0.455, 0.012]} at={[0, 0.275, -0.214]} color="#3b4239" radius={0.004} />
+    {Array.from({ length: 7 }, (_, i) => <LabBox key={i} size={[0.145, 0.005, 0.003]} at={[0, 0.12 + i * 0.023, -0.222]} color="#1f251f" radius={0.001} />)}
+    <mesh position={[0.065, 0.45, -0.223]} rotation={[0, Math.PI, 0]}><circleGeometry args={[0.008, 12]} /><meshStandardMaterial color="#99a492" /></mesh>
+    {[-0.075, 0.075].map(x => <LabBox key={x} size={[0.035, 0.03, 0.32]} at={[x, 0.015, 0]} color="#242a24" />)}
+  </group>;
+}
+
+function DeskNotebook({ at }: { at: Vec3 }) {
+  return <group position={at} rotation={[0, -0.12, 0]}>
+    <LabBox size={[0.23, 0.005, 0.29]} at={[0, 0.0025, 0]} color="#66685b" radius={0.003} />
+    <LabBox size={[0.214, 0.015, 0.275]} at={[0.004, 0.0125, 0]} color="#e8e1d2" radius={0.002} />
+    <LabBox size={[0.23, 0.005, 0.29]} at={[0, 0.0225, 0]} color="#66685b" radius={0.003} />
+    <LabBox size={[0.007, 0.025, 0.29]} at={[-0.112, 0.0125, 0]} color="#4b5046" radius={0.002} />
+    <LabBox size={[0.012, 0.002, 0.05]} at={[0.06, 0.007, 0.151]} color="#b0a37b" radius={0.001} />
+  </group>;
+}
+
+function DeskCup({ at }: { at: Vec3 }) {
+  return <group position={at}>
+    <mesh position={[0, 0.073, 0]} castShadow receiveShadow><cylinderGeometry args={[0.044, 0.035, 0.146, 24]} /><meshStandardMaterial color="#73766a" roughness={0.6} /></mesh>
+    <mesh position={[0, 0.145, 0]} castShadow><cylinderGeometry args={[0.047, 0.047, 0.012, 24]} /><meshStandardMaterial color="#303830" roughness={0.65} /></mesh>
+    <mesh position={[0, 0.153, 0]}><cylinderGeometry args={[0.039, 0.042, 0.006, 24]} /><meshStandardMaterial color="#454e42" roughness={0.65} /></mesh>
+  </group>;
+}
+
+function DeskMouse() {
+  return <group position={[0.88, 0.82, 0.23]}>
+    <LabBox size={[0.064, 0.014, 0.095]} at={[0, 0.007, 0]} color="#484f45" radius={0.012} />
+    <mesh position={[0, 0.012, 0]} scale={[0.032, 0.018, 0.047]} castShadow><sphereGeometry args={[1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#969b8e" roughness={0.7} /></mesh>
+    <mesh position={[0, 0.028, -0.01]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.004, 0.004, 0.01, 12]} /><meshStandardMaterial color="#3b4439" /></mesh>
+  </group>;
+}
+
+function Workstation({ shared = false, occupied = false }: { shared?: boolean; occupied?: boolean }) {
   const fabric = useMemo(() => fabricSurface(), []);
   useEffect(() => () => fabric.dispose(), [fabric]);
   return <group>
@@ -223,11 +282,9 @@ function Workstation({ shared = false }: { shared?: boolean }) {
       <LabBox size={[0.045, 0.04, shared ? 1.38 : 0.82]} at={[x, 0.035, shared ? -0.28 : 0]} metal />
     </group>)}
     <LabBox size={[1.8, 0.065, 0.035]} at={[0, 0.7, -0.38]} />
-    <LabBox size={[0.39, 0.63, 0.58]} at={[-0.61, 0.34, -0.05]} />
-    {[0.19, 0.4, 0.57].map(y => <group key={y}><LabBox size={[0.36, 0.16, 0.02]} at={[-0.61, y, 0.25]} color="#4b4d47" /><LabBox size={[0.085, 0.012, 0.015]} at={[-0.61, y + 0.045, 0.266]} color="#292e29" /></group>)}
-    <LabBox size={[0.27, 0.49, 0.45]} at={[-0.28, 0.28, -0.22]} color="#343834" />
-    <RoundedBox args={[1.34, 0.39, 0.043]} position={[-0.25, 1.03, -0.33]} radius={0.012} smoothness={2} castShadow receiveShadow><meshStandardMaterial map={fabric} roughness={1} /></RoundedBox>
-    {!shared && <><Monitor x={-0.25} tilt={0.08} /><Monitor x={0.36} tilt={-0.12} /></>}
+    <DrawerPedestal /><DeskTower />
+    <RoundedBox args={[shared ? 1.34 : 0.98, 0.39, 0.043]} position={[shared ? -0.25 : -0.43, 1.03, -0.33]} radius={0.012} smoothness={2} castShadow receiveShadow><meshStandardMaterial map={fabric} roughness={1} /></RoundedBox>
+    {(!shared || occupied) && <><Monitor x={-0.25} tilt={0.08} /><Monitor x={0.36} tilt={-0.12} /></>}
     {shared && <group position={[0, 0, -0.64]} rotation={[0, Math.PI, 0]}>
       <Monitor x={0.1} tilt={-0.1} />
       <LabBox size={[0.47, 0.019, 0.16]} at={[0.1, 0.831, 0.13]} color="#303630" />
@@ -236,21 +293,20 @@ function Workstation({ shared = false }: { shared?: boolean }) {
       <LabBox size={[0.21, 0.012, 0.255]} at={[-0.55, 0.837, 0.085]} color="#e8e1d2" />
       <LabPlant at={[0.78, 0.82, 0]} scale={0.35} />
     </group>}
-    {!shared && <>
+    {(!shared || occupied) && <>
       <LabBox size={[0.47, 0.019, 0.16]} at={[0.6, 0.831, 0.32]} color="#303630" />
       {Array.from({ length: 4 }, (_, row) => Array.from({ length: 13 }, (_, col) => <LabBox key={`${row}:${col}`} size={[0.026, 0.004, 0.024]} at={[0.393 + col * 0.034, 0.843, 0.265 + row * 0.034]} color="#7c8176" radius={0.001} />))}
-      <LabBox size={[0.07, 0.025, 0.1]} at={[0.88, 0.838, 0.31]} color="#969a8d" radius={0.018} />
+      <DeskMouse />
     </>}
-    <LabBox size={[0.23, 0.024, 0.29]} at={[0.75, 0.835, 0.08]} color="#6a7663" />
-    <LabBox size={[0.214, 0.012, 0.275]} at={[0.75, 0.837, 0.084]} color="#e8e1d2" />
-    <LabPlant at={[-0.79, 0.82, -0.22]} scale={0.34} />
-    <group position={[-0.63, 0.82, 0.24]}>
+    <DeskNotebook at={shared ? [0.75, 0.82, 0.08] : [0.72, 0.82, -0.18]} />
+    <LabPlant at={shared ? [-0.79, 0.82, -0.22] : [-0.65, 0.82, -0.4]} scale={0.32} squarePot={!shared} />
+    {shared && <group position={[-0.63, 0.82, 0.24]}>
       <LabBox size={[0.42, 0.018, 0.23]} at={[0, 0.009, 0]} color="#41473d" />
       {[-0.203, 0.203].map(x => <LabBox key={x} size={[0.014, 0.14, 0.23]} at={[x, 0.075, 0]} color="#41473d" />)}
       {[-0.108, 0.108].map(z => <LabBox key={z} size={[0.42, 0.1, 0.014]} at={[0, 0.055, z]} color="#41473d" />)}
       {[0, 1, 2].map(i => <Book key={i} at={[-0.135 + i * 0.075, 0.018, 0]} width={0.06} height={0.23 + i % 2 * 0.035} color={["#ece4cf", "#7e886c", "#b9ae8c"][i]} />)}
-    </group>
-    <mesh position={[-0.07, 0.891, 0.29]} castShadow><cylinderGeometry args={[0.044, 0.04, 0.145, 16]} /><meshStandardMaterial color="#55594c" /></mesh>
+    </group>}
+    <DeskCup at={shared ? [-0.07, 0.82, 0.29] : [0.36, 0.82, -0.37]} />
     <Chair />
     {shared && <Chair at={[-0.45, 0, 0.74]} upholstery="#8a917b" />}
   </group>;
@@ -280,8 +336,8 @@ function BookWorkbench() {
   </group>;
 }
 
-export function ResearchFurniture({ type, booksOnly = false, sharedDesk = false }: { type: ResearchFurnitureType; booksOnly?: boolean; sharedDesk?: boolean }) {
-  if (type === "workstation") return <Workstation shared={sharedDesk} />;
+export function ResearchFurniture({ type, booksOnly = false, sharedDesk = false, occupied = false }: { type: ResearchFurnitureType; booksOnly?: boolean; sharedDesk?: boolean; occupied?: boolean }) {
+  if (type === "workstation") return <Workstation shared={sharedDesk} occupied={occupied} />;
   if (type === "cabinet") return <group scale={[0.85, 0.83, 1]}><Cabinet booksOnly={booksOnly} /></group>;
   if (type === "shelf") return <group scale={[0.85, 0.82, 1]}><Shelf /></group>;
   if (type === "divider") return <PrivacyDivider />;
