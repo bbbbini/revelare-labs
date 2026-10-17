@@ -298,8 +298,8 @@ function Workstation({ shared = false, occupied = false }: { shared?: boolean; o
       {Array.from({ length: 4 }, (_, row) => Array.from({ length: 13 }, (_, col) => <LabBox key={`${row}:${col}`} size={[0.026, 0.004, 0.024]} at={[0.393 + col * 0.034, 0.843, 0.265 + row * 0.034]} color="#7c8176" radius={0.001} />))}
       <DeskMouse />
     </>}
-    <DeskNotebook at={shared ? [0.75, 0.82, 0.08] : [0.72, 0.82, -0.18]} />
-    <LabPlant at={shared ? [-0.79, 0.82, -0.22] : [-0.65, 0.82, -0.4]} scale={0.32} squarePot={!shared} />
+    <DeskNotebook at={shared ? [0.75, 0.82, 0] : [0.72, 0.82, -0.18]} />
+    <LabPlant at={shared ? [-0.79, 0.82, -0.22] : [-0.65, 0.82, -0.415]} scale={0.32} squarePot={!shared} />
     {shared && <group position={[-0.63, 0.82, 0.24]}>
       <LabBox size={[0.42, 0.018, 0.23]} at={[0, 0.009, 0]} color="#41473d" />
       {[-0.203, 0.203].map(x => <LabBox key={x} size={[0.014, 0.14, 0.23]} at={[x, 0.075, 0]} color="#41473d" />)}
