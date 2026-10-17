@@ -6,30 +6,61 @@ import * as THREE from "three";
 import type { ResearchFurnitureType } from "../core/researchLayout";
 
 type Vec3 = [number, number, number];
-const Oak = createContext<THREE.Texture | null>(null);
+type OakSurface = { color: THREE.Texture; relief: THREE.Texture };
+const Oak = createContext<OakSurface | null>(null);
+
+/** Low-contrast grain and pores, shared by every oak surface in this room. */
+function oakSurface(): OakSurface {
+  const width = 512;
+  const color = document.createElement("canvas");
+  const relief = document.createElement("canvas");
+  color.width = color.height = relief.width = relief.height = width;
+  const colorContext = color.getContext("2d")!;
+  const reliefContext = relief.getContext("2d")!;
+  const pixels = colorContext.createImageData(width, width);
+  const heights = reliefContext.createImageData(width, width);
+  let seed = 137;
+  const base = [185, 155, 118];
+  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  for (let y = 0; y < width; y++) for (let x = 0; x < width; x++) {
+    const u = x / width * Math.PI * 2;
+    const v = y / width * Math.PI * 2;
+    // Periodic along both axes so a large tabletop has no texture-edge seam.
+    const bend = 0.48 * Math.sin(u) + 0.17 * Math.sin(u * 2 + Math.sin(v));
+    const broad = Math.sin(v * 3 + bend) * 2.2 + Math.sin(v * 7 - bend) * 1.1;
+    const fiber = Math.pow(0.5 + 0.5 * Math.sin(v * 37 + bend * 4), 12);
+    const pore = random() > 0.993 ? 4 : 0;
+    const variation = broad - fiber * 3.4 - pore + (random() - 0.5) * 1.5;
+    const offset = (y * width + x) * 4;
+    for (let channel = 0; channel < 3; channel++) {
+      pixels.data[offset + channel] = base[channel] + variation;
+      heights.data[offset + channel] = 155 - fiber * 35 - pore * 12;
+    }
+    pixels.data[offset + 3] = heights.data[offset + 3] = 255;
+  }
+  colorContext.putImageData(pixels, 0, 0);
+  reliefContext.putImageData(heights, 0, 0);
+  const colorMap = new THREE.CanvasTexture(color);
+  const reliefMap = new THREE.CanvasTexture(relief);
+  colorMap.colorSpace = THREE.SRGBColorSpace;
+  for (const map of [colorMap, reliefMap]) {
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+  }
+  return { color: colorMap, relief: reliefMap };
+}
 
 /** Deterministic, authored surface maps. No reference bitmap is shipped with the app. */
-function surface(kind: "oak" | "fabric") {
+function fabricSurface() {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 256;
   const ctx = canvas.getContext("2d")!;
   let seed = 41;
   const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-  ctx.fillStyle = kind === "oak" ? "#b99b76" : "#92998a";
+  ctx.fillStyle = "#92998a";
   ctx.fillRect(0, 0, 256, 256);
-  if (kind === "oak") {
-    for (let i = 0; i < 390; i++) {
-      const y = random() * 256;
-      ctx.strokeStyle = `rgba(${random() > 0.5 ? "70,43,22" : "249,222,181"},${0.012 + random() * 0.035})`;
-      ctx.lineWidth = 0.5 + random() * 2;
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.bezierCurveTo(70, y + 3, 180, y - 4, 256, y + 2); ctx.stroke();
-    }
-    ctx.fillStyle = "#59432818"; ctx.fillRect(0, 85, 256, 1); ctx.fillRect(0, 171, 256, 1);
-  } else {
-    for (let y = 0; y < 256; y += 2) for (let x = 0; x < 256; x += 2) {
-      ctx.fillStyle = `rgba(${random() > 0.5 ? "255,255,240" : "50,48,40"},${random() * 0.09})`;
-      ctx.fillRect(x, y, kind === "fabric" ? 1 : 2, 2);
-    }
+  for (let y = 0; y < 256; y += 2) for (let x = 0; x < 256; x += 2) {
+    ctx.fillStyle = `rgba(${random() > 0.5 ? "255,255,240" : "50,48,40"},${random() * 0.09})`;
+    ctx.fillRect(x, y, 1, 2);
   }
   const map = new THREE.CanvasTexture(canvas);
   map.colorSpace = THREE.SRGBColorSpace;
@@ -38,15 +69,15 @@ function surface(kind: "oak" | "fabric") {
 }
 
 export function ResearchMaterials({ children }: { children: ReactNode }) {
-  const oak = useMemo(() => surface("oak"), []);
-  useEffect(() => () => oak.dispose(), [oak]);
+  const oak = useMemo(() => oakSurface(), []);
+  useEffect(() => () => { oak.color.dispose(); oak.relief.dispose(); }, [oak]);
   return <Oak.Provider value={oak}>{children}</Oak.Provider>;
 }
 
 export function LabBox({ size, at = [0, 0, 0], color = "#3f403d", wood = false, metal = false, radius = 0.008, rotation }: { size: Vec3; at?: Vec3; color?: string; wood?: boolean; metal?: boolean; radius?: number; rotation?: Vec3 }) {
   const oak = useContext(Oak);
   return <RoundedBox args={size} position={at} rotation={rotation} radius={Math.min(radius, Math.min(...size) / 3)} smoothness={2} castShadow receiveShadow>
-    <meshStandardMaterial color={wood ? "#ffffff" : color} map={wood ? oak : null} metalness={metal ? 0.25 : 0} roughness={wood ? 0.72 : metal ? 0.55 : 0.86} />
+    <meshStandardMaterial color={wood ? "#ffffff" : color} map={wood ? oak?.color : null} bumpMap={wood ? oak?.relief : null} bumpScale={0.001} metalness={metal ? 0.25 : 0} roughness={wood ? 0.72 : metal ? 0.55 : 0.86} />
   </RoundedBox>;
 }
 
@@ -161,8 +192,11 @@ function Shelf() {
 
 function Monitor({ x, tilt = 0 }: { x: number; tilt?: number }) {
   return <group position={[x, 0.82, -0.19]} rotation={[0, tilt, 0]}>
-    <LabBox size={[0.2, 0.018, 0.14]} at={[0, 0.01, 0]} />
-    <LabBox size={[0.035, 0.18, 0.03]} at={[0, 0.1, 0]} />
+    <mesh position={[-0.09, 0.012, -0.065]} castShadow receiveShadow><cylinderGeometry args={[0.065, 0.075, 0.024, 24]} /><meshStandardMaterial color="#363935" metalness={0.3} roughness={0.5} /></mesh>
+    <mesh position={[-0.09, 0.17, -0.065]} castShadow><cylinderGeometry args={[0.014, 0.014, 0.3, 16]} /><meshStandardMaterial color="#555951" metalness={0.45} roughness={0.4} /></mesh>
+    <LabBox size={[0.12, 0.026, 0.035]} at={[-0.04, 0.28, -0.065]} metal />
+    <LabBox size={[0.045, 0.085, 0.065]} at={[0, 0.305, -0.04]} metal radius={0.009} />
+    <LabBox size={[0.13, 0.13, 0.015]} at={[0, 0.33, -0.022]} color="#41453f" />
     <LabBox size={[0.56, 0.35, 0.028]} at={[0, 0.33, 0]} color="#292c2b" />
     <LabBox size={[0.523, 0.313, 0.004]} at={[0, 0.33, 0.018]} color="#38413f" />
     {[0, 1, 2, 3, 4, 5].map(i => <LabBox key={i} size={[0.12 + i % 3 * 0.06, 0.007, 0.001]} at={[-0.08 + i % 2 * 0.03, 0.43 - i * 0.032, 0.022]} color={i % 3 === 0 ? "#98a48b" : "#687a76"} radius={0.0003} />)}
@@ -180,7 +214,7 @@ function Chair() {
 }
 
 function Workstation({ shared = false }: { shared?: boolean }) {
-  const fabric = useMemo(() => surface("fabric"), []);
+  const fabric = useMemo(() => fabricSurface(), []);
   useEffect(() => () => fabric.dispose(), [fabric]);
   return <group>
     <LabBox size={[1.96, 0.055, shared ? 1.5 : 0.94]} at={[0, 0.79, shared ? -0.28 : 0]} wood radius={0.012} />
@@ -220,7 +254,7 @@ function Workstation({ shared = false }: { shared?: boolean }) {
 }
 
 function PrivacyDivider() {
-  const fabric = useMemo(() => surface("fabric"), []);
+  const fabric = useMemo(() => fabricSurface(), []);
   useEffect(() => () => fabric.dispose(), [fabric]);
   return <group>
     <RoundedBox args={[1.45, 1.25, 0.065]} position={[0, 0.86, 0]} radius={0.025} smoothness={3} castShadow receiveShadow><meshStandardMaterial map={fabric} color="#dedbd1" roughness={1} /></RoundedBox>
