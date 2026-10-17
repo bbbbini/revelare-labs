@@ -20,9 +20,9 @@ export function defaultResearchLayout(): ResearchLayoutItem[] {
     { id: "foreground-divider", type: "divider", x: 1.8, z: 1.7, rotation: 0 },
     { id: "left-cabinet", type: "cabinet", x: -3.22, z: 0.35, rotation: Math.PI / 2 },
     { id: "back-cabinet", type: "cabinet", x: -1.2, z: -1.98, rotation: 0 },
-    { id: "corner-shelf", type: "shelf", x: -3.15, z: -1.05, rotation: Math.PI / 2 },
+    { id: "corner-shelf", type: "shelf", x: -3.15, z: -1.5, rotation: Math.PI / 2 },
     { id: "left-plant", type: "plant", x: -3, z: 2.25, rotation: 0 },
-    { id: "door-plant", type: "plant", x: 1.28, z: -1.6, rotation: 0 },
+    { id: "door-plant", type: "plant", x: 1.05, z: -1.6, rotation: 0 },
   ];
 }
 

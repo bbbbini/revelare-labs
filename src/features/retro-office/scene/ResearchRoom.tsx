@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import { RoundedBox, Text, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import type { ResearchFurnitureType } from "../core/researchLayout";
@@ -43,10 +43,10 @@ export function ResearchMaterials({ children }: { children: ReactNode }) {
   return <Oak.Provider value={oak}>{children}</Oak.Provider>;
 }
 
-export function LabBox({ size, at = [0, 0, 0], color = "#3f403d", wood = false, radius = 0.008, rotation }: { size: Vec3; at?: Vec3; color?: string; wood?: boolean; radius?: number; rotation?: Vec3 }) {
+export function LabBox({ size, at = [0, 0, 0], color = "#3f403d", wood = false, metal = false, radius = 0.008, rotation }: { size: Vec3; at?: Vec3; color?: string; wood?: boolean; metal?: boolean; radius?: number; rotation?: Vec3 }) {
   const oak = useContext(Oak);
   return <RoundedBox args={size} position={at} rotation={rotation} radius={Math.min(radius, Math.min(...size) / 3)} smoothness={2} castShadow receiveShadow>
-    <meshStandardMaterial color={wood ? "#ffffff" : color} map={wood ? oak : null} roughness={wood ? 0.72 : 0.86} />
+    <meshStandardMaterial color={wood ? "#ffffff" : color} map={wood ? oak : null} metalness={metal ? 0.25 : 0} roughness={wood ? 0.72 : metal ? 0.55 : 0.86} />
   </RoundedBox>;
 }
 
@@ -79,25 +79,49 @@ function createLeafGeometry() {
 
 export function LabPlant({ at = [0, 0, 0], scale = 1 }: { at?: Vec3; scale?: number }) {
   const leaf = useMemo(() => createLeafGeometry(), []);
+  const leaves = useRef<THREE.InstancedMesh>(null);
+  const stems = useRef<THREE.InstancedMesh>(null);
   useEffect(() => () => leaf.dispose(), [leaf]);
+  useLayoutEffect(() => {
+    if (!leaves.current || !stems.current) return;
+    const local = new THREE.Object3D();
+    const around = new THREE.Matrix4();
+    const matrix = new THREE.Matrix4();
+    const colors = ["#6f8847", "#9b9f5b", "#4e733c", "#87974d"].map(color => new THREE.Color(color));
+    for (let i = 0; i < 24; i++) {
+      const height = 0.43 + (i % 7) * 0.055;
+      around.makeRotationY(i * 2.399);
+      local.position.set(0.04, (height + 0.32) / 2, 0);
+      local.rotation.set(0, 0, -0.2);
+      local.scale.set(1, height - 0.3, 1);
+      local.updateMatrix();
+      stems.current.setMatrixAt(i, matrix.multiplyMatrices(around, local.matrix));
+      local.position.set(0.08, height, 0);
+      local.rotation.set(0.2, i % 2 * 0.3, -0.55 - (i % 4) * 0.18);
+      local.scale.setScalar(0.65 + (i % 4) * 0.12);
+      local.updateMatrix();
+      leaves.current.setMatrixAt(i, matrix.multiplyMatrices(around, local.matrix));
+      leaves.current.setColorAt(i, colors[i % colors.length]);
+    }
+    for (const mesh of [leaves.current, stems.current]) {
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.computeBoundingSphere();
+    }
+    if (leaves.current.instanceColor) leaves.current.instanceColor.needsUpdate = true;
+  }, []);
   return <group position={at} scale={scale}>
     <mesh position={[0, 0.17, 0]} castShadow receiveShadow><cylinderGeometry args={[0.18, 0.135, 0.34, 24]} /><meshStandardMaterial color="#d9d6c9" roughness={0.95} /></mesh>
     <mesh position={[0, 0.343, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[0.163, 24]} /><meshStandardMaterial color="#4e4738" /></mesh>
-    {Array.from({ length: 18 }, (_, i) => {
-      const angle = i * 2.399, height = 0.45 + (i % 5) * 0.085;
-      return <group key={i} rotation={[0, angle, 0]}>
-        <mesh position={[0.04, (height + 0.32) / 2, 0]} rotation={[0, 0, -0.2]} castShadow><cylinderGeometry args={[0.004, 0.007, height - 0.3, 6]} /><meshStandardMaterial color="#687e44" /></mesh>
-        <mesh geometry={leaf} position={[0.08, height, 0]} rotation={[0.2, i % 2 * 0.3, -0.55 - (i % 4) * 0.18]} scale={0.78 + (i % 3) * 0.15} castShadow receiveShadow><meshStandardMaterial color={["#6f8847", "#9b9f5b", "#4e733c", "#87974d"][i % 4]} side={THREE.DoubleSide} roughness={0.7} /></mesh>
-      </group>;
-    })}
+    <instancedMesh ref={stems} args={[undefined, undefined, 24]} castShadow><cylinderGeometry args={[0.004, 0.007, 1, 6]} /><meshStandardMaterial color="#687e44" /></instancedMesh>
+    <instancedMesh ref={leaves} args={[leaf, undefined, 24]} castShadow receiveShadow><meshStandardMaterial side={THREE.DoubleSide} roughness={0.7} /></instancedMesh>
   </group>;
 }
 
 function Cabinet({ booksOnly = false }: { booksOnly?: boolean }) {
   return <group>
-    <LabBox size={[2.55, 0.77, 0.48]} at={[0, 0.425, 0]} />
+    <LabBox size={[2.55, 0.77, 0.48]} at={[0, 0.425, 0]} metal />
     <LabBox size={[2.61, 0.045, 0.53]} at={[0, 0.83, 0]} wood />
-    {[-0.95, -0.317, 0.317, 0.95].map(x => <LabBox key={x} size={[0.625, 0.74, 0.025]} at={[x, 0.44, 0.253]} color="#454542" />)}
+    {[-0.95, -0.317, 0.317, 0.95].map(x => <LabBox key={x} size={[0.625, 0.74, 0.025]} at={[x, 0.44, 0.253]} color="#454542" metal />)}
     <LabBox size={[2.35, 0.07, 0.38]} at={[0, 0.035, 0]} color="#313330" />
     <LabPlant at={[-1, 0.855, 0]} scale={0.42} />
     {booksOnly ? <>
@@ -120,15 +144,15 @@ function Cabinet({ booksOnly = false }: { booksOnly?: boolean }) {
 
 function Shelf() {
   return <group>
-    {[-0.48, 0.48].map(x => [-0.2, 0.2].map(z => <LabBox key={`${x}:${z}`} size={[0.045, 2.32, 0.045]} at={[x, 1.16, z]} />))}
-    {[0.14, 0.65, 1.16, 1.67, 2.18].map((y, level) => <group key={y}>
+    {[-0.48, 0.48].map(x => [-0.2, 0.2].map(z => <LabBox key={`${x}:${z}`} size={[0.045, 2.32, 0.045]} at={[x, 1.16, z]} metal />))}
+    {[0.14, 0.84, 1.56, 2.3].map((y, level) => <group key={y}>
       <LabBox size={[1.01, 0.035, 0.47]} at={[0, y, 0]} wood />
-      {level % 2 === 0 ? <>
-        <LabBox size={[0.43, 0.32, 0.34]} at={[0.17, y + 0.18, 0]} color={level === 0 ? "#b2afa5" : "#474a43"} />
+      {level === 3 ? null : level % 2 === 0 ? <>
+        <LabBox size={[0.43, 0.4, 0.34]} at={[0.17, y + 0.22, 0]} color={level === 0 ? "#b2afa5" : "#474a43"} />
         <LabBox size={[0.13, 0.036, 0.006]} at={[0.17, y + 0.22, 0.173]} color="#d2cdbf" />
-        {[0, 1, 2].map(i => <Book key={i} at={[-0.34 + i * 0.065, y + 0.02, 0.02]} height={0.28 + i * 0.025} color={["#777f70", "#b4ad98", "#d6d4c9"][i]} />)}
+        {[0, 1, 2].map(i => <Book key={i} at={[-0.34 + i * 0.065, y + 0.02, 0.02]} height={0.36 + i * 0.025} color={["#777f70", "#b4ad98", "#d6d4c9"][i]} />)}
       </> : <>
-        {[0, 1, 2, 3, 4].map(i => <Book key={i} at={[-0.31 + i * 0.074, y + 0.02, 0]} height={0.31 + (i % 3) * 0.025} color={["#444b42", "#d0cbbd", "#a7aa99", "#e0dbd0", "#b7ad97"][i]} />)}
+        {[0, 1, 2, 3, 4].map(i => <Book key={i} at={[-0.31 + i * 0.074, y + 0.02, 0]} height={0.38 + (i % 3) * 0.025} color={["#444b42", "#d0cbbd", "#a7aa99", "#e0dbd0", "#b7ad97"][i]} />)}
         <LabBox size={[0.21, 0.24, 0.3]} at={[0.29, y + 0.14, 0]} color="#55574f" />
       </>}
     </group>)}
@@ -161,8 +185,8 @@ function Workstation({ shared = false }: { shared?: boolean }) {
   return <group>
     <LabBox size={[1.96, 0.055, shared ? 1.5 : 0.94]} at={[0, 0.79, shared ? -0.28 : 0]} wood radius={0.012} />
     {[-0.91, 0.91].map(x => <group key={x}>
-      {[shared ? -0.95 : -0.39, 0.39].map(z => <LabBox key={z} size={[0.045, 0.76, 0.045]} at={[x, 0.38, z]} />)}
-      <LabBox size={[0.045, 0.04, shared ? 1.38 : 0.82]} at={[x, 0.035, shared ? -0.28 : 0]} />
+      {[shared ? -0.95 : -0.39, 0.39].map(z => <LabBox key={z} size={[0.045, 0.76, 0.045]} at={[x, 0.38, z]} metal />)}
+      <LabBox size={[0.045, 0.04, shared ? 1.38 : 0.82]} at={[x, 0.035, shared ? -0.28 : 0]} metal />
     </group>)}
     <LabBox size={[1.8, 0.065, 0.035]} at={[0, 0.7, -0.38]} />
     <LabBox size={[0.39, 0.63, 0.58]} at={[-0.61, 0.34, -0.05]} />
@@ -222,10 +246,10 @@ function BookWorkbench() {
 export function ResearchFurniture({ type, booksOnly = false, sharedDesk = false }: { type: ResearchFurnitureType; booksOnly?: boolean; sharedDesk?: boolean }) {
   if (type === "workstation") return <Workstation shared={sharedDesk} />;
   if (type === "cabinet") return <group scale={[0.85, 0.83, 1]}><Cabinet booksOnly={booksOnly} /></group>;
-  if (type === "shelf") return <group scale={[0.9, 0.8, 1]}><Shelf /></group>;
+  if (type === "shelf") return <group scale={[0.85, 0.82, 1]}><Shelf /></group>;
   if (type === "divider") return <PrivacyDivider />;
   if (type === "workbench") return <BookWorkbench />;
-  return <LabPlant scale={1.25} />;
+  return <LabPlant scale={1} />;
 }
 
 function Noticeboard() {
