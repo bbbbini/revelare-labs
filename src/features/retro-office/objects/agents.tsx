@@ -13,6 +13,8 @@ import type {
   RenderAgent,
 } from "@/features/retro-office/core/types";
 import { AgentModelProps } from "@/features/retro-office/objects/types";
+import { ResearchCharacter } from "./ResearchCharacter";
+import { supportsResearchCharacter } from "../core/researchAvatar";
 import { AGENT_STATUS_LABELS } from "@/features/office/statusLabels";
 
 /** Tee shown under the open "overshirt" top (research-lab look). */
@@ -660,7 +662,7 @@ export const AgentModel = memo(function AgentModel({
   const accessoryColor = topColor;
   // Character B (research lab): the overshirt outfit gets the rounded head,
   // fuller parted hair and smaller eyes.
-  const labLook = topStyle === "overshirt";
+  const labLook = supportsResearchCharacter(resolvedAppearance);
   const sleeveColor = topStyle === "jacket" ? "#dbe4ff" : topColor;
   const cuffColor = topStyle === "hoodie" ? "#d1d5db" : sleeveColor;
   // Jacket accent brightened ~10% so it doesn't turn muddy under ACES tone mapping.
@@ -807,7 +809,7 @@ export const AgentModel = memo(function AgentModel({
     const plateScale = THREE.MathUtils.clamp(distance / 12, 0.24, 1);
     nameplateRef.current.scale.setScalar(plateScale);
     // Close up, the smaller plate also sits just above the head.
-    const headTop = 0.68;
+    const headTop = labLook ? 0.8 : 0.68;
     nameplateRef.current.position.y = headTop + (nameplateHeight - headTop) * plateScale;
   });
 
@@ -834,6 +836,7 @@ export const AgentModel = memo(function AgentModel({
         <circleGeometry args={[0.12, 12]} />
         <meshBasicMaterial color="#000" transparent opacity={0.2} />
       </mesh>
+      {labLook ? <ResearchCharacter skin={skin} hair={hairColor} shirt={topColor} trousers={trouserColor} shoes={shoeColor} leftArm={leftArmRef} rightArm={rightArmRef} leftLeg={leftLegRef} rightLeg={rightLegRef} /> : <group>
       <group ref={rightLegRef} position={[-0.045, 0.1, 0]}>
         {bottomStyle === "shorts" ? (
           <>
@@ -848,7 +851,7 @@ export const AgentModel = memo(function AgentModel({
           </>
         ) : (
           <>
-            <LabBox rounded={labLook} size={labLook ? [0.062, 0.14, 0.072] : [0.07, 0.14, 0.08]} radius={0.022} castShadow>
+            <LabBox rounded={labLook} size={labLook ? [0.062, 0.14, 0.072] : [0.07, 0.14, 0.08]} radius={0.03} castShadow>
               <meshStandardMaterial color={trouserColor} roughness={0.75} />
             </LabBox>
             {bottomStyle === "cuffed" ? (
@@ -859,7 +862,7 @@ export const AgentModel = memo(function AgentModel({
             ) : null}
           </>
         )}
-        <LabBox rounded={labLook} size={labLook ? [0.066, 0.045, 0.115] : [0.07, 0.05, 0.12]} radius={0.018} position={[0, -0.09, 0]} castShadow>
+        <LabBox rounded={labLook} size={labLook ? [0.066, 0.045, 0.115] : [0.07, 0.05, 0.12]} radius={0.022} position={[0, -0.09, 0]} castShadow>
           <meshStandardMaterial color={shoeColor} roughness={0.75} />
         </LabBox>
       </group>
@@ -877,7 +880,7 @@ export const AgentModel = memo(function AgentModel({
           </>
         ) : (
           <>
-            <LabBox rounded={labLook} size={labLook ? [0.062, 0.14, 0.072] : [0.07, 0.14, 0.08]} radius={0.022} castShadow>
+            <LabBox rounded={labLook} size={labLook ? [0.062, 0.14, 0.072] : [0.07, 0.14, 0.08]} radius={0.03} castShadow>
               <meshStandardMaterial color={trouserColor} roughness={0.75} />
             </LabBox>
             {bottomStyle === "cuffed" ? (
@@ -888,7 +891,7 @@ export const AgentModel = memo(function AgentModel({
             ) : null}
           </>
         )}
-        <LabBox rounded={labLook} size={labLook ? [0.066, 0.045, 0.115] : [0.07, 0.05, 0.12]} radius={0.018} position={[0, -0.09, 0]} castShadow>
+        <LabBox rounded={labLook} size={labLook ? [0.066, 0.045, 0.115] : [0.07, 0.05, 0.12]} radius={0.022} position={[0, -0.09, 0]} castShadow>
           <meshStandardMaterial color={shoeColor} roughness={0.75} />
         </LabBox>
       </group>
@@ -908,7 +911,7 @@ export const AgentModel = memo(function AgentModel({
           </mesh>
         </group>
       ) : null}
-      <LabBox rounded={labLook} size={labLook ? [0.165, 0.2, 0.1] : [0.18, 0.2, 0.1]} radius={0.034} position={[0, 0.28, 0]} castShadow receiveShadow>
+      <LabBox rounded={labLook} size={labLook ? [0.165, 0.2, 0.1] : [0.18, 0.2, 0.1]} radius={0.048} position={[0, 0.28, 0]} castShadow receiveShadow>
         <meshStandardMaterial ref={bodyMatRef} color={topColor} roughness={0.75} />
       </LabBox>
       {topStyle === "hoodie" ? (
@@ -949,16 +952,14 @@ export const AgentModel = memo(function AgentModel({
         </>
       ) : null}
       <group ref={rightArmRef} position={[-0.12, 0.28, 0]}>
-        <mesh position={[0, -0.08, 0]} castShadow>
-          <boxGeometry args={[0.06, 0.16, 0.06]} />
+        <LabBox rounded={labLook} size={[0.06, 0.16, 0.06]} radius={0.028} position={[0, -0.08, 0]} castShadow>
           <meshStandardMaterial color={sleeveColor} roughness={0.75} />
-        </mesh>
+        </LabBox>
         {labLook ? (
           // Rolled-up overshirt sleeve.
-          <mesh position={[0, -0.135, 0]}>
-            <boxGeometry args={[0.066, 0.03, 0.066]} />
+          <RoundedBox args={[0.066, 0.03, 0.066]} radius={0.014} smoothness={3} position={[0, -0.135, 0]}>
             <meshStandardMaterial color={OVERSHIRT_CUFF_COLOR} roughness={0.8} />
-          </mesh>
+          </RoundedBox>
         ) : null}
         {topStyle === "hoodie" ? (
           <mesh position={[0, -0.145, 0]}>
@@ -966,10 +967,9 @@ export const AgentModel = memo(function AgentModel({
             <meshStandardMaterial color={cuffColor} roughness={0.75} />
           </mesh>
         ) : null}
-        <mesh position={[0, -0.17, 0]} castShadow>
-          <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <LabBox rounded={labLook} size={[0.05, 0.05, 0.05]} radius={0.022} position={[0, -0.17, 0]} castShadow>
           <meshStandardMaterial color={skin} roughness={0.55} />
-        </mesh>
+        </LabBox>
         <group
           ref={heldPaddleRef}
           position={[-0.01, -0.21, 0.07]}
@@ -1059,16 +1059,14 @@ export const AgentModel = memo(function AgentModel({
         </group>
       </group>
       <group ref={leftArmRef} position={[0.12, 0.28, 0]}>
-        <mesh position={[0, -0.08, 0]} castShadow>
-          <boxGeometry args={[0.06, 0.16, 0.06]} />
+        <LabBox rounded={labLook} size={[0.06, 0.16, 0.06]} radius={0.028} position={[0, -0.08, 0]} castShadow>
           <meshStandardMaterial color={sleeveColor} roughness={0.75} />
-        </mesh>
+        </LabBox>
         {labLook ? (
           // Rolled-up overshirt sleeve.
-          <mesh position={[0, -0.135, 0]}>
-            <boxGeometry args={[0.066, 0.03, 0.066]} />
+          <RoundedBox args={[0.066, 0.03, 0.066]} radius={0.014} smoothness={3} position={[0, -0.135, 0]}>
             <meshStandardMaterial color={OVERSHIRT_CUFF_COLOR} roughness={0.8} />
-          </mesh>
+          </RoundedBox>
         ) : null}
         {topStyle === "hoodie" ? (
           <mesh position={[0, -0.145, 0]}>
@@ -1076,10 +1074,9 @@ export const AgentModel = memo(function AgentModel({
             <meshStandardMaterial color={cuffColor} roughness={0.75} />
           </mesh>
         ) : null}
-        <mesh position={[0, -0.17, 0]} castShadow>
-          <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <LabBox rounded={labLook} size={[0.05, 0.05, 0.05]} radius={0.022} position={[0, -0.17, 0]} castShadow>
           <meshStandardMaterial color={skin} roughness={0.55} />
-        </mesh>
+        </LabBox>
       </group>
       <mesh position={[0, 0.39, 0]}>
         <boxGeometry args={[0.07, 0.05, 0.07]} />
@@ -1090,7 +1087,7 @@ export const AgentModel = memo(function AgentModel({
         // below sit on its flat front.
         <RoundedBox
           args={[0.165, 0.17, 0.145]}
-          radius={0.04}
+          radius={0.046}
           smoothness={4}
           position={[0, 0.47, 0]}
           castShadow
@@ -1299,6 +1296,7 @@ export const AgentModel = memo(function AgentModel({
         <boxGeometry args={[0.014, 0.014, 0.01]} />
         <meshBasicMaterial color="#9c4a4a" />
       </mesh>
+      </group>}
       <mesh
         ref={pulseRingRef}
         position={[0, 0.005, 0]}

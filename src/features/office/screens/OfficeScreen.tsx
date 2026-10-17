@@ -981,6 +981,7 @@ export function OfficeScreen({
   const [hermesLogEntries, setHermesLogEntries] = useState<
     HermesLogEntry[]
   >([]);
+  const [hermesConsoleVisible, setHermesConsoleVisible] = useState(false);
   const [hermesConsoleCollapsed, setHermesConsoleCollapsed] =
     useState(true);
   const [hermesConsoleSearch, setHermesConsoleSearch] = useState("");
@@ -1022,7 +1023,7 @@ export function OfficeScreen({
   const officeTriggerStateRef = useRef(officeTriggerState);
   const historyInFlightRef = useRef<Set<string>>(new Set());
   const lastTransportHistoryRefreshKeyRef = useRef<Record<string, string>>({});
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(true);
   const [chatRosterCollapsed, setChatRosterCollapsed] = useState(false);
   const [selectedChatAgentId, setSelectedChatAgentId] = useState<string | null>(
     null,
@@ -5035,8 +5036,10 @@ export function OfficeScreen({
         />
       ) : null}
 
-      {showHermesConsole ? (
-        <section className="pointer-events-auto fixed bottom-3 left-3 z-30 flex w-[520px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-xl border border-[#e2dccf] bg-[#fbf8f2]/95 shadow-lg backdrop-blur">
+      {showHermesConsole && <button type="button" onClick={() => setHermesConsoleVisible(value => !value)} aria-expanded={hermesConsoleVisible} className="fixed bottom-4 right-40 z-30 rounded-md px-2 py-1 text-[12px] text-[#606657] bg-[#faf8f3]">이벤트 콘솔</button>}
+
+      {showHermesConsole && hermesConsoleVisible ? (
+        <section className="pointer-events-auto fixed bottom-20 left-3 z-30 flex w-[520px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-xl border border-[#e2dccf] bg-[#fbf8f2]/95 shadow-lg backdrop-blur">
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-[#e2dccf] px-3 py-2 text-[12px] font-semibold text-[#2f3133]">
             <span className="whitespace-nowrap">에이전트 이벤트 콘솔</span>
             <div className="flex flex-wrap items-center gap-2 [&>*]:shrink-0 [&>*]:whitespace-nowrap">
@@ -5248,7 +5251,7 @@ export function OfficeScreen({
       ) : null}
 
       <div
-        className={`fixed bottom-3 z-30 flex flex-col items-end gap-2 ${sidebarOpen ? "right-84" : "right-3"} ${
+        className={`fixed bottom-[76px] z-30 flex flex-col items-end gap-2 ${sidebarOpen ? "right-84" : "right-3"} ${
           debugEnabled ? "hidden" : ""
         }`}
       >
@@ -5256,15 +5259,15 @@ export function OfficeScreen({
           <div
             className="lab-theme flex overflow-hidden rounded-2xl border border-[#e2dccf] bg-[#f7f3ec] shadow-2xl"
             style={{
-              width: chatRosterCollapsed
-                ? "min(680px, calc(100vw - 1.5rem))"
-                : "min(780px, calc(100vw - 1.5rem))",
-              height: "min(560px, calc(100vh - 5.5rem))",
+              width: chatRosterEntries.length <= 1 || chatRosterCollapsed
+                ? "min(max(360px, 30vw), calc(100vw - 1.5rem))"
+                : "min(600px, calc(100vw - 1.5rem))",
+              height: "calc(100vh - 144px)",
             }}
           >
             <div
               className={`flex shrink-0 flex-col border-r border-[#e2dccf] bg-[#f3eee5] transition-[width] ${
-                chatRosterCollapsed ? "w-12" : "w-52"
+                chatRosterEntries.length <= 1 ? "hidden" : chatRosterCollapsed ? "w-12" : "w-52"
               }`}
             >
               <div className="flex items-center justify-between border-b border-[#e2dccf] px-3 py-2">
@@ -5484,7 +5487,7 @@ export function OfficeScreen({
         <button
           type="button"
           onClick={() => setChatOpen((prev) => !prev)}
-          className="flex items-center gap-1.5 rounded-full border border-[#e2dccf] bg-[#fbf8f2]/95 px-3.5 py-1.5 text-[12px] font-medium text-[#2f3133] shadow-lg backdrop-blur transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
+          className="fixed bottom-3 right-5 flex items-center gap-1.5 rounded-full border border-[#e2dccf] bg-[#fbf8f2]/95 px-3.5 py-1.5 text-[12px] font-medium text-[#2f3133] shadow-lg backdrop-blur transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
         >
           {chatOpen ? (
             <>

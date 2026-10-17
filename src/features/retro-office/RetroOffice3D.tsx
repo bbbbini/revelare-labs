@@ -178,6 +178,8 @@ import type {
 } from "@/features/retro-office/core/types";
 import type { NavGrid } from "@/features/retro-office/core/navigation";
 import type { OfficeLayoutSnapshot } from "@/lib/office/layoutSnapshot";
+import { ResearchLabScene } from "./ResearchLabScene";
+import { ResearchBackdrop } from "@/features/retro-office/objects/ResearchBackdrop";
 import { AgentModel as AgentObjectModel } from "@/features/retro-office/objects/agents";
 import { JukeboxModel as InteractiveJukeboxModel } from "@/features/retro-office/objects/Jukebox";
 import {
@@ -3256,6 +3258,7 @@ export function RetroOffice3D({
   const [followAgentId, setFollowAgentId] = useState<string | null>(null);
   // '연구원 보기': keeps a close oblique view on the researcher while on.
   const [researcherViewOn, setResearcherViewOn] = useState(false);
+  const [labSceneOn, setLabSceneOn] = useState(true);
   const followAgentIdRef = useRef<string | null>(null);
   const prevMonitorAgentIdRef = useRef<string | null>(null);
   const prevAtmUidRef = useRef<string | null>(null);
@@ -3475,8 +3478,8 @@ export function RetroOffice3D({
       // the concept's oblique desk view (facing is the model's Y rotation and
       // the model faces +Z).
       const angle = (live.facing ?? 0) + 1.0;
-      const camX = wx + Math.sin(angle) * 1.6;
-      const camZ = wz + Math.cos(angle) * 1.6;
+      const camX = wx + Math.sin(angle) * 3.4;
+      const camZ = wz + Math.cos(angle) * 3.4;
       // With the chat panel open, aim a little to the camera's right so the
       // researcher stays visible in the left part of the screen.
       let targetX = wx;
@@ -3485,13 +3488,13 @@ export function RetroOffice3D({
         const viewX = wx - camX;
         const viewZ = wz - camZ;
         const length = Math.hypot(viewX, viewZ) || 1;
-        targetX += (-viewZ / length) * 0.5;
-        targetZ += (viewX / length) * 0.5;
+        targetX += (-viewZ / length) * 0.85;
+        targetZ += (viewX / length) * 0.85;
       }
       cameraPresetRef.current = {
-        pos: [camX + (targetX - wx), 1.85, camZ + (targetZ - wz)],
-        target: [targetX, 0.55, targetZ],
-        zoom: 400,
+        pos: [camX + (targetX - wx), 2.7, camZ + (targetZ - wz)],
+        target: [targetX, 0.45, targetZ],
+        zoom: 600,
       };
     };
     aim();
@@ -5854,11 +5857,29 @@ export function RetroOffice3D({
     cameraPresetRef.current = overviewPreset;
   }, [officeCenterSignal, overviewPreset]);
 
+  if (labSceneOn && !immersiveOverlayActive && !settingsModalOpen) {
+    return <ResearchLabScene key={storageNamespace} storageNamespace={storageNamespace} readOnly={readOnly} agents={agents} chatOpen={chatPanelOpen} gatewayStatus={gatewayStatus} officeTitle={officeTitle} onSelect={onAgentChatSelect} onLegacy={() => { setResearcherViewOn(false); cameraPresetRef.current = overviewPreset; setLabSceneOn(false); }} onSettings={() => setSettingsModalOpen(true)} onHelp={onOpenOnboarding} />;
+  }
+
   return (
-    <div className="relative w-full h-full bg-[#1a1008] font-mono text-white overflow-hidden">
+    <div className="research-office relative w-full h-full bg-[#d9d4c8] text-[#30372e] overflow-hidden">
+      {!immersiveOverlayActive && <>
+        <header className="research-app-header">
+          <button aria-label="전체 사무실 보기" onClick={() => { setResearcherViewOn(false); cameraPresetRef.current = overviewPreset; }}>☰</button>
+          <span className="research-brand">REVELARE <span>SECURITY LABS</span></span>
+          <span className="research-connection"><i className={gatewayStatus === "connected" ? "is-connected" : ""} />{gatewayStatus === "connected" ? "연결됨" : "연결 대기"}</span>
+          <span className="research-agent-count">{agents.length} 에이전트</span>
+        </header>
+        <nav className="research-app-footer" aria-label="연구실 메뉴">
+          <button className="active" onClick={() => { setSettingsModalOpen(false); setLabSceneOn(true); }}>새 연구실</button>
+          <button onClick={() => setSettingsModalOpen(true)}>설정</button>
+          <button onClick={onOpenOnboarding}>도움말</button>
+          <span>REVELARE 연구실</span>
+        </nav>
+      </>}
       {/* 3D Canvas — fills everything. */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-x-0 top-[60px] bottom-[58px]"
         style={{
           cursor: spaceDown ? (spaceDragging ? "grabbing" : "grab") : undefined,
         }}
@@ -5916,7 +5937,7 @@ export function RetroOffice3D({
               rotateSpeed={0.6}
               zoomSpeed={0.8}
               panSpeed={0.6}
-              minDistance={4}
+              minDistance={researcherViewOn ? 1.4 : 4}
               maxDistance={65}
               maxPolarAngle={Math.PI / 2.2}
               enableRotate={!spaceDown}
@@ -5965,15 +5986,16 @@ export function RetroOffice3D({
             />
 
             {/* Floor + walls — always visible, no async loading. */}
-            <SceneFloorAndWalls showRemoteOffice={remoteOfficeEnabled} />
+            <SceneFloorAndWalls showRemoteOffice={remoteOfficeEnabled} cutaway={researcherViewOn} />
 
             {/* Wall pictures — procedural, no async loading. */}
             <SceneWallPictures showRemoteOffice={remoteOfficeEnabled} />
+            {researcherViewOn && !editMode && <ResearchBackdrop items={furniture} agents={renderAgentsRef} />}
 
             {/* Furniture models — each loads its GLB asynchronously. */}
             <Suspense fallback={null}>
               {!editMode ? (
-                <PrimitiveInstancedWallSegmentsModel items={wallItems} />
+                <PrimitiveInstancedWallSegmentsModel items={wallItems} cutaway={researcherViewOn} />
               ) : null}
               {!editMode ? (
                 <>
@@ -6536,7 +6558,7 @@ export function RetroOffice3D({
 
       {/* New Idea 2: Camera preset buttons — top left. */}
       {!readOnly && !immersiveOverlayActive ? (
-        <div className="absolute top-3 left-3 z-20 flex flex-col items-start gap-2">
+        <div className="absolute top-[72px] left-3 z-20 flex flex-col items-start gap-2">
           <div className="flex items-center gap-1">
             {(
               [
@@ -6631,21 +6653,10 @@ export function RetroOffice3D({
         </div>
       ) : null}
 
-      {/* Title — top center overlay. */}
-      {!immersiveOverlayActive ? (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none z-10">
-          <div className="flex items-center gap-3">
-            <span className="rounded-full border border-[#e2dccf] bg-[#fbf8f2]/95 px-4 py-1.5 text-[13px] font-bold uppercase tracking-[0.16em] text-[#2f3133] shadow-sm backdrop-blur-sm">
-              {officeTitle}
-            </span>
-          </div>
-        </div>
-      ) : null}
-
       {/* Agent roster — compact top summary with overflow panel. */}
       {!readOnly && !immersiveOverlayActive ? (
         <div
-          className="absolute top-10 left-1/2 z-20 -translate-x-1/2"
+          className="absolute top-[72px] left-1/2 z-20 -translate-x-1/2"
           data-conversation-groups={conversationGroups
             .map((group) => group.id)
             .join("|")}
@@ -7698,7 +7709,7 @@ export function RetroOffice3D({
 
       {/* Toolbar — top right. */}
       {!readOnly && !immersiveOverlayActive ? (
-        <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
+        <div className="absolute top-[72px] right-3 flex items-center gap-2 z-20">
           {remoteOfficeEnabled &&
           (remoteOfficeSourceKind === "presence_endpoint"
             ? remoteOfficePresenceUrl.trim().length > 0

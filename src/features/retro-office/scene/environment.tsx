@@ -183,17 +183,20 @@ function PerimeterWall({
   center,
   length,
   axis,
+  cutaway = false,
 }: {
   center: [number, number];
   length: number;
   axis: "x" | "z";
+  /** Low cut walls for the close researcher view (not saved). */
+  cutaway?: boolean;
 }) {
   const plaster = useMemo(
     () => withRepeat(getPlasterTextures(), Math.max(2, Math.round(length / 2)), 1),
     [length],
   );
   const thickness = 0.12;
-  const wallHeight = 1.65;
+  const wallHeight = cutaway ? 0.25 : 1.65;
   const capHeight = 0.05;
   // Maps (along-wall, height, across-wall) sizes onto world axes.
   const dims = (
@@ -262,8 +265,10 @@ function PlanterFoliage({
 
 export const FloorAndWalls = memo(function FloorAndWalls({
   showRemoteOffice = true,
+  cutaway = false,
 }: {
   showRemoteOffice?: boolean;
+  cutaway?: boolean;
 }) {
   const districtWidth = CANVAS_W * SCALE;
   const districtHeight = CANVAS_H * SCALE;
@@ -684,48 +689,56 @@ export const FloorAndWalls = memo(function FloorAndWalls({
       ) : null}
 
       <PerimeterWall
+        cutaway={cutaway}
         center={[localOfficeCenterX, localNorthWallZ]}
         length={localOfficeWidth}
         axis="x"
       />
       {showRemoteOffice ? (
         <PerimeterWall
+        cutaway={cutaway}
           center={[localOfficeCenterX, localNorthWallZ + remoteOfficeOffsetZ]}
           length={localOfficeWidth}
           axis="x"
         />
       ) : null}
       <PerimeterWall
+        cutaway={cutaway}
         center={[localOfficeCenterX, localSouthWallZ]}
         length={localOfficeWidth}
         axis="x"
       />
       {showRemoteOffice ? (
         <PerimeterWall
+        cutaway={cutaway}
           center={[localOfficeCenterX, localSouthWallZ + remoteOfficeOffsetZ]}
           length={localOfficeWidth}
           axis="x"
         />
       ) : null}
       <PerimeterWall
+        cutaway={cutaway}
         center={[localWestWallX, localOfficeCenterZ]}
         length={localOfficeHeight}
         axis="z"
       />
       {showRemoteOffice ? (
         <PerimeterWall
+        cutaway={cutaway}
           center={[localWestWallX, localOfficeCenterZ + remoteOfficeOffsetZ]}
           length={localOfficeHeight}
           axis="z"
         />
       ) : null}
       <PerimeterWall
+        cutaway={cutaway}
         center={[localEastWallX, localOfficeCenterZ]}
         length={localOfficeHeight}
         axis="z"
       />
       {showRemoteOffice ? (
         <PerimeterWall
+        cutaway={cutaway}
           center={[localEastWallX, localOfficeCenterZ + remoteOfficeOffsetZ]}
           length={localOfficeHeight}
           axis="z"

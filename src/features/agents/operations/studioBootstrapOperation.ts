@@ -15,6 +15,7 @@ import type {
 
 type GatewayClientLike = {
   call: (method: string, params: unknown) => Promise<unknown>;
+  capabilities?: ReadonlySet<string>;
 };
 
 export type StudioBootstrapLoadCommand =

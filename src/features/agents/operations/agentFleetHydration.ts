@@ -17,6 +17,7 @@ import { deriveHydrateAgentFleetResult } from "@/features/agents/operations/agen
 
 type GatewayClientLike = {
   call: (method: string, params: unknown) => Promise<unknown>;
+  capabilities?: ReadonlySet<string>;
   getLastHello?: () => { snapshot?: unknown } | null;
 };
 
@@ -134,7 +135,7 @@ export async function hydrateAgentFleetFromGateway(params: {
   const logError = params.logError ?? ((message, error) => console.error(message, error));
 
   let configSnapshot = params.cachedConfigSnapshot;
-  if (!configSnapshot) {
+  if (!configSnapshot && params.client.capabilities?.has("config") !== false) {
     try {
       configSnapshot = (await params.client.call(
         "config.get",

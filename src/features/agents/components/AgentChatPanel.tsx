@@ -1642,7 +1642,7 @@ export const AgentChatPanel = ({
 
   return (
     <div data-agent-panel className="group fade-up relative flex h-full w-full flex-col">
-      <div className="px-3 pt-2 sm:px-4 sm:pt-3">
+      <div className="ui-chat-panel-header px-3 pt-2 sm:px-4 sm:pt-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 items-start gap-3">
             <div className="group/avatar relative">

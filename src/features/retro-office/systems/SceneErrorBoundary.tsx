@@ -65,12 +65,12 @@ export class SceneErrorBoundary extends Component<
         <div className="flex h-full w-full items-center justify-center bg-[#14100b]">
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-amber-900/30 bg-black/40 px-8 py-6 text-center">
             <div className="font-mono text-xs uppercase tracking-[0.2em] text-amber-500/80">
-              3D renderer interrupted
+              3D 화면을 준비하지 못했습니다
             </div>
             <div className="max-w-xs text-sm text-amber-100/80">
               {retrying
-                ? "The graphics context was lost — restarting the renderer…"
-                : "The renderer could not restart on its own."}
+                ? "3D 화면을 다시 준비하고 있습니다…"
+                : "화면을 다시 열어 주세요. 대화와 저장된 배치는 유지됩니다."}
             </div>
             {retrying ? (
               <div className="h-1 w-32 overflow-hidden rounded-full bg-amber-900/40">
@@ -82,7 +82,7 @@ export class SceneErrorBoundary extends Component<
                 onClick={this.handleManualRetry}
                 className="rounded-lg border border-amber-500/40 bg-amber-100/10 px-4 py-1.5 text-sm text-amber-100 transition-colors hover:bg-amber-100/20"
               >
-                Try again
+                다시 열기
               </button>
             )}
           </div>

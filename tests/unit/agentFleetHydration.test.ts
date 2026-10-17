@@ -5,6 +5,26 @@ import { createDefaultAgentAvatarProfile } from "@/lib/avatars/profile";
 import { defaultStudioSettings, type StudioSettings } from "@/lib/studio/settings";
 
 describe("hydrateAgentFleetFromGateway", () => {
+  it("hydrates a runtime without requesting unsupported gateway configuration", async () => {
+    const call = vi.fn(async (method: string) => {
+      if (method === "config.get") throw new Error("unsupported config.get");
+      if (method === "agents.list") return { defaultId: "main", mainKey: "main", agents: [] };
+      return { sessions: [] };
+    });
+    const logError = vi.fn();
+    const result = await hydrateAgentFleetFromGateway({
+      client: { call, capabilities: new Set(["chat", "agents"]) },
+      gatewayUrl: "http://127.0.0.1:7770",
+      cachedConfigSnapshot: null,
+      loadStudioSettings: async () => null,
+      isDisconnectLikeError: () => false,
+      logError,
+    });
+    expect(result.configSnapshot).toBeNull();
+    expect(call.mock.calls.some(([method]) => method === "config.get")).toBe(false);
+    expect(logError).not.toHaveBeenCalled();
+  });
+
   it("maps_gateway_results_into_seeds_and_selects_latest_assistant_agent", async () => {
     const gatewayUrl = "ws://localhost:18789";
 

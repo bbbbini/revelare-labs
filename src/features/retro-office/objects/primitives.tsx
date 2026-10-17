@@ -28,8 +28,11 @@ type DoorModelProps = InteractiveFurnitureModelProps & {
 
 export function InstancedWallSegmentsModel({
   items,
+  cutaway = false,
 }: {
   items: FurnitureItem[];
+  /** Low cut walls for the close researcher view (not saved). */
+  cutaway?: boolean;
 }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const plaster = useMemo(() => withRepeat(getPlasterTextures(), 2, 1), []);
@@ -42,16 +45,17 @@ export function InstancedWallSegmentsModel({
       const width = (item.w ?? 80) * SCALE;
       const depth = (item.h ?? WALL_THICKNESS) * SCALE;
       const rotY = getItemRotationRadians(item);
-      tempPosition.set(wx + width / 2, (item.elevation ?? 0) + 0.5, wz + depth / 2);
+      const height = cutaway ? 0.22 : 1;
+      tempPosition.set(wx + width / 2, (item.elevation ?? 0) + height / 2, wz + depth / 2);
       tempQuaternion.setFromEuler(new THREE.Euler(0, rotY, 0));
-      tempScale.set(width, 1, depth);
+      tempScale.set(width, height, depth);
       return new THREE.Matrix4().compose(
         tempPosition.clone(),
         tempQuaternion.clone(),
         tempScale.clone(),
       );
     });
-  }, [items]);
+  }, [cutaway, items]);
 
   useLayoutEffect(() => {
     if (!meshRef.current) return;
