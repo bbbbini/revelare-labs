@@ -89,17 +89,21 @@ function Book({ at, width = 0.055, height = 0.29, color = "#d8d4c8" }: { at: Vec
   </group>;
 }
 
+/** A curved broad leaf, with enough cross-sections for a soft central fold. */
 function createLeafGeometry() {
   const vertices: number[] = [], indices: number[] = [];
-  const segments = 12;
+  const segments = 12, columns = 6;
   for (let i = 0; i <= segments; i++) {
     const t = i / segments;
-    const width = 0.085 * Math.pow(Math.sin(Math.PI * t), 0.8);
-    const arch = Math.sin(Math.PI * t) * 0.055 - t * t * 0.08;
-    for (const side of [-1, 0, 1]) vertices.push(side * width, t * 0.38, arch + (side === 0 ? 0.022 * Math.sin(Math.PI * t) : 0));
-    if (i < segments) for (let j = 0; j < 2; j++) {
-      const a = i * 3 + j;
-      indices.push(a, a + 3, a + 1, a + 1, a + 3, a + 4);
+    const width = 0.125 * Math.pow(Math.sin(Math.PI * t), 0.75) * (1.12 - t * 0.3);
+    for (let j = 0; j <= columns; j++) {
+      const side = j / columns * 2 - 1;
+      vertices.push(side * width, t * 0.32,
+        Math.sin(Math.PI * t) * (0.038 - side * side * 0.03) - t * t * 0.055);
+      if (i < segments && j < columns) {
+        const a = i * (columns + 1) + j;
+        indices.push(a, a + columns + 1, a + 1, a + 1, a + columns + 1, a + columns + 2);
+      }
     }
   }
   const geometry = new THREE.BufferGeometry();
@@ -108,58 +112,82 @@ function createLeafGeometry() {
   return geometry;
 }
 
-export function LabPlant({ at = [0, 0, 0], scale = 1, squarePot = false }: { at?: Vec3; scale?: number; squarePot?: boolean }) {
+/** Branch and leaf instances share their attachment points; no floating foliage. */
+export function LabPlant({ at = [0, 0, 0], scale = 1, squarePot = false, trailing = false }: { at?: Vec3; scale?: number; squarePot?: boolean; trailing?: boolean }) {
   const leaf = useMemo(() => createLeafGeometry(), []);
   const leaves = useRef<THREE.InstancedMesh>(null);
   const stems = useRef<THREE.InstancedMesh>(null);
+  const potProfile = useMemo(() => [
+    [0.125, 0], [0.137, 0.012], [0.174, 0.31], [0.179, 0.33],
+    [0.177, 0.342], [0.166, 0.345], [0.162, 0.332], [0.158, 0.305],
+  ].map(([radius, height]) => new THREE.Vector2(radius, height)), []);
   useEffect(() => () => leaf.dispose(), [leaf]);
   useLayoutEffect(() => {
     if (!leaves.current || !stems.current) return;
     const local = new THREE.Object3D();
-    const around = new THREE.Matrix4();
-    const matrix = new THREE.Matrix4();
-    const colors = ["#6f8847", "#9b9f5b", "#4e733c", "#87974d"].map(color => new THREE.Color(color));
-    for (let i = 0; i < 24; i++) {
-      const height = 0.43 + (i % 7) * 0.055;
-      around.makeRotationY(i * 2.399);
-      local.position.set(0.04, (height + 0.32) / 2, 0);
-      local.rotation.set(0, 0, -0.2);
-      local.scale.set(1, height - 0.3, 1);
+    const up = new THREE.Vector3(0, 1, 0);
+    const colors = ["#54763d", "#728b48", "#3e6537", "#899552"].map(color => new THREE.Color(color));
+    let stemIndex = 0;
+    const stem = (start: THREE.Vector3, end: THREE.Vector3, radius: number) => {
+      const direction = end.clone().sub(start);
+      local.position.copy(start).add(end).multiplyScalar(0.5);
+      local.quaternion.setFromUnitVectors(up, direction.clone().normalize());
+      local.scale.set(radius, direction.length(), radius);
       local.updateMatrix();
-      stems.current.setMatrixAt(i, matrix.multiplyMatrices(around, local.matrix));
-      local.position.set(0.08, height, 0);
-      local.rotation.set(0.2, i % 2 * 0.3, -0.55 - (i % 4) * 0.18);
-      local.scale.setScalar(0.65 + (i % 4) * 0.12);
-      local.updateMatrix();
-      leaves.current.setMatrixAt(i, matrix.multiplyMatrices(around, local.matrix));
-      leaves.current.setColorAt(i, colors[i % colors.length]);
+      stems.current!.setMatrixAt(stemIndex++, local.matrix);
+    };
+    // Trailing stems clear the furniture edge before falling; their leaves face outward.
+    for (let branch = 0; branch < 4; branch++) {
+      const angle = branch * 2.399;
+      let previous = new THREE.Vector3(Math.cos(angle) * 0.035, 0.32, Math.sin(angle) * 0.035);
+      for (let node = 0; node < 6; node++) {
+        const t = (node + 1) / 6;
+        const joint = trailing
+          ? new THREE.Vector3((branch - 1.5) * 0.095 + Math.sin(t * 5 + branch) * 0.04,
+              0.36 + Math.sin(t * Math.PI) * 0.12 - t * t * (0.72 + branch * 0.12), 0.07 + Math.sin(t * Math.PI / 2) * 0.5)
+          : new THREE.Vector3(Math.cos(angle) * (0.035 + t * 0.24),
+              0.35 + t * (0.38 + branch * 0.025), Math.sin(angle) * (0.035 + t * 0.24));
+        stem(previous, joint, 0.006 - t * 0.0025);
+        const outward = angle + (node % 2 ? 0.8 : -0.8);
+        const attachment = joint.clone().add(new THREE.Vector3(Math.cos(outward) * 0.055, 0.012, Math.sin(outward) * 0.055));
+        stem(joint, attachment, 0.0025);
+        local.position.copy(attachment);
+        local.rotation.set(trailing ? 1.5 + node * 0.12 : 0.85 + t * 0.35, trailing ? (branch - 1.5) * 0.5 : Math.PI / 2 - outward, 0, "YXZ");
+        const length = (trailing ? 0.78 : 1.02) * (1 - t * 0.18) + (branch % 2) * 0.07;
+        local.scale.set(length, length, length);
+        local.updateMatrix();
+        const index = branch * 6 + node;
+        leaves.current.setMatrixAt(index, local.matrix);
+        leaves.current.setColorAt(index, colors[(branch + node) % colors.length]);
+        previous = joint;
+      }
     }
     for (const mesh of [leaves.current, stems.current]) {
       mesh.instanceMatrix.needsUpdate = true;
       mesh.computeBoundingSphere();
     }
     if (leaves.current.instanceColor) leaves.current.instanceColor.needsUpdate = true;
-  }, []);
+  }, [trailing]);
   return <group position={at} scale={scale}>
     {squarePot ? <>
       <LabBox size={[0.32, 0.34, 0.32]} at={[0, 0.17, 0]} color="#dedbd0" radius={0.024} />
       <LabBox size={[0.28, 0.008, 0.28]} at={[0, 0.344, 0]} color="#4e4738" radius={0.008} />
     </> : <>
-      <mesh position={[0, 0.17, 0]} castShadow receiveShadow><cylinderGeometry args={[0.18, 0.135, 0.34, 24]} /><meshStandardMaterial color="#d9d6c9" roughness={0.95} /></mesh>
-      <mesh position={[0, 0.343, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[0.163, 24]} /><meshStandardMaterial color="#4e4738" /></mesh>
+      <mesh castShadow receiveShadow><latheGeometry args={[potProfile, 32]} /><meshStandardMaterial color="#dedbd0" roughness={0.82} side={THREE.DoubleSide} /></mesh>
+      <mesh position={[0, 0.319, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[0.158, 24]} /><meshStandardMaterial color="#494336" /></mesh>
     </>}
-    <instancedMesh ref={stems} args={[undefined, undefined, 24]} castShadow><cylinderGeometry args={[0.004, 0.007, 1, 6]} /><meshStandardMaterial color="#687e44" /></instancedMesh>
-    <instancedMesh ref={leaves} args={[leaf, undefined, 24]} castShadow receiveShadow><meshStandardMaterial side={THREE.DoubleSide} roughness={0.7} /></instancedMesh>
+    <instancedMesh ref={stems} args={[undefined, undefined, 48]} castShadow><cylinderGeometry args={[0.65, 1, 1, 6]} /><meshStandardMaterial color="#63764a" roughness={0.85} /></instancedMesh>
+    <instancedMesh ref={leaves} args={[leaf, undefined, 24]} castShadow receiveShadow><meshStandardMaterial side={THREE.DoubleSide} roughness={0.62} /></instancedMesh>
   </group>;
 }
 
 function Cabinet({ booksOnly = false }: { booksOnly?: boolean }) {
   return <group>
-    <LabBox size={[2.55, 0.77, 0.48]} at={[0, 0.425, 0]} metal />
-    <LabBox size={[2.61, 0.045, 0.53]} at={[0, 0.83, 0]} wood />
-    {[-0.95, -0.317, 0.317, 0.95].map(x => <LabBox key={x} size={[0.625, 0.74, 0.025]} at={[x, 0.44, 0.253]} color="#454542" metal />)}
+    <LabBox size={[2.55, 0.77, 0.48]} at={[0, 0.425, 0]} color="#333632" radius={0.012} />
+    <LabBox size={[2.61, 0.045, 0.53]} at={[0, 0.83, 0]} wood radius={0.012} />
+    {[-0.95, -0.317, 0.317, 0.95].map(x => <LabBox key={x} size={[0.625, 0.735, 0.025]} at={[x, 0.44, 0.253]} color="#454542" radius={0.006} />)}
     <LabBox size={[2.35, 0.07, 0.38]} at={[0, 0.035, 0]} color="#313330" />
-    <LabPlant at={[-1, 0.855, 0]} scale={0.42} />
+    <LabPlant at={[-1, 0.855, booksOnly ? 0 : 0.16]} scale={booksOnly ? 0.42 : 0.55} trailing={!booksOnly} />
     {booksOnly ? <>
       {[0, 1, 2].map(i => <group key={i} position={[-0.67 + i * 0.02, 0.88 + i * 0.055, 0.04]} rotation={[0, i * 0.09, 0]}>
         <LabBox size={[0.41, 0.05, 0.28]} color={["#4f5548", "#ad9a77", "#42483f"][i]} />
@@ -183,8 +211,12 @@ function Shelf() {
     {[-0.48, 0.48].map(x => [-0.2, 0.2].map(z => <LabBox key={`${x}:${z}`} size={[0.045, 2.32, 0.045]} at={[x, 1.16, z]} metal />))}
     {[0.14, 0.84, 1.56, 2.3].map((y, level) => <group key={y}>
       <LabBox size={[1.01, 0.035, 0.47]} at={[0, y, 0]} wood />
-      {level === 3 ? null : level % 2 === 0 ? <>
-        <LabBox size={[0.43, 0.4, 0.34]} at={[0.17, y + 0.22, 0]} color={level === 0 ? "#b2afa5" : "#474a43"} />
+      {level === 3 ? null : level === 2 ? <>
+        <LabBox size={[0.4, 0.38, 0.34]} at={[-0.23, y + 0.21, 0]} color="#474a43" />
+        <LabBox size={[0.12, 0.03, 0.006]} at={[-0.23, y + 0.22, 0.173]} color="#d2cdbf" />
+        <LabPlant at={[0.2, y + 0.018, 0.1]} scale={0.45} trailing />
+      </> : level === 0 ? <>
+        <LabBox size={[0.43, 0.4, 0.34]} at={[0.17, y + 0.22, 0]} color="#b2afa5" />
         <LabBox size={[0.13, 0.036, 0.006]} at={[0.17, y + 0.22, 0.173]} color="#d2cdbf" />
         {[0, 1, 2].map(i => <Book key={i} at={[-0.34 + i * 0.065, y + 0.02, 0.02]} height={0.36 + i * 0.025} color={["#777f70", "#b4ad98", "#d6d4c9"][i]} />)}
       </> : <>
