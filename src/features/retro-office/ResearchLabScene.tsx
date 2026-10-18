@@ -150,7 +150,7 @@ export function ResearchLabScene({ agents, chatOpen, gatewayStatus, officeTitle,
         <directionalLight position={[5, 3, -1]} intensity={0.35} color="#f0f2eb" />
         <rectAreaLight position={[0, 3.3, 2]} rotation={[-0.85, 0.35, 0]} width={4} height={2.5} intensity={2.8} color="#fff0db" />
         <pointLight position={[-3.1, 2, 0.4]} intensity={0.18} distance={2.6} decay={2} color="#fff4e5" />
-        <WallWash position={[-1.7, 3.15, -1.15]} target={[-1.7, 1.7, -2.25]} width={3.4} height={1.1} intensity={WALL_WASH * 0.8} />
+        <WallWash position={[-1.7, 3.15, -1.15]} target={[-1.7, 1.7, -2.25]} width={3.4} height={1.1} intensity={WALL_WASH * 0.55} />
         <WallWash position={[-2.35, 3.15, 0.2]} target={[-3.49, 1.7, 0.2]} width={4.2} height={1.1} intensity={WALL_WASH} />
         <Suspense fallback={<Html center><p className="research-loading" role="status">연구실을 불러오는 중…</p></Html>}>
           <ResearchMaterials>

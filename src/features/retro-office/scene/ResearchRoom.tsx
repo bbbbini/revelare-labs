@@ -56,7 +56,7 @@ export function ResearchMaterials({ children }: { children: ReactNode }) {
 const softenOakGrain: THREE.MeshStandardMaterial["onBeforeCompile"] = shader => {
   shader.fragmentShader = shader.fragmentShader.replace(
     "#include <map_fragment>",
-    "#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(0.42, 0.28, 0.15), diffuseColor.rgb, 0.6);",
+    "#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(0.4, 0.3, 0.21), diffuseColor.rgb, 0.5);",
   );
 };
 
@@ -414,7 +414,7 @@ export function ResearchArchitecture() {
     <LabBox size={[0.1, 3.6, 4.65]} at={[-3.54, 1.8, -0.525]} color="#efe2cc" />
     <LabBox size={[0.1, 3.6, 4.95]} at={[-3.54, 1.8, 5.675]} color="#efe2cc" />
     <LabBox size={[0.1, 0.4, 1.4]} at={[-3.54, 3.4, 2.5]} color="#efe2cc" />
-    <LabBox size={[3.63, 3.6, 0.1]} at={[-1.735, 1.8, -2.3]} color="#f2e5cf" />
+    <LabBox size={[3.63, 3.6, 0.1]} at={[-1.735, 1.8, -2.3]} color="#efe5d5" />
     <LabBox size={[0.025, 0.09, 4.65]} at={[-3.48, 0.045, -0.525]} color="#737568" />
     <LabBox size={[0.025, 0.09, 4.95]} at={[-3.48, 0.045, 5.675]} color="#737568" />
     <LabBox size={[3.58, 0.09, 0.025]} at={[-1.72, 0.045, -2.24]} color="#737568" />
