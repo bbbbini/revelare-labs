@@ -6,48 +6,8 @@ import * as THREE from "three";
 import type { ResearchFurnitureType } from "../core/researchLayout";
 
 type Vec3 = [number, number, number];
-type OakSurface = { color: THREE.Texture; relief: THREE.Texture };
+type OakSurface = { color: THREE.Texture; normal: THREE.Texture; roughness: THREE.Texture };
 const Oak = createContext<OakSurface | null>(null);
-
-/** Low-contrast grain and pores, shared by every oak surface in this room. */
-function oakSurface(): OakSurface {
-  const width = 512;
-  const color = document.createElement("canvas");
-  const relief = document.createElement("canvas");
-  color.width = color.height = relief.width = relief.height = width;
-  const colorContext = color.getContext("2d")!;
-  const reliefContext = relief.getContext("2d")!;
-  const pixels = colorContext.createImageData(width, width);
-  const heights = reliefContext.createImageData(width, width);
-  let seed = 137;
-  const base = [175, 151, 119];
-  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-  for (let y = 0; y < width; y++) for (let x = 0; x < width; x++) {
-    const u = x / width * Math.PI * 2;
-    const v = y / width * Math.PI * 2;
-    // Periodic along both axes so a large tabletop has no texture-edge seam.
-    const bend = 0.48 * Math.sin(u) + 0.17 * Math.sin(u * 2 + Math.sin(v));
-    const broad = Math.sin(v * 3 + bend) * 3.8 + Math.sin(v * 7 - bend) * 1.8;
-    const fiber = Math.pow(0.5 + 0.5 * Math.sin(v * 37 + bend * 4), 12);
-    const pore = random() > 0.993 ? 4 : 0;
-    const variation = broad - fiber * 5 - pore + (random() - 0.5) * 1.5;
-    const offset = (y * width + x) * 4;
-    for (let channel = 0; channel < 3; channel++) {
-      pixels.data[offset + channel] = base[channel] + variation;
-      heights.data[offset + channel] = 155 - fiber * 35 - pore * 12;
-    }
-    pixels.data[offset + 3] = heights.data[offset + 3] = 255;
-  }
-  colorContext.putImageData(pixels, 0, 0);
-  reliefContext.putImageData(heights, 0, 0);
-  const colorMap = new THREE.CanvasTexture(color);
-  const reliefMap = new THREE.CanvasTexture(relief);
-  colorMap.colorSpace = THREE.SRGBColorSpace;
-  for (const map of [colorMap, reliefMap]) {
-    map.wrapS = map.wrapT = THREE.RepeatWrapping;
-  }
-  return { color: colorMap, relief: reliefMap };
-}
 
 /** Deterministic, authored surface maps. No reference bitmap is shipped with the app. */
 function fabricSurface(color = "#92998a") {
@@ -69,15 +29,41 @@ function fabricSurface(color = "#92998a") {
 }
 
 export function ResearchMaterials({ children }: { children: ReactNode }) {
-  const oak = useMemo(() => oakSurface(), []);
-  useEffect(() => () => { oak.color.dispose(); oak.relief.dispose(); }, [oak]);
+  const sources = useTexture([
+    "/office-assets/textures/research/oak-color.jpg",
+    "/office-assets/textures/research/oak-normal.jpg",
+    "/office-assets/textures/research/oak-roughness.jpg",
+  ]);
+  const oak = useMemo(() => {
+    const maps = sources.map((source, index) => {
+      const map = source.clone();
+      map.wrapS = map.wrapT = THREE.RepeatWrapping;
+      // RoundedBox uses object-space UVs. The scan covers 1.8 m, with grain along V.
+      map.repeat.set(1 / 1.8, 1 / 1.8);
+      map.rotation = Math.PI / 2;
+      map.colorSpace = index === 0 ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+      map.anisotropy = 4;
+      map.needsUpdate = true;
+      return map;
+    });
+    return { color: maps[0], normal: maps[1], roughness: maps[2] };
+  }, [sources]);
+  useEffect(() => () => { oak.color.dispose(); oak.normal.dispose(); oak.roughness.dispose(); }, [oak]);
   return <Oak.Provider value={oak}>{children}</Oak.Provider>;
 }
+
+// The scan is raw veneer; a sealed desktop reads with gentler grain contrast.
+const softenOakGrain: THREE.MeshStandardMaterial["onBeforeCompile"] = shader => {
+  shader.fragmentShader = shader.fragmentShader.replace(
+    "#include <map_fragment>",
+    "#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(0.42, 0.28, 0.15), diffuseColor.rgb, 0.6);",
+  );
+};
 
 export function LabBox({ size, at = [0, 0, 0], color = "#3f403d", wood = false, metal = false, radius = 0.008, rotation }: { size: Vec3; at?: Vec3; color?: string; wood?: boolean; metal?: boolean; radius?: number; rotation?: Vec3 }) {
   const oak = useContext(Oak);
   return <RoundedBox args={size} position={at} rotation={rotation} radius={Math.min(radius, Math.min(...size) / 3)} smoothness={2} castShadow receiveShadow>
-    <meshStandardMaterial color={wood ? "#ffffff" : color} map={wood ? oak?.color : null} bumpMap={wood ? oak?.relief : null} bumpScale={0.003} metalness={metal ? 0.25 : 0} roughness={wood ? 0.72 : metal ? 0.55 : 0.86} />
+    <meshStandardMaterial color={wood ? "#ebe3d9" : color} map={wood ? oak?.color : null} normalMap={wood ? oak?.normal : null} normalScale={[0.06, 0.06]} roughnessMap={wood ? oak?.roughness : null} onBeforeCompile={wood ? softenOakGrain : undefined} metalness={metal ? 0.25 : 0} roughness={wood ? 0.85 : metal ? 0.55 : 0.86} />
   </RoundedBox>;
 }
 
@@ -421,14 +407,14 @@ export function ResearchArchitecture() {
   return <group>
     <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow><planeGeometry args={[16, 16]} /><meshStandardMaterial map={floor[0]} normalMap={floor[1]} normalScale={[0.12, 0.12]} roughnessMap={floor[2]} roughness={0.82}
       onBeforeCompile={shader => {
-        // Keep the scanned tile variation subtle in the clean indoor palette.
-        shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", "#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(0.36), diffuseColor.rgb, 0.5);");
+        // Keep the scanned tile variation subtle, on the warm grey of the approved floor.
+        shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", "#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(0.42, 0.37, 0.33), diffuseColor.rgb, 0.5);");
       }} /></mesh>
     {/* Two internal glazed doors frame the room, as in the approved view. */}
-    <LabBox size={[0.1, 3.6, 4.65]} at={[-3.54, 1.8, -0.525]} color="#e7e1d6" />
-    <LabBox size={[0.1, 3.6, 4.95]} at={[-3.54, 1.8, 5.675]} color="#e7e1d6" />
-    <LabBox size={[0.1, 0.4, 1.4]} at={[-3.54, 3.4, 2.5]} color="#e7e1d6" />
-    <LabBox size={[3.63, 3.6, 0.1]} at={[-1.735, 1.8, -2.3]} color="#ece6db" />
+    <LabBox size={[0.1, 3.6, 4.65]} at={[-3.54, 1.8, -0.525]} color="#efe2cc" />
+    <LabBox size={[0.1, 3.6, 4.95]} at={[-3.54, 1.8, 5.675]} color="#efe2cc" />
+    <LabBox size={[0.1, 0.4, 1.4]} at={[-3.54, 3.4, 2.5]} color="#efe2cc" />
+    <LabBox size={[3.63, 3.6, 0.1]} at={[-1.735, 1.8, -2.3]} color="#f2e5cf" />
     <LabBox size={[0.025, 0.09, 4.65]} at={[-3.48, 0.045, -0.525]} color="#737568" />
     <LabBox size={[0.025, 0.09, 4.95]} at={[-3.48, 0.045, 5.675]} color="#737568" />
     <LabBox size={[3.58, 0.09, 0.025]} at={[-1.72, 0.045, -2.24]} color="#737568" />

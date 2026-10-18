@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Billboard, ContactShadows, Html, OrbitControls } from "@react-three/drei";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
@@ -89,6 +89,17 @@ function PlacedFurniture({ item, agent, editing, selected, onSelect, onMove, onA
   </group>;
 }
 
+const WALL_WASH = 3;
+
+/** Soft warm light grazing an ivory wall from the ceiling line, as in the approved view. */
+function WallWash({ position, target, width, height, intensity }: { position: [number, number, number]; target: [number, number, number]; width: number; height: number; intensity: number }) {
+  const light = useRef<THREE.RectAreaLight>(null);
+  const [px, py, pz] = position;
+  const [x, y, z] = target;
+  useLayoutEffect(() => { light.current?.lookAt(x, y, z); }, [px, py, pz, x, y, z]);
+  return <rectAreaLight ref={light} position={position} width={width} height={height} intensity={intensity} color="#fff0dc" />;
+}
+
 function CameraControls({ editing, revision }: { editing: boolean; revision: number }) {
   const controls = useRef<OrbitControlsImpl>(null);
   useEffect(() => {
@@ -139,6 +150,8 @@ export function ResearchLabScene({ agents, chatOpen, gatewayStatus, officeTitle,
         <directionalLight position={[5, 3, -1]} intensity={0.35} color="#f0f2eb" />
         <rectAreaLight position={[0, 3.3, 2]} rotation={[-0.85, 0.35, 0]} width={4} height={2.5} intensity={2.8} color="#fff0db" />
         <pointLight position={[-3.1, 2, 0.4]} intensity={0.18} distance={2.6} decay={2} color="#fff4e5" />
+        <WallWash position={[-1.7, 3.15, -1.15]} target={[-1.7, 1.7, -2.25]} width={3.4} height={1.1} intensity={WALL_WASH * 0.8} />
+        <WallWash position={[-2.35, 3.15, 0.2]} target={[-3.49, 1.7, 0.2]} width={4.2} height={1.1} intensity={WALL_WASH} />
         <Suspense fallback={<Html center><p className="research-loading" role="status">연구실을 불러오는 중…</p></Html>}>
           <ResearchMaterials>
             <ResearchArchitecture />
