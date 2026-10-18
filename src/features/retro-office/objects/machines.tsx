@@ -1,4 +1,4 @@
-import { Text } from "@react-three/drei";
+import { LocalText } from "@/features/retro-office/systems/LocalText";
 import { useMemo } from "react";
 import * as THREE from "three";
 import { SCALE } from "@/features/retro-office/core/constants";
@@ -84,7 +84,7 @@ export function AtmMachineModel({
             emissiveIntensity={1.8}
           />
         </mesh>
-        <Text
+        <LocalText
           position={[0, 0.95, depthWorld * 0.3]}
           fontSize={0.06}
           color="#ffffff"
@@ -92,7 +92,7 @@ export function AtmMachineModel({
           anchorY="middle"
         >
           ATM
-        </Text>
+        </LocalText>
 
         <group position={[0, 0.6, depthWorld * 0.35]}>
           <mesh castShadow receiveShadow>
@@ -128,7 +128,7 @@ export function AtmMachineModel({
               metalness={0}
             />
           </mesh>
-          <Text
+          <LocalText
             position={[0, 0.1, depthWorld * 0.25 + 0.05]}
             rotation={[-0.2, 0, 0]}
             fontSize={0.045}
@@ -137,8 +137,8 @@ export function AtmMachineModel({
             anchorY="middle"
           >
             WELCOME
-          </Text>
-          <Text
+          </LocalText>
+          <LocalText
             position={[0, 0.06, depthWorld * 0.25 + 0.05]}
             rotation={[-0.2, 0, 0]}
             fontSize={0.02}
@@ -147,7 +147,7 @@ export function AtmMachineModel({
             anchorY="middle"
           >
             INSERT CARD
-          </Text>
+          </LocalText>
           <mesh
             position={[-widthWorld * 0.42, 0.1, depthWorld * 0.25 + 0.05]}
             rotation={[0, 0.2, 0]}
@@ -322,7 +322,7 @@ export function PhoneBoothModel({
             metalness={0.4}
           />
         </mesh>
-        <Text
+        <LocalText
           position={[0, 2.25, depthWorld * 0.451]}
           fontSize={0.06}
           color="#38bdf8"
@@ -330,7 +330,7 @@ export function PhoneBoothModel({
           anchorY="middle"
         >
           PHONE
-        </Text>
+        </LocalText>
 
         {/* Back Wall */}
         <mesh position={[0, 1.1, -depthWorld / 2 + 0.025]} castShadow receiveShadow>
@@ -545,7 +545,7 @@ export function SmsBoothModel({
             metalness={0.4}
           />
         </mesh>
-        <Text
+        <LocalText
           position={[0, 1.69, depthWorld * 0.445]}
           fontSize={0.055}
           color="#22d3ee"
@@ -553,7 +553,7 @@ export function SmsBoothModel({
           anchorY="middle"
         >
           SMS
-        </Text>
+        </LocalText>
         <mesh position={[0, 0.8, -depthWorld / 2 + 0.025]} castShadow receiveShadow>
           <boxGeometry args={[widthWorld, 1.5, 0.05]} />
           <meshStandardMaterial
@@ -886,7 +886,7 @@ export function ServerTerminalModel({
             metalness={0}
           />
         </mesh>
-        <Text
+        <LocalText
           position={[0, 0.47, depthWorld * 0.45]}
           rotation={[-0.18, 0, 0]}
           fontSize={0.05}
@@ -895,8 +895,8 @@ export function ServerTerminalModel({
           anchorY="middle"
         >
           GITHUB
-        </Text>
-        <Text
+        </LocalText>
+        <LocalText
           position={[0, 0.4, depthWorld * 0.45]}
           rotation={[-0.18, 0, 0]}
           fontSize={0.018}
@@ -905,7 +905,7 @@ export function ServerTerminalModel({
           anchorY="middle"
         >
           REVIEW STATION
-        </Text>
+        </LocalText>
         <mesh position={[0, 0.11, depthWorld * 0.42]} castShadow>
           <boxGeometry args={[widthWorld * 0.66, 0.06, 0.12]} />
           <meshStandardMaterial
@@ -1014,7 +1014,7 @@ export function QaTerminalModel({
             </mesh>
           </group>
         ))}
-        <Text
+        <LocalText
           position={[0, 0.73, 0]}
           fontSize={0.034}
           color="#faf5ff"
@@ -1022,8 +1022,8 @@ export function QaTerminalModel({
           anchorY="middle"
         >
           QA LAB
-        </Text>
-        <Text
+        </LocalText>
+        <LocalText
           position={[0, 0.66, 0]}
           fontSize={0.014}
           color="#ddd6fe"
@@ -1031,7 +1031,7 @@ export function QaTerminalModel({
           anchorY="middle"
         >
           TEST CONSOLE
-        </Text>
+        </LocalText>
         <mesh position={[0, 0.16, depthWorld * 0.4]} castShadow>
           <boxGeometry args={[widthWorld * 0.78, 0.07, 0.15]} />
           <meshStandardMaterial
@@ -1177,7 +1177,7 @@ export function DeviceRackModel({
             <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={1.5} />
           </mesh>
         ))}
-        <Text
+        <LocalText
           position={[0, 1.05, 0]}
           fontSize={0.04}
           color="#e0f2fe"
@@ -1185,7 +1185,7 @@ export function DeviceRackModel({
           anchorY="middle"
         >
           DEVICES
-        </Text>
+        </LocalText>
       </group>
     </group>
   );
@@ -1295,7 +1295,7 @@ export function TestBenchModel({
           <boxGeometry args={[0.12, 0.018, 0.018]} />
           <meshStandardMaterial color="#f0f4f8" metalness={0.9} roughness={0.12} />
         </mesh>
-        <Text
+        <LocalText
           position={[0, 0.64, 0]}
           fontSize={0.034}
           color="#ede9fe"
@@ -1303,7 +1303,7 @@ export function TestBenchModel({
           anchorY="middle"
         >
           TEST BENCH
-        </Text>
+        </LocalText>
       </group>
     </group>
   );
@@ -2485,7 +2485,7 @@ export function ArtRackModel({
               <boxGeometry args={[widthWorld * 0.86, 0.18, 0.02]} />
               <meshStandardMaterial color="#111827" />
             </mesh>
-            <Text
+            <LocalText
               position={[0, 0, 0.015]}
               fontSize={0.04}
               color={shelf.tone}
@@ -2493,7 +2493,7 @@ export function ArtRackModel({
               anchorY="middle"
             >
               {shelf.label}
-            </Text>
+            </LocalText>
           </group>
         ))}
       </group>

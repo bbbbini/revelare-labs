@@ -1,6 +1,7 @@
 "use client";
 
-import { Billboard, Text } from "@react-three/drei";
+import { Billboard } from "@react-three/drei";
+import { LocalText } from "@/features/retro-office/systems/LocalText";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -161,7 +162,7 @@ export function JukeboxModel({
 
         {/* Track status / disabled text on display. */}
         <Billboard position={[0, 1.1, 0.32]} follow={false}>
-          <Text
+          <LocalText
             fontSize={0.07}
             color={enabled ? C.displayText : "#666"}
             anchorX="center"
@@ -170,7 +171,7 @@ export function JukeboxModel({
             textAlign="center"
           >
             {enabled ? (playing ? "♪  NOW PLAYING" : "SOUNDHERMES") : "NOT INSTALLED"}
-          </Text>
+          </LocalText>
         </Billboard>
 
         {/* Speaker grill (replaces record slot). */}
@@ -254,9 +255,9 @@ export function JukeboxModel({
         {/* Floating "Install skill" hint above the machine when disabled and hovered. */}
         {!enabled && (localHovered || isHovered) && (
           <Billboard position={[0, 2.0, 0]} follow={false}>
-            <Text fontSize={0.07} color="#facc15" anchorX="center" anchorY="middle" outlineWidth={0.01} outlineColor="#000">
+            <LocalText fontSize={0.07} color="#facc15" anchorX="center" anchorY="middle" outlineWidth={0.01} outlineColor="#000">
               Click to install SOUNDHERMES
-            </Text>
+            </LocalText>
           </Billboard>
         )}
 

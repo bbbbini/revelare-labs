@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { RoundedBox, Text } from "@react-three/drei";
+import { RoundedBox } from "@react-three/drei";
+import { LocalText } from "@/features/retro-office/systems/LocalText";
 import * as THREE from "three";
 import type { FurnitureItem, RenderAgent } from "../core/types";
 import { getItemRotationRadians, toWorld } from "../core/geometry";
@@ -62,7 +63,7 @@ export function ResearchBackdrop({ items, agents }: { items: FurnitureItem[]; ag
     {[[-0.3, 0.1], [0.08, -0.1], [0.34, 0.12]].map(([x, y], i) => <Block key={i} size={[0.24, 0.31, 0.006]} at={[1.55 + x, 1.55 + y, -2.391]} color={i === 1 ? "#a9b694" : "#f3eddf"} />)}
     <Plant at={[2.4, 0, -1.6]} />
     <Plant at={[-2.6, 0, 0.1]} />
-    <Text position={[-1.7, 1.62, -2.455]} fontSize={0.19} color="#3d4538" maxWidth={1.6} anchorX="center">REVELARE</Text>
-    <Text position={[-1.7, 1.39, -2.454]} fontSize={0.06} letterSpacing={0.12} color="#5e6854">SECURITY LABS</Text>
+    <LocalText position={[-1.7, 1.62, -2.455]} fontSize={0.19} color="#3d4538" maxWidth={1.6} anchorX="center">REVELARE</LocalText>
+    <LocalText position={[-1.7, 1.39, -2.454]} fontSize={0.06} letterSpacing={0.12} color="#5e6854">SECURITY LABS</LocalText>
   </group>;
 }
