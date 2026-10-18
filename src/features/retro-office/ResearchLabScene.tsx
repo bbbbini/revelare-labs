@@ -103,10 +103,15 @@ function WallWash({ position, target, width, height, intensity }: { position: [n
 function CameraControls({ editing, revision }: { editing: boolean; revision: number }) {
   const controls = useRef<OrbitControlsImpl>(null);
   useEffect(() => {
-    if (!controls.current) return;
-    controls.current.object.position.set(...CAMERA);
-    controls.current.target.set(...TARGET);
-    controls.current.update();
+    const orbit = controls.current;
+    if (!orbit) return;
+    // Settle any damped rotation left from a recent drag; otherwise it keeps turning the restored view.
+    orbit.enableDamping = false;
+    orbit.update();
+    orbit.object.position.set(...CAMERA);
+    orbit.target.set(...TARGET);
+    orbit.update();
+    orbit.enableDamping = true;
   }, [revision]);
   return <OrbitControls ref={controls} makeDefault target={TARGET} enabled={!editing} minDistance={3} maxDistance={16} maxPolarAngle={Math.PI / 2.12} enableDamping dampingFactor={0.12} />;
 }
