@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import { RoundedBox, Text, useTexture } from "@react-three/drei";
 import * as THREE from "three";
+import { toCreasedNormals } from "three-stdlib";
 import type { ResearchFurnitureType } from "../core/researchLayout";
 
 type Vec3 = [number, number, number];
@@ -71,11 +72,36 @@ const softenOakGrain: THREE.MeshStandardMaterial["onBeforeCompile"] = shader => 
   );
 };
 
+const roundedBoxes = new Map<string, THREE.BufferGeometry>();
+
+/**
+ * The same geometry drei's RoundedBox builds (smoothness 2, crease 0.4), made once per size
+ * and shared. Hundreds of boxes, many identical such as keyboard keys, otherwise each rebuild
+ * their bevel and creased normals on the main thread while the room opens.
+ */
+function roundedBoxGeometry([width, height, depth]: Vec3, radius: number) {
+  const key = `${width},${height},${depth},${radius}`;
+  let geometry = roundedBoxes.get(key);
+  if (!geometry) {
+    const eps = 0.00001, inner = radius - eps;
+    const shape = new THREE.Shape();
+    shape.absarc(eps, eps, eps, -Math.PI / 2, -Math.PI, true);
+    shape.absarc(eps, height - inner * 2, eps, Math.PI, Math.PI / 2, true);
+    shape.absarc(width - inner * 2, height - inner * 2, eps, Math.PI / 2, 0, true);
+    shape.absarc(width - inner * 2, eps, eps, 0, -Math.PI / 2, true);
+    const extruded = new THREE.ExtrudeGeometry(shape, { depth: depth - radius * 2, bevelEnabled: true, bevelSegments: 8, steps: 1, bevelSize: radius - eps, bevelThickness: radius, curveSegments: 2 });
+    extruded.center();
+    geometry = toCreasedNormals(extruded, 0.4);
+    roundedBoxes.set(key, geometry);
+  }
+  return geometry;
+}
+
 export function LabBox({ size, at = [0, 0, 0], color = "#3f403d", wood = false, metal = false, radius = 0.008, rotation }: { size: Vec3; at?: Vec3; color?: string; wood?: boolean; metal?: boolean; radius?: number; rotation?: Vec3 }) {
   const oak = useContext(Oak);
-  return <RoundedBox args={size} position={at} rotation={rotation} radius={Math.min(radius, Math.min(...size) / 3)} smoothness={2} castShadow receiveShadow>
+  return <mesh geometry={roundedBoxGeometry(size, Math.min(radius, Math.min(...size) / 3))} position={at} rotation={rotation} castShadow receiveShadow>
     <meshStandardMaterial color={wood ? "#ebe3d9" : color} map={wood ? oak?.color : null} normalMap={wood ? oak?.normal : null} normalScale={[0.06, 0.06]} roughnessMap={wood ? oak?.roughness : null} onBeforeCompile={wood ? softenOakGrain : undefined} metalness={metal ? 0.25 : 0} roughness={wood ? 0.85 : metal ? 0.55 : 0.86} />
-  </RoundedBox>;
+  </mesh>;
 }
 
 function Book({ at, width = 0.055, height = 0.29, color = "#d8d4c8" }: { at: Vec3; width?: number; height?: number; color?: string }) {
