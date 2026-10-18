@@ -18,13 +18,24 @@ function fabricSurface(color = "#92998a") {
   const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, 256, 256);
+  // Heathered yarn: soft light and dark patches, drawn on all sides so the tile wraps.
+  for (let i = 0; i < 420; i++) {
+    const x = random() * 256, y = random() * 256, r = 1.5 + random() * 3.5;
+    ctx.fillStyle = `rgba(${random() > 0.5 ? "255,252,236" : "38,40,34"},${0.03 + random() * 0.04})`;
+    for (const dx of [-256, 0, 256]) for (const dy of [-256, 0, 256]) {
+      ctx.beginPath(); ctx.arc(x + dx, y + dy, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  // Plain weave: alternating warp and weft rows read as a fine texture up close.
   for (let y = 0; y < 256; y += 2) for (let x = 0; x < 256; x += 2) {
-    ctx.fillStyle = `rgba(${random() > 0.5 ? "255,255,240" : "50,48,40"},${random() * 0.09})`;
-    ctx.fillRect(x, y, 1, 2);
+    ctx.fillStyle = `rgba(${(x + y) % 4 ? "255,255,240" : "40,40,34"},${0.05 + random() * 0.07})`;
+    ctx.fillRect(x, y, 2, 1);
   }
   const map = new THREE.CanvasTexture(canvas);
   map.colorSpace = THREE.SRGBColorSpace;
   map.wrapS = map.wrapT = THREE.RepeatWrapping;
+  // RoundedBox UVs are in metres; one tile spans 35 cm.
+  map.repeat.set(1 / 0.35, 1 / 0.35);
   return map;
 }
 
@@ -232,10 +243,32 @@ function Monitor({ x, tilt = 0 }: { x: number; tilt?: number }) {
   </group>;
 }
 
+/** A shallow shell about 0.50 m wide with its bevel (0.47 m before), 0.48 m tall; centre line at z = -0.22. */
+function createChairBackGeometry() {
+  const halfAngle = 0.52, outer = 0.47, inner = 0.43, centre = 0.25, steps = 12;
+  const shape = new THREE.Shape();
+  for (let i = 0; i <= steps; i++) {
+    const angle = -halfAngle + (i / steps) * halfAngle * 2;
+    const point: [number, number] = [outer * Math.sin(angle), outer * Math.cos(angle) - centre];
+    if (i === 0) shape.moveTo(...point); else shape.lineTo(...point);
+  }
+  for (let i = steps; i >= 0; i--) {
+    const angle = -halfAngle + (i / steps) * halfAngle * 2;
+    shape.lineTo(inner * Math.sin(angle), inner * Math.cos(angle) - centre);
+  }
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.456, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012, bevelSegments: 3, curveSegments: 1 });
+  // Extrude upward: shape y becomes -z, so the shell centre lands at z = -0.22.
+  geometry.rotateX(-Math.PI / 2);
+  geometry.translate(0, -0.228, 0);
+  return geometry;
+}
+
 function Chair({ at = [0.64, 0, 0.74], upholstery }: { at?: Vec3; upholstery?: string }) {
+  const back = useMemo(() => createChairBackGeometry(), []);
+  useEffect(() => () => back.dispose(), [back]);
   return <group position={at} rotation={[0, Math.PI, 0]}>
     <LabBox size={[0.49, 0.07, 0.45]} at={[0, 0.48, 0]} color={upholstery ?? "#484a44"} radius={0.035} />
-    <LabBox size={[0.47, 0.48, 0.065]} at={[0, 0.78, -0.22]} color={upholstery ?? "#4b4c47"} radius={0.04} rotation={[-0.09, 0, 0]} />
+    <mesh geometry={back} position={[0, 0.78, 0]} rotation={[-0.09, 0, 0]} castShadow receiveShadow><meshStandardMaterial color={upholstery ?? "#4b4c47"} roughness={0.86} /></mesh>
     <mesh position={[0, 0.255, 0]} castShadow><cylinderGeometry args={[0.03, 0.04, 0.43, 16]} /><meshStandardMaterial color="#454742" metalness={0.35} roughness={0.55} /></mesh>
     {Array.from({ length: 5 }, (_, i) => <group key={i} rotation={[0, i * Math.PI * 0.4, 0]}><LabBox size={[0.04, 0.03, 0.3]} at={[0, 0.07, 0.12]} /><mesh position={[0, 0.045, 0.28]} rotation={[0, 0, Math.PI / 2]} castShadow><cylinderGeometry args={[0.037, 0.037, 0.04, 12]} /><meshStandardMaterial color="#333631" /></mesh></group>)}
     {[-0.27, 0.27].map(x => <group key={x}><LabBox size={[0.028, 0.21, 0.03]} at={[x, 0.54, 0]} /><LabBox size={[0.06, 0.025, 0.3]} at={[x, 0.655, 0]} radius={0.01} /></group>)}
@@ -298,10 +331,11 @@ function Workstation({ shared = false, occupied = false }: { shared?: boolean; o
     {[-0.91, 0.91].map(x => <group key={x}>
       {[shared ? -0.95 : -0.39, 0.39].map(z => <LabBox key={z} size={[0.045, 0.76, 0.045]} at={[x, 0.38, z]} metal />)}
       <LabBox size={[0.045, 0.04, shared ? 1.38 : 0.82]} at={[x, 0.035, shared ? -0.28 : 0]} metal />
+      <LabBox size={[0.045, 0.04, shared ? 1.38 : 0.82]} at={[x, 0.742, shared ? -0.28 : 0]} metal />
     </group>)}
     <LabBox size={[1.8, 0.065, 0.035]} at={[0, 0.7, -0.38]} />
     <DrawerPedestal /><DeskTower />
-    <RoundedBox args={[shared ? 1.34 : 0.98, 0.39, 0.043]} position={[shared ? -0.25 : -0.43, 1.03, -0.33]} radius={0.012} smoothness={2} castShadow receiveShadow><meshStandardMaterial map={fabric} roughness={1} /></RoundedBox>
+    <RoundedBox args={[shared ? 1.34 : 0.98, 0.39, 0.043]} position={[shared ? -0.25 : -0.43, 1.03, -0.33]} radius={0.012} smoothness={2} castShadow receiveShadow><meshStandardMaterial map={fabric} bumpMap={fabric} bumpScale={0.3} roughness={1} /></RoundedBox>
     {(!shared || occupied) && <><Monitor x={-0.25} tilt={0.08} /><Monitor x={0.36} tilt={-0.12} /></>}
     {shared && <group position={[0, 0, -0.64]} rotation={[0, Math.PI, 0]}>
       <Monitor x={0.1} tilt={-0.1} />
@@ -334,7 +368,7 @@ function PrivacyDivider() {
   const fabric = useMemo(() => fabricSurface("#c3c0b7"), []);
   useEffect(() => () => fabric.dispose(), [fabric]);
   return <group>
-    <RoundedBox args={[1.45, 1.25, 0.065]} position={[0, 0.86, 0]} radius={0.025} smoothness={3} castShadow receiveShadow><meshStandardMaterial map={fabric} roughness={1} /></RoundedBox>
+    <RoundedBox args={[1.45, 1.25, 0.065]} position={[0, 0.86, 0]} radius={0.025} smoothness={3} castShadow receiveShadow><meshStandardMaterial map={fabric} bumpMap={fabric} bumpScale={0.3} roughness={1} /></RoundedBox>
     {[-0.55, 0.55].map(x => <group key={x}><LabBox size={[0.045, 0.3, 0.045]} at={[x, 0.15, 0]} /><LabBox size={[0.08, 0.025, 0.42]} at={[x, 0.025, 0]} /></group>)}
     <LabBox size={[1.3, 0.24, 0.29]} at={[0, 0.16, 0.26]} color="#626858" />
     {[-0.42, -0.14, 0.14, 0.42].map(x => <LabPlant key={x} at={[x, 0.14, 0.26]} scale={0.7} />)}
