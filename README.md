@@ -1,5 +1,7 @@
 # Hermes3D — A 3D Workspace for AI Agents
 
+> 이 저장소의 REVELARE 작업은 [문서 안내](docs/README.md), [현재 진행 상태](PROGRESS.md), [요구사항](SPEC.md)에서 확인할 수 있습니다. 아래는 기반 프로젝트 Hermes3D의 사용 안내입니다.
+
 <p align="center">
     <img src="assets/branding/hermes3d-hero.png" alt="Hermes3D" width="700">
 </p>
@@ -281,6 +283,8 @@ See [`.env.example`](.env.example) for the full local development template.
 - `npm run smoke:dev-server` runs a basic dev-server smoke check.
 
 ## Documentation
+
+- [프로젝트 문서 안내](docs/README.md): REVELARE의 현재 문서, 기반 설계 문서, 과거 작업 기록.
 
 - [`VISION.md`](VISION.md): project direction and long-term guardrails.
 - [`ARCHITECTURE.md`](ARCHITECTURE.md): system boundaries, data flow, and major trade-offs.

@@ -2,6 +2,8 @@
 
 이 문서는 REVELARE Security Labs가 Hermes3D 코드 위에서 기능을 붙이고 공개 빌드를 분리할 때 참고하는 지도이다. 경로는 모두 레포 루트 기준이다.
 
+현재 작업 범위와 상태는 [SPEC](../SPEC.md)과 [PROGRESS](../PROGRESS.md), 문서 분류는 [문서 안내](README.md)를 참고한다. 별도 비공개 2D 시안은 아래 앱 코드에 아직 통합되지 않았다.
+
 ## 1. 진입점과 서버
 
 | 역할 | 위치 |
@@ -14,7 +16,7 @@
 | 오피스 페이지 | `src/app/office/page.tsx` → `src/features/office/screens/OfficeScreen.tsx` |
 | Studio 설정 저장 위치 (`HERMES_STATE_DIR`) | `src/lib/hermes/paths.ts`, `src/lib/studio/settings-store.ts` |
 
-`OfficeScreen.tsx`는 약 5,600줄짜리 화면 컴포넌트이다. 렌더러, 채팅, 연결, 작업 보드, 음성, Spotify, 전화·문자, GitHub 기능을 모두 이 한 곳에서 조립한다(import 84개).
+`OfficeScreen.tsx`는 렌더러, 채팅, 연결, 작업 보드, 음성, Spotify, 전화·문자, GitHub 기능을 조립한다.
 
 ## 2. 오피스 방과 레이아웃
 
@@ -22,6 +24,8 @@
 | --- | --- |
 | 렌더러 선택 (3D/2D) | `src/features/office/renderMode.ts` |
 | 3D 오피스 렌더러 | `src/features/retro-office/RetroOffice3D.tsx` |
+| 새 3D 연구실 씬과 방 | `src/features/retro-office/ResearchLabScene.tsx`, `src/features/retro-office/scene/ResearchRoom.tsx` |
+| 새 3D 연구실 배치·저장과 아바타 | `src/features/retro-office/core/researchLayout.ts`, `src/features/retro-office/core/researchAvatar.ts` |
 | 3D 방 경계·벽·문 좌표 상수 (gym, QA lab, east wing 등) | `src/features/retro-office/core/constants.ts` |
 | 3D 기본 가구 배치와 방 구성 | `src/features/retro-office/core/furnitureDefaults.ts` |
 | 3D 구역(district)과 캔버스 크기 | `src/features/retro-office/core/district.ts` |
@@ -53,11 +57,11 @@
 1. 어댑터 선택: `src/lib/runtime/createRuntimeProvider.ts`. Studio 설정의 adapter가 `custom`(또는 `local`, `hermes3d`)이면 `CustomRuntimeProvider`를 만든다.
 2. 런타임 호출: `src/lib/runtime/custom/provider.ts`
    - `GET /health`, `GET /state`, `GET /registry`로 런타임을 설명하고 에이전트를 만든다. 에이전트는 `state.active`의 키, 없으면 `state.identity`(`name`, `role`, `lane`, `model_id`)에서 1명을 만든다.
-   - 채팅은 `POST /v1/chat/completions`(`stream: false`)로 보낸다. 응답은 OpenAI 형식의 `choices[0].message.content`를 쓴다. 대화 기록은 브라우저 메모리에 있고 매 요청마다 전체 messages를 보낸다.
+   - 채팅은 `POST /v1/chat/completions`(`stream: false`)로 보낸다. 응답은 OpenAI 형식의 `choices[0].message.content`를 쓴다. 세션 기록은 메모리에서 관리하고 매 요청마다 전체 messages를 보낸다. Labs Runtime은 비공개 폴더에 기록을 저장하며, provider는 `GET /v1/sessions/history?session_id=...`로 기록을 복원한다. 이 선택적 경로가 없는 다른 런타임은 빈 세션으로 계속한다.
 3. 브라우저 → 서버: `src/lib/runtime/custom/http.ts`가 `POST /api/runtime/custom`에 `{runtimeUrl, pathname, method, body}`를 보낸다.
 4. 서버 프록시: `src/app/api/runtime/custom/route.ts`. 허용 호스트 목록은 `CUSTOM_RUNTIME_ALLOWLIST` 또는 `UPSTREAM_ALLOWLIST`이다. 목록이 없으면 production이 아닐 때 모든 호스트를 허용한다. 허용 목록이 명시되어 있으면 `CUSTOM_RUNTIME_TOKEN_FILE`(또는 `CUSTOM_RUNTIME_TOKEN`)의 토큰을 서버 측에서 `Authorization: Bearer`로 붙인다. 토큰은 브라우저에 전달되지 않는다.
    - 세션 설정 동기화(`sessions.patch`)는 provider 안에서 모델 선택만 기억하고 성공을 돌려준다. upstream에는 이 메서드가 없어 채팅 전송이 실패했다.
-5. 기본 URL: `src/lib/studio/settings.ts`의 `DEFAULT_CUSTOM_RUNTIME_URL = "http://localhost:7770"`. 환경변수 `HERMES3D_GATEWAY_URL`, `HERMES3D_GATEWAY_ADAPTER_TYPE`(`src/lib/studio/settings-store.ts`)로 지정할 수 있다.
+5. 기본 URL: `src/lib/studio/settings.ts`의 `LABS_RUNTIME_URL = "http://127.0.0.1:7770"`을 `DEFAULT_CUSTOM_RUNTIME_URL`이 사용한다. 환경변수 `HERMES3D_GATEWAY_URL`, `HERMES3D_GATEWAY_ADAPTER_TYPE`(`src/lib/studio/settings-store.ts`)로 지정할 수 있다.
 6. 연결 화면: `src/features/agents/components/GatewayConnectScreen.tsx`의 "Custom backend" 버튼.
 
 ## 5. 공개 빌드에서 제외할 기능

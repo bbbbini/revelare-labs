@@ -1,5 +1,7 @@
 # Runtime Profiles
 
+> 이 문서는 Hermes3D의 프로필 구조를 설명한다. 현재 REVELARE 포크에서 저장된 설정이 없을 때의 기본값은 `custom`과 `http://127.0.0.1:7770`이다. 기존 저장 프로필은 유지한다. Labs Runtime 사용법은 [CODEMAP](CODEMAP.md#7-비공개-런타임-phase-1)을 참고한다.
+
 Hermes3D now treats runtime backends as named saved profiles instead of one global URL/token pair.
 
 ## Current Profiles
@@ -16,7 +18,7 @@ Each profile keeps its own saved URL and token in Studio settings.
 
 ### `hermes`
 
-The default profile. It runs the bundled Hermes gateway adapter over Studio's WebSocket bridge.
+The Hermes gateway profile. It runs the bundled Hermes gateway adapter over Studio's WebSocket bridge.
 
 This is the provider-rich path: Hermes owns its own provider/account setup behind the gateway boundary, so Hermes3D treats it as a first-class gateway adapter rather than flattening it into `custom`.
 
