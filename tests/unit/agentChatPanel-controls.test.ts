@@ -79,7 +79,7 @@ describe("AgentChatPanel controls", () => {
     expect(screen.getByTestId("agent-new-session-toggle")).toBeInTheDocument();
     expect(screen.getByLabelText("새 대화 시작")).toBeInTheDocument();
     expect(screen.getByTestId("agent-settings-toggle")).toBeInTheDocument();
-    expect(screen.getByLabelText("동작 설정 열기")).toBeInTheDocument();
+    expect(screen.getByLabelText("연구원 설정 열기")).toBeInTheDocument();
     expect(screen.queryByText("Inspect")).not.toBeInTheDocument();
   });
 
@@ -349,7 +349,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    const textarea = screen.getByPlaceholderText("메시지를 입력하세요");
+    const textarea = screen.getByPlaceholderText("요청할 연구 작업을 입력하세요");
     fireEvent.change(textarea, { target: { value: "follow up" } });
     fireEvent.click(screen.getByRole("button", { name: "전송" }));
 
@@ -538,7 +538,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    const textarea = screen.getByPlaceholderText("메시지를 입력하세요") as HTMLTextAreaElement;
+    const textarea = screen.getByPlaceholderText("요청할 연구 작업을 입력하세요") as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: "hello world" } });
     expect(textarea.value).toBe("hello world");
 
@@ -601,7 +601,7 @@ describe("AgentChatPanel controls", () => {
       })
     );
 
-    const textarea = screen.getByPlaceholderText("메시지를 입력하세요");
+    const textarea = screen.getByPlaceholderText("요청할 연구 작업을 입력하세요");
     fireEvent.change(textarea, { target: { value: "draft text" } });
 
     fireEvent.keyDown(textarea, {

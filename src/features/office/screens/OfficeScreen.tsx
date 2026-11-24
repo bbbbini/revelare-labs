@@ -9,8 +9,14 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, ChevronDown, ChevronLeft, ChevronRight, Mic } from "lucide-react";
-import { RetroOffice3D } from "@/features/retro-office/RetroOffice3D";
+import { Mic } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ResearchWorkspaceNavigation, type ResearchWorkspaceSection } from "@/features/research-lab/ResearchWorkspaceNavigation";
+import { ResearcherTaskPanel } from "@/features/research-lab/ResearcherTaskPanel";
+import { ResearchWorkPanel } from "@/features/research-lab/ResearchWorkPanel";
+import { ResearchSettings } from "@/features/research-lab/ResearchSettings";
+import { ResearchersPanel } from "@/features/research-lab/ResearchersPanel";
+import { ResearchLab2D } from "@/features/research-lab/ResearchLab2D";
 import type { OfficeAgent } from "@/features/retro-office/core/types";
 import { PixelOffice2D } from "@/features/pixel-office/PixelOffice2D";
 import {
@@ -63,7 +69,6 @@ import {
   stripUiMetadata,
 } from "@/lib/text/message-extract";
 import { resolveOfficeIntentSnapshot } from "@/lib/office/deskDirectives";
-import { AgentChatPanel } from "@/features/agents/components/AgentChatPanel";
 import {
   RemoteAgentChatPanel,
   type RemoteAgentChatMessage,
@@ -130,10 +135,6 @@ import {
 } from "@/lib/agents/personalityBuilder";
 import { writeGatewayAgentFiles } from "@/lib/gateway/agentFiles";
 import { randomUUID } from "@/lib/uuid";
-import {
-  HQSidebar,
-  type HQSidebarTab,
-} from "@/features/office/components/HQSidebar";
 import { CompanyBuilderModal } from "@/features/company-builder/components/CompanyBuilderModal";
 import {
   buildGenerateCompanyPlanPrompt,
@@ -151,13 +152,8 @@ import type {
   CompanyBuilderInput,
   CompanyBuilderPlan,
 } from "@/features/company-builder/types";
-import { AnalyticsPanel } from "@/features/office/components/panels/AnalyticsPanel";
-import { HistoryPanel } from "@/features/office/components/panels/HistoryPanel";
-import { InboxPanel } from "@/features/office/components/panels/InboxPanel";
 import { KanbanDisabledPanel } from "@/features/office/components/panels/KanbanDisabledPanel";
-import { PlaybooksPanel } from "@/features/office/components/panels/PlaybooksPanel";
 import { SkillsMarketplaceModal } from "@/features/office/components/panels/SkillsMarketplaceModal";
-import { TaskBoardPanel } from "@/features/office/components/panels/TaskBoardPanel";
 import { JukeboxPanel } from "@/features/spotify-jukebox/components/JukeboxPanel";
 import { JukeboxDisabledPanel } from "@/features/spotify-jukebox/components/JukeboxDisabledPanel";
 import { executeBrowserJukeboxCommand } from "@/features/spotify-jukebox/agentBridge";
@@ -205,6 +201,11 @@ import {
 import { deriveSkillReadinessState } from "@/lib/skills/presentation";
 import type { StandupAgentSnapshot } from "@/lib/office/standup/types";
 import type { SkillStatusEntry } from "@/lib/skills/types";
+
+const RetroOffice3D = dynamic(
+  () => import("@/features/retro-office/RetroOffice3D").then(module => module.RetroOffice3D),
+  { ssr: false },
+);
 
 const stringToColor = (str: string) => {
   let hash = 0;
@@ -671,13 +672,6 @@ type RemoteChatSessionState = {
   messages: RemoteAgentChatMessage[];
 };
 
-type ChatRosterEntry = {
-  id: string;
-  name: string;
-  kind: "local" | "remote";
-  isRunning: boolean;
-};
-
 const EMPTY_REMOTE_CHAT_SESSION: RemoteChatSessionState = {
   draft: "",
   mode: "direct",
@@ -906,10 +900,12 @@ const inferRunningFromAgentSessions = async (params: {
 
 type OfficeScreenProps = {
   showHermesConsole?: boolean;
+  defaultRenderMode?: OfficeRenderMode;
 };
 
 export function OfficeScreen({
   showHermesConsole = true,
+  defaultRenderMode = "lab",
 }: OfficeScreenProps) {
   // Patch Hermes Phase 2: avoid useSearchParams() at component root — it
   // suspends during hydration in Next.js dev mode and keeps the parent
@@ -945,7 +941,6 @@ export function OfficeScreen({
   } =
     useRuntimeConnection(settingsCoordinator);
   const runtimeSupportsSkills = supportsCapability("skills");
-  const runtimeSupportsApprovals = supportsCapability("approvals");
   const runtimeSupportsCron = supportsCapability("cron");
   const runtimeSupportsModels = supportsCapability("models");
   const runtimeSupportsRunLifecycle = supportsCapability("runtime-agent-events");
@@ -1023,8 +1018,7 @@ export function OfficeScreen({
   const officeTriggerStateRef = useRef(officeTriggerState);
   const historyInFlightRef = useRef<Set<string>>(new Set());
   const lastTransportHistoryRefreshKeyRef = useRef<Record<string, string>>({});
-  const [chatOpen, setChatOpen] = useState(true);
-  const [chatRosterCollapsed, setChatRosterCollapsed] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [selectedChatAgentId, setSelectedChatAgentId] = useState<string | null>(
     null,
   );
@@ -1076,12 +1070,11 @@ export function OfficeScreen({
   const [gatewayModels, setGatewayModels] = useState<GatewayModelChoice[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [marketplaceOpen, setMarketplaceOpen] = useState(false);
-  // Office renderer preference (3D immersive vs. 2D pixel). Resolved after
-  // mount so SSR markup stays deterministic.
-  const [officeRenderMode, setOfficeRenderMode] = useState<OfficeRenderMode>("3d");
+  // Resolve saved or explicitly requested views after hydration.
+  const [officeRenderMode, setOfficeRenderMode] = useState<OfficeRenderMode>(defaultRenderMode);
   useEffect(() => {
-    setOfficeRenderMode(resolveInitialOfficeRenderMode());
-  }, []);
+    setOfficeRenderMode(resolveInitialOfficeRenderMode(defaultRenderMode));
+  }, [defaultRenderMode]);
   const handleOfficeRenderModeChange = useCallback((mode: OfficeRenderMode) => {
     saveOfficeRenderMode(mode);
     setOfficeRenderMode(mode);
@@ -1107,8 +1100,7 @@ export function OfficeScreen({
     const searchParams = new URL(window.location.href).searchParams;
     return searchParams.has("code");
   });
-  const [activeSidebarTab, setActiveSidebarTab] =
-    useState<HQSidebarTab>("inbox");
+  const [researchSection, setResearchSection] = useState<ResearchWorkspaceSection>("work");
   const pendingJukeboxCommandTimeoutsRef = useRef<
     Map<string, { requestKey: string; timeoutId: number }>
   >(new Map());
@@ -3012,7 +3004,6 @@ export function OfficeScreen({
   const {
     deskHoldByAgentId,
     githubHoldByAgentId,
-    jukeboxHoldByAgentId,
     manualGymUntilByAgentId,
     pendingStandupRequest,
     phoneBoothHoldByAgentId,
@@ -3918,16 +3909,6 @@ export function OfficeScreen({
     [handleChatSend, transcribeVoicePayload],
   );
 
-  const handleVoiceSend = useCallback(
-    async (payload: VoiceSendPayload) => {
-      if (!focusedChatAgent) {
-        throw new Error("Select an agent before using push-to-talk.");
-      }
-      await sendVoicePayloadToAgent(focusedChatAgent, payload);
-    },
-    [focusedChatAgent, sendVoicePayloadToAgent],
-  );
-
   const {
     state: mainVoiceState,
     error: mainVoiceError,
@@ -3936,7 +3917,7 @@ export function OfficeScreen({
     stop: stopMainVoiceRecording,
     clearError: clearMainVoiceError,
   } = useVoiceRecorder({
-    enabled: status === "connected" && Boolean(mainAgent),
+    enabled: officeRenderMode !== "lab" && status === "connected" && Boolean(mainAgent),
     onVoiceSend: async (payload) => {
       if (!mainAgent) {
         throw new Error("Main agent not found.");
@@ -3946,7 +3927,7 @@ export function OfficeScreen({
   });
 
   useFinalizedAssistantReplyListener(state.agents, ({ text }) => {
-    if (!voiceRepliesLoaded || !voiceRepliesEnabled) return;
+    if (officeRenderMode === "lab" || !voiceRepliesLoaded || !voiceRepliesEnabled) return;
     enqueueVoiceReply({
       text,
       provider: voiceRepliesPreference.provider,
@@ -4134,23 +4115,6 @@ export function OfficeScreen({
       ),
     [remoteOfficeSnapshot]
   );
-  const chatRosterEntries = useMemo<ChatRosterEntry[]>(
-    () => [
-      ...state.agents.map((agent) => ({
-        id: agent.agentId,
-        name: agent.name || agent.agentId,
-        kind: "local" as const,
-        isRunning: agent.status === "running",
-      })),
-      ...remoteOfficeAgents.map((agent) => ({
-        id: agent.id,
-        name: agent.name || agent.id,
-        kind: "remote" as const,
-        isRunning: agent.status === "working",
-      })),
-    ],
-    [remoteOfficeAgents, state.agents],
-  );
   const focusedRemoteChatTarget = selectedChatAgentId
     ? (remoteOfficeAgents.find((agent) => agent.id === selectedChatAgentId) ?? null)
     : null;
@@ -4160,6 +4124,12 @@ export function OfficeScreen({
   const allVisibleAgents = useMemo(
     () => [...officeAgents, ...remoteOfficeAgents],
     [officeAgents, remoteOfficeAgents],
+  );
+  // Research work status comes from the runtime, independent of office
+  // animation holds such as review-room visits or recent activity.
+  const researchLabAgents = useMemo(
+    () => [...state.agents.map(mapAgentToOffice), ...remoteOfficeAgents],
+    [state.agents, remoteOfficeAgents],
   );
   const remoteOfficeVisible =
     remoteOfficeEnabled &&
@@ -4477,36 +4447,24 @@ export function OfficeScreen({
   // Defer mounting the heavy office renderers (Three.js / Phaser) until a
   // gateway connection exists, so users can pick 2D vs. 3D on the connect
   // screen before either pipeline loads.
+  const Office2DRenderer = officeRenderMode === "lab" ? ResearchLab2D : PixelOffice2D;
   const officeSceneReady = agentsLoaded || status === "connected";
 
-  const runningCount = state.agents.filter(
-    (agent) =>
-      agent.status === "running" ||
-      deskHoldByAgentId[agent.agentId] ||
-      gymHoldByAgentId[agent.agentId] ||
-      jukeboxHoldByAgentId[agent.agentId] ||
-      phoneBoothHoldByAgentId[agent.agentId] ||
-      smsBoothHoldByAgentId[agent.agentId] ||
-      qaHoldByAgentId[agent.agentId],
-  ).length;
-  const unseenInboxCount = state.agents.filter(
-    (agent) => agent.hasUnseenActivity,
-  ).length;
   const showEmptyFleetBanner =
     status === "connected" && agentsLoaded && state.agents.length === 0;
   const emptyFleetMessage =
     state.error?.trim() ||
-    "Connected to the gateway, but no agents were loaded into the office.";
+    "런타임에 연결했지만 연구원을 불러오지 못했습니다.";
 
   return (
-    <main className="relative h-full w-full overflow-hidden bg-black">
+    <main className="research-workspace lab-theme relative h-full w-full overflow-hidden" data-chat-open={chatOpen && !debugEnabled} data-panel-open={sidebarOpen}>
       {showGatewayLoadingOverlay ? (
         <div
-          className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center bg-[#120a05]/76"
+          className="workspace-connection-overlay pointer-events-none absolute inset-0 z-40 flex items-center justify-center"
           aria-label="Connecting to runtime"
           role="status"
         >
-          <div className="rounded-xl border border-amber-700/45 bg-[#1a1008] px-8 py-6 shadow-2xl">
+          <div className="ui-card px-8 py-6">
             <RunningAvatarLoader
               size={28}
               trackWidth={76}
@@ -4519,8 +4477,8 @@ export function OfficeScreen({
       {showGatewayConnectOverlay ? (
         // The overlay background is always dark, so its contents use the dark
         // theme tokens even when the app theme is light.
-        <div className="dark pointer-events-auto absolute inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#120a05]/76 px-4 py-10">
-          <div className="mb-10 w-full max-w-[860px] rounded-2xl border border-amber-900/55 bg-[#120a05]/98 p-3 shadow-2xl">
+        <div className="workspace-connection-overlay pointer-events-auto absolute inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 py-10">
+          <div className="workspace-connect-card mb-10 w-full max-w-[760px]">
             <GatewayConnectScreen
               renderMode={officeRenderMode}
               onRenderModeChange={handleOfficeRenderModeChange}
@@ -4540,19 +4498,20 @@ export function OfficeScreen({
           </div>
         </div>
       ) : null}
-      <section className="relative h-full min-h-0 min-w-0 overflow-hidden">
+      <section className="workspace-stage relative h-full min-h-0 min-w-0 overflow-hidden" aria-label="연구실 공간" inert={sidebarOpen} aria-hidden={sidebarOpen}>
         {!officeSceneReady ? (
         <div
-          className="flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,#1c1208_0%,#0d0804_70%)]"
+          className="workspace-empty flex h-full w-full items-center justify-center"
           aria-hidden
         >
           <p className="select-none font-mono text-xs tracking-[0.4em] text-amber-100/25">
-            HERMES3D
+            REVELARE SECURITY LABS
           </p>
         </div>
-        ) : officeRenderMode === "2d" ? (
-        <PixelOffice2D
-          agents={allVisibleAgents}
+        ) : officeRenderMode !== "3d" ? (
+        <Office2DRenderer
+          selectedAgentId={selectedChatAgentId}
+          agents={officeRenderMode === "lab" ? researchLabAgents : allVisibleAgents}
           animationState={officeAnimationState}
           streamingTextByAgentId={streamingTextByAgentId}
           renderMode={officeRenderMode}
@@ -4560,7 +4519,7 @@ export function OfficeScreen({
           onAgentChatSelect={(agentId) => {
             handleOpenAgentChat(agentId);
           }}
-          onAddAgent={handleOpenCreateAgentWizard}
+          onAddAgent={supportsCapability("config") ? handleOpenCreateAgentWizard : undefined}
           onAgentEdit={(agentId) => {
             openAgentEditor(agentId, "avatar");
           }}
@@ -4860,7 +4819,7 @@ export function OfficeScreen({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-200/80">
-                  Office fleet status
+                  연구원 연결 상태
                 </p>
                 <p className="mt-1 text-sm text-amber-50">{emptyFleetMessage}</p>
               </div>
@@ -4869,19 +4828,10 @@ export function OfficeScreen({
                   type="button"
                   className="ui-btn-secondary px-3 py-2 text-xs font-semibold tracking-[0.05em] text-foreground"
                   onClick={() => {
-                    handleOpenCreateAgentWizard();
+                    setResearchSection("settings"); setSidebarOpen(true);
                   }}
                 >
-                  Add Agent
-                </button>
-                <button
-                  type="button"
-                  className="ui-btn-secondary px-3 py-2 text-xs font-semibold tracking-[0.05em] text-foreground"
-                  onClick={() => {
-                    handleOpenCompanyBuilder();
-                  }}
-                >
-                  Build Company
+                  연결 설정 확인
                 </button>
                 <button
                   type="button"
@@ -4890,7 +4840,7 @@ export function OfficeScreen({
                     void loadAgents({ forceSettings: true });
                   }}
                 >
-                  Retry
+                  다시 시도
                 </button>
               </div>
             </div>
@@ -4902,7 +4852,7 @@ export function OfficeScreen({
         <div className="pointer-events-none fixed left-1/2 top-5 z-40 -translate-x-1/2 px-4">
           <div className="pointer-events-auto rounded-lg border border-red-400/30 bg-black/85 px-4 py-3 shadow-2xl backdrop-blur">
             <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-red-200/75">
-              Fleet mutation
+              연구원 변경 상태
             </div>
             <div className="mt-1 text-sm text-red-50">{deleteAgentStatusLine}</div>
           </div>
@@ -4910,85 +4860,29 @@ export function OfficeScreen({
       ) : null}
 
       {!debugEnabled ? (
-        <HQSidebar
-          open={sidebarOpen}
-          activeTab={activeSidebarTab}
-          inboxCount={unseenInboxCount}
-          onToggle={() => setSidebarOpen((prev) => !prev)}
-          onTabChange={setActiveSidebarTab}
-          onOpenMarketplace={() => setMarketplaceOpen(true)}
-          onAddAgent={handleOpenCreateAgentWizard}
-          onOpenCompanyBuilder={handleOpenCompanyBuilder}
-          inboxPanel={
-            <InboxPanel
-              agents={state.agents}
-              onSelectAgent={(agentId) => {
-                handleOpenAgentChat(agentId);
-                setActiveSidebarTab("inbox");
-              }}
-            />
-          }
-          historyPanel={
-            <HistoryPanel
-              runs={runLog}
-              agents={state.agents}
-              onSelectAgent={(agentId) => {
-                handleOpenAgentChat(agentId);
-                setActiveSidebarTab("history");
-              }}
-            />
-          }
-          kanbanPanel={
-            <TaskBoardPanel
-              agents={state.agents}
-              cardsByStatus={taskBoard.cardsByStatus}
-              selectedCard={taskBoard.selectedCard}
-              activeRuns={taskBoard.activeRuns}
-              cronJobs={taskBoard.cronJobs}
-              cronLoading={taskBoard.cronLoading}
-              cronError={
-                taskBoard.sharedTasksError ?? taskBoard.gatewayTasksError ?? taskBoard.cronError
-              }
-              taskCaptureDebug={showHermesConsole ? taskBoard.taskCaptureDebug : undefined}
-              onCreateCard={() => {
-                taskBoard.createManualCard();
-                setActiveSidebarTab("kanban");
-              }}
-              onMoveCard={taskBoard.moveCard}
-              onSelectCard={taskBoard.selectCard}
-              onUpdateCard={taskBoard.updateCard}
-              onDeleteCard={taskBoard.removeCard}
-              onRefreshCronJobs={() => {
-                void taskBoard.refreshSharedTasks();
-                void taskBoard.refreshRemoteTasks();
-                void taskBoard.refreshCronJobs();
-              }}
-            />
-          }
-          playbooksPanel={
-            <PlaybooksPanel
-              client={client}
-              status={status}
-              cronEnabled={runtimeSupportsCron}
-              agents={state.agents}
-              standup={standupController}
-            />
-          }
-          analyticsPanel={
-            <AnalyticsPanel
-              client={client}
-              status={status}
-              approvalsEnabled={runtimeSupportsApprovals}
-              agents={state.agents}
-              runLog={runLog}
-              gatewayUrl={gatewayUrl}
-              settingsCoordinator={settingsCoordinator}
-              onSelectAgent={(agentId) => {
-                handleOpenAgentChat(agentId);
-                setActiveSidebarTab("analytics");
-              }}
-            />
-          }
+        <ResearchWorkspaceNavigation
+          open={sidebarOpen} section={researchSection}
+          onSectionChange={(section) => { setResearchSection(section); setSidebarOpen(true); if (window.innerWidth <= 760) setChatOpen(false); }}
+          onCloseSection={() => setSidebarOpen(false)} title={officeTitle}
+          connected={status === "connected"} researcherCount={researchLabAgents.length}
+          workingCount={status === "connected" ? researchLabAgents.filter(agent => agent.status === "working").length : 0}
+          taskOpen={chatOpen} onToggleTask={() => setChatOpen(value => !value)}
+          panels={{
+            work: <ResearchWorkPanel agents={state.agents} connected={status === "connected"} onOpen={handleOpenAgentChat} />,
+            results: <ResearchWorkPanel agents={state.agents} connected={status === "connected"} resultsOnly onOpen={handleOpenAgentChat} />,
+            researchers: <ResearchersPanel agents={researchLabAgents} connected={status === "connected"} onSelect={handleOpenAgentChat} />,
+            settings: <ResearchSettings
+              title={officeTitle} titleLoaded={officeTitleLoaded} onTitleChange={setOfficeTitle}
+              connected={status === "connected"} connecting={status === "connecting"}
+              url={gatewayUrl} token={token} adapter={selectedAdapterType} error={gatewayError}
+              onUrlChange={setGatewayUrl} onTokenChange={setToken} onAdapterChange={setSelectedAdapterType}
+              onConnect={() => void connect()} onDisconnect={disconnect}
+              renderMode={officeRenderMode} onRenderModeChange={handleOfficeRenderModeChange}
+              onOpenDiagnostics={showHermesConsole ? () => setHermesConsoleVisible(value => !value) : undefined}
+              onOpenTools={runtimeSupportsSkills ? () => setMarketplaceOpen(true) : undefined}
+              onManageResearchers={supportsCapability("config") ? handleOpenCreateAgentWizard : undefined}
+            />,
+          }}
         />
       ) : null}
 
@@ -5036,7 +4930,7 @@ export function OfficeScreen({
         />
       ) : null}
 
-      {showHermesConsole && <button type="button" onClick={() => setHermesConsoleVisible(value => !value)} aria-expanded={hermesConsoleVisible} className="fixed bottom-4 right-40 z-30 rounded-md px-2 py-1 text-[12px] text-[#606657] bg-[#faf8f3]">이벤트 콘솔</button>}
+
 
       {showHermesConsole && hermesConsoleVisible ? (
         <section className="pointer-events-auto fixed bottom-20 left-3 z-30 flex w-[520px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-xl border border-[#e2dccf] bg-[#fbf8f2]/95 shadow-lg backdrop-blur">
@@ -5251,176 +5145,27 @@ export function OfficeScreen({
       ) : null}
 
       <div
-        className={`fixed bottom-[76px] z-30 flex flex-col items-end gap-2 ${sidebarOpen ? "right-84" : "right-3"} ${
+        className={`workspace-chat-dock fixed bottom-[76px] z-30 flex flex-col items-end gap-2 ${sidebarOpen ? "right-84" : "right-3"} ${
           debugEnabled ? "hidden" : ""
         }`}
       >
         {chatOpen && (
           <div
             className="lab-theme flex overflow-hidden rounded-2xl border border-[#e2dccf] bg-[#f7f3ec] shadow-2xl"
-            style={{
-              width: chatRosterEntries.length <= 1 || chatRosterCollapsed
-                ? "min(max(360px, 30vw), calc(100vw - 1.5rem))"
-                : "min(600px, calc(100vw - 1.5rem))",
-              height: "calc(100vh - 144px)",
-            }}
           >
-            <div
-              className={`flex shrink-0 flex-col border-r border-[#e2dccf] bg-[#f3eee5] transition-[width] ${
-                chatRosterEntries.length <= 1 ? "hidden" : chatRosterCollapsed ? "w-12" : "w-52"
-              }`}
-            >
-              <div className="flex items-center justify-between border-b border-[#e2dccf] px-3 py-2">
-                {!chatRosterCollapsed ? (
-                  <>
-                    <span className="text-[12px] font-semibold text-[#2f3133]">
-                      에이전트
-                    </span>
-                    <span className="font-mono text-[10px] text-[#8a847a]">
-                      {chatRosterEntries.length}
-                    </span>
-                  </>
-                ) : (
-                  <span className="mx-auto font-mono text-[10px] text-[#8a847a]">
-                    {chatRosterEntries.length}
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setChatRosterCollapsed((current) => !current)}
-                className="mx-2 mt-2 inline-flex items-center justify-center rounded-lg border border-[#e2dccf] bg-white px-2 py-2 text-[#6f6a62] transition hover:border-[#b8c6ab] hover:text-[#2f3133]"
-                aria-label={chatRosterCollapsed ? "Expand agent list" : "Collapse agent list"}
-                title={chatRosterCollapsed ? "Expand agent list" : "Collapse agent list"}
-              >
-                {chatRosterCollapsed ? (
-                  <ChevronRight className="h-4 w-4" />
-                ) : (
-                  <ChevronLeft className="h-4 w-4" />
-                )}
-              </button>
-              <div className="flex-1 overflow-y-auto">
-                {chatRosterCollapsed ? (
-                  <div className="flex flex-col items-center gap-2 px-1 py-2">
-                    {chatRosterEntries.map((agent) => {
-                      const isSelected = agent.id === selectedChatAgentId;
-                      return (
-                        <button
-                          key={agent.id}
-                          type="button"
-                          onClick={() => handleOpenAgentChat(agent.id)}
-                          className={`inline-flex h-8 w-8 items-center justify-center rounded border font-mono text-[10px] transition ${
-                            isSelected
-                              ? "border-[#b8c6ab] bg-[#e3e9dc] text-[#2f3133]"
-                              : "border-[#e2dccf] bg-white text-[#6f6a62] hover:border-[#b8c6ab] hover:text-[#2f3133]"
-                          }`}
-                          title={agent.name}
-                        >
-                          {agent.name.slice(0, 1).toUpperCase()}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : chatRosterEntries.length === 0 ? (
-                  <div className="px-3 py-4 text-[11px] text-[#8a847a]">
-                    No agents.
-                  </div>
-                ) : (
-                  chatRosterEntries.map((agent) => {
-                    const isSelected = agent.id === selectedChatAgentId;
-                    const isRunning = agent.isRunning;
-                    return (
-                      <button
-                        key={agent.id}
-                        type="button"
-                        onClick={() => handleOpenAgentChat(agent.id)}
-                        className={`flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors ${
-                          isSelected
-                            ? "bg-[#e3e9dc] text-[#2f3133]"
-                            : "text-[#6f6a62] hover:bg-[#ece6da] hover:text-[#2f3133]"
-                        }`}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${isRunning ? "bg-[#6f8762]" : "bg-[#cfc8bb]"}`}
-                        />
-                        <span className="min-w-0 flex-1 truncate text-[12px]">
-                          {agent.name}
-                        </span>
-                        {agent.kind === "remote" ? (
-                          <span className="shrink-0 text-[10px] text-[#6f8762]">
-                            Remote
-                          </span>
-                        ) : null}
-                        <span className="sr-only">
-                          {agent.kind === "remote" ? "Remote agent" : "Local agent"}
-                        </span>
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
             <div className="flex min-w-0 flex-1 flex-col">
               {focusedChatAgent ? (
-                <AgentChatPanel
-                  agent={focusedChatAgent}
-                  isSelected={false}
-                  canSend={status === "connected"}
-                  models={gatewayModels}
-                  stopBusy={
-                    chatController.stopBusyAgentId === focusedChatAgent.agentId
-                  }
-                  onLoadMoreHistory={() => {}}
-                  onOpenSettings={() =>
-                    openAgentEditor(focusedChatAgent.agentId, "IDENTITY.md")
-                  }
-                  onNewSession={() =>
-                    chatController.handleNewSession(focusedChatAgent.agentId)
-                  }
-                  onModelChange={(value) =>
-                    dispatch({
-                      type: "updateAgent",
-                      agentId: focusedChatAgent.agentId,
-                      patch: { model: value ?? undefined },
-                    })
-                  }
-                  onThinkingChange={(value) =>
-                    dispatch({
-                      type: "updateAgent",
-                      agentId: focusedChatAgent.agentId,
-                      patch: { thinkingLevel: value ?? undefined },
-                    })
-                  }
-                  onDraftChange={(value) =>
-                    chatController.handleDraftChange(
-                      focusedChatAgent.agentId,
-                      value,
-                    )
-                  }
-                  onVoiceSend={handleVoiceSend}
-                  onSend={(message) => {
-                    void handleChatSend(
-                      focusedChatAgent.agentId,
-                      focusedChatAgent.sessionKey,
-                      message,
-                    );
-                  }}
-                  onRemoveQueuedMessage={(index) =>
-                    chatController.removeQueuedMessage(
-                      focusedChatAgent.agentId,
-                      index,
-                    )
-                  }
-                  onStopRun={() => {
-                    void chatController.handleStopRun(
-                      focusedChatAgent.agentId,
-                      focusedChatAgent.sessionKey,
-                    );
-                  }}
-                  onAvatarShuffle={() =>
-                    openAgentEditor(focusedChatAgent.agentId, "avatar")
-                  }
+                <ResearcherTaskPanel
+                  key={`${focusedChatAgent.agentId}:${focusedChatAgent.sessionKey}:${focusedChatAgent.sessionEpoch ?? 0}`}
+                  agent={focusedChatAgent} connected={status === "connected"} models={gatewayModels}
+                  stopBusy={chatController.stopBusyAgentId === focusedChatAgent.agentId}
+                  onDraftChange={value => chatController.handleDraftChange(focusedChatAgent.agentId, value)}
+                  onSend={message => { void handleChatSend(focusedChatAgent.agentId, focusedChatAgent.sessionKey, message); }}
+                  onStop={() => { void chatController.handleStopRun(focusedChatAgent.agentId, focusedChatAgent.sessionKey); }}
+                  onRemoveQueued={index => chatController.removeQueuedMessage(focusedChatAgent.agentId, index)}
+                  onModelChange={value => dispatch({ type: "updateAgent", agentId: focusedChatAgent.agentId, patch: { model: value ?? undefined } })}
+                  onNewSession={() => chatController.handleNewSession(focusedChatAgent.agentId)}
+                  onClose={() => setChatOpen(false)}
                 />
               ) : focusedRemoteChatTarget && focusedRemoteChatState ? (
                 <RemoteAgentChatPanel
@@ -5476,36 +5221,12 @@ export function OfficeScreen({
                   }}
                 />
               ) : (
-                <div className="flex flex-1 items-center justify-center font-mono text-[12px] text-white/30">
-                  Select an agent to chat.
-                </div>
+                <div className="workspace-empty"><h2>작업할 연구원을 선택해 주세요</h2><p>연구실의 인물 또는 연구원 목록에서 선택할 수 있습니다.</p><button type="button" className="ui-btn-primary" onClick={() => { setResearchSection("researchers"); setSidebarOpen(true); if (window.innerWidth <= 760) setChatOpen(false); }}>연구원 선택</button></div>
               )}
             </div>
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => setChatOpen((prev) => !prev)}
-          className="fixed bottom-3 right-5 flex items-center gap-1.5 rounded-full border border-[#e2dccf] bg-[#fbf8f2]/95 px-3.5 py-1.5 text-[12px] font-medium text-[#2f3133] shadow-lg backdrop-blur transition-colors hover:border-[#b8c6ab] hover:text-[#4f6545]"
-        >
-          {chatOpen ? (
-            <>
-              <ChevronDown className="h-3.5 w-3.5" />
-              <span>채팅 숨기기</span>
-            </>
-          ) : (
-            <>
-              <MessageSquare className="h-3.5 w-3.5" />
-              <span>채팅</span>
-              {runningCount > 0 ? (
-                <span className="rounded-full bg-[#6f8762] px-1.5 text-[10px] text-white">
-                  {runningCount}
-                </span>
-              ) : null}
-            </>
-          )}
-        </button>
       </div>
 
       {mainVoiceState !== "idle" || mainVoiceError ? (

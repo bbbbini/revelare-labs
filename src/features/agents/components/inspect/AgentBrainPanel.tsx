@@ -49,7 +49,7 @@ const AgentFileProvenance = ({
 }) => {
   if (!path && !workspace) return null;
   return (
-    <div className="rounded-md border border-border/50 bg-black/20 px-3 py-2 text-[11px] text-muted-foreground">
+    <div className="rounded-md border border-border/50 bg-background/90 px-3 py-2 text-[12px] text-muted-foreground">
       {workspace ? (
         <div>
           작업 공간: <span className="font-mono text-foreground">{workspace}</span>
@@ -162,9 +162,9 @@ export const AgentBrainPanel = ({
       const file = agentFiles[name];
       const trimmedContent = file.content.trim();
       const statusCopy = !file.exists
-        ? `이 에이전트에는 아직 전용 ${name} 파일이 없습니다. 여기서 저장하면 작업 공간에 실제 파일이 만들어집니다.`
+        ? `이 연구원에는 아직 전용 ${name} 파일이 없습니다. 여기서 저장하면 작업 공간에 실제 파일이 만들어집니다.`
         : !trimmedContent
-          ? `이 에이전트의 ${name} 파일은 있지만 현재 비어 있습니다.`
+          ? `이 연구원의 ${name} 파일은 있지만 현재 비어 있습니다.`
           : null;
       return (
         <AgentBrainPanelSection title={AGENT_FILE_META[name].title}>
@@ -199,7 +199,7 @@ export const AgentBrainPanel = ({
           {AGENT_FILE_META["IDENTITY.md"].hint}
         </div>
         <div className="text-xs text-muted-foreground">
-          여기서 <span className="font-medium text-foreground">이름</span>을 바꾸고 저장하면 실행 중인 에이전트의 이름도
+          여기서 <span className="font-medium text-foreground">이름</span>을 바꾸고 저장하면 실행 중인 연구원의 이름도
           바뀝니다.
         </div>
         <AgentFileProvenance

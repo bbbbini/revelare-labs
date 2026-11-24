@@ -18,12 +18,12 @@ export const CompanyStep = ({
       <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-4">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/15">
-            <Building2 className="h-5 w-5 text-amber-300" />
+            <Building2 className="h-5 w-5 text-amber-700" />
           </div>
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-white">AI로 회사 구성하기</p>
-            <p className="text-xs leading-5 text-white/60">
-              회사가 하는 일을 설명하면 전문 에이전트, 작업 파일, 역할 지침을 갖춘 전체 조직 구조로
+            <p className="text-sm font-semibold text-foreground">AI로 연구팀 구성하기</p>
+            <p className="text-xs leading-5 text-muted-foreground">
+              연구팀가 하는 일을 설명하면 전문 연구원, 작업 파일, 역할 지침을 갖춘 전체 조직 구조로
               만들어 줍니다.
             </p>
           </div>
@@ -35,7 +35,7 @@ export const CompanyStep = ({
           {
             icon: Sparkles,
             title: "설명 다듬기",
-            description: "연결된 런타임으로 회사 설명 프롬프트를 더 구체적으로 다듬습니다.",
+            description: "연결된 런타임으로 연구팀 설명 프롬프트를 더 구체적으로 다듬습니다.",
           },
           {
             icon: Users,
@@ -45,16 +45,16 @@ export const CompanyStep = ({
           {
             icon: Wand2,
             title: "한 번에 만들기",
-            description: "에이전트 파일을 작성하고 연결된 런타임에 팀을 바로 만듭니다.",
+            description: "연구원 파일을 작성하고 연결된 런타임에 팀을 바로 만듭니다.",
           },
         ].map(({ icon: Icon, title, description }) => (
           <div
             key={title}
-            className="rounded-md border border-white/8 bg-white/[0.02] px-3 py-3"
+            className="rounded-md border border-border bg-surface-2 px-3 py-3"
           >
-            <Icon className="h-4 w-4 text-white/70" />
-            <p className="mt-2 text-[11px] font-semibold text-white">{title}</p>
-            <p className="mt-1 text-[10px] leading-4 text-white/45">{description}</p>
+            <Icon className="h-4 w-4 text-foreground" />
+            <p className="mt-2 text-[12px] font-semibold text-foreground">{title}</p>
+            <p className="mt-1 text-[12px] leading-4 text-muted-foreground">{description}</p>
           </div>
         ))}
       </div>
@@ -68,12 +68,12 @@ export const CompanyStep = ({
               onClick={onOpenCompanyBuilder}
             >
               <Sparkles className="h-3.5 w-3.5" />
-              회사 빌더 열기
+              연구팀 빌더 열기
             </button>
           </div>
         ) : (
-          <div className="rounded-md border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-100/80">
-            AI로 회사를 생성하려면 런타임에 연결하고 기획 에이전트를 1명 이상 준비해 두세요.
+          <div className="rounded-md border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-700">
+            AI로 연구팀를 생성하려면 런타임에 연결하고 기획 연구원를 1명 이상 준비해 두세요.
           </div>
         )}
       </div>

@@ -61,6 +61,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   turbopack: {
     root: path.resolve(__dirname),
   },

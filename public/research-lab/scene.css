@@ -1,0 +1,14 @@
+:root { color-scheme: light; font: 13px system-ui, sans-serif; color: #3e4039; background: #eee9df; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { position: relative; display: flex; flex-direction: column; }
+#zones { position: absolute; top: 16px; left: 16px; z-index: 5; }
+#zones select { max-width: calc(100vw - 32px); min-height: 38px; padding: 8px 32px 8px 12px; border: 1px solid #d8d5ca; border-radius: 8px; background: #fffdf7f5; color: #4d5147; font: inherit; cursor: pointer; box-shadow: 0 2px 5px #44432f08; }
+#zones select:focus-visible { outline: 2px solid #6f8762; outline-offset: 3px; }
+.scene { display: flex; position: relative; flex: 1; min-height: 0; align-items: center; justify-content: center; overflow: hidden; }
+#stage { width: min(100%, calc(100vh * 1240 / 900)); flex-shrink: 0; aspect-ratio: 1240 / 900; position: relative; touch-action: manipulation; }
+canvas.layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#status { position: absolute; top: 42%; padding: 12px 18px; border: 1px solid #e1dccf; border-radius: 8px; background: #fffdf7; color: #64675c; }
+#status[hidden] { display: none; }
+
+body[data-view="selected"] #stage, body[data-view="zone"] #stage { width: max(100%, calc(100vh * 1240 / 900)); }

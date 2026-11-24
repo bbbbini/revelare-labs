@@ -31,6 +31,7 @@ type ContextMenuState = {
 
 export type PixelOffice2DProps = {
   agents: OfficeAgent[];
+  selectedAgentId?: string | null;
   animationState?: OfficeAnimationState | null;
   streamingTextByAgentId?: Record<string, string | null>;
   renderMode: OfficeRenderMode;

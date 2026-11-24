@@ -1210,7 +1210,7 @@ const AgentChatComposer = memo(function AgentChatComposer({
             className="chat-composer-input min-h-[64px] flex-1 resize-none border-0 bg-transparent px-0 py-1 text-[15px] leading-6 text-foreground outline-none shadow-none transition placeholder:text-muted-foreground/65 focus:outline-none focus-visible:outline-none focus-visible:ring-0"
             onChange={onChange}
             onKeyDown={onKeyDown}
-            placeholder="메시지를 입력하세요"
+            placeholder="요청할 연구 작업을 입력하세요"
           />
           <button
             className="ui-chat-attach rounded-md border border-border/70 bg-surface-3 px-2.5 py-2 font-mono text-[11px] font-medium tracking-[0.02em] text-white transition hover:bg-surface-2 hover:text-white disabled:cursor-not-allowed disabled:border-border/30 disabled:bg-muted/20 disabled:text-muted-foreground"
@@ -1743,8 +1743,8 @@ export const AgentChatPanel = ({
                 className="nodrag ui-btn-icon ui-btn-icon-sm shrink-0"
                 type="button"
                 data-testid="agent-settings-toggle"
-                aria-label="동작 설정 열기"
-                title="동작 설정 열기"
+                aria-label="연구원 설정 열기"
+                title="연구원 설정 열기"
                 onClick={onOpenSettings}
               >
                 <ChevronRight className="h-3.5 w-3.5" />

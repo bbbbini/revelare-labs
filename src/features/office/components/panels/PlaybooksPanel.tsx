@@ -128,7 +128,7 @@ const PLAYBOOK_TEMPLATES: TemplateDefinition[] = [
 ];
 
 const formatRelativeDateTime = (timestampMs?: number) => {
-  if (!timestampMs || !Number.isFinite(timestampMs)) return "Unknown";
+  if (!timestampMs || !Number.isFinite(timestampMs)) return "알 수 없음";
   return new Date(timestampMs).toLocaleString([], {
     month: "short",
     day: "numeric",
@@ -247,7 +247,7 @@ export function PlaybooksPanel({
 
   const handleCreate = useCallback(async () => {
     if (!cronEnabled) {
-      setError("This runtime does not expose scheduled playbooks.");
+      setError("현재 런타임은 예약 작업을 지원하지 않습니다.");
       return;
     }
     if (!activeTemplate) return;
@@ -278,7 +278,7 @@ export function PlaybooksPanel({
   const handleRunNow = useCallback(
     async (jobId: string) => {
       if (!cronEnabled) {
-        setError("This runtime does not expose scheduled playbooks.");
+        setError("현재 런타임은 예약 작업을 지원하지 않습니다.");
         return;
       }
       setRunBusyJobId(jobId);
@@ -286,10 +286,10 @@ export function PlaybooksPanel({
       setActionMessage(null);
       try {
         const result = await runCronJobNow(client, jobId);
-        setActionMessage(result.ok ? "Playbook triggered." : "Playbook trigger failed.");
+        setActionMessage(result.ok ? "반복 작업을 시작했습니다." : "반복 작업을 시작하지 못했습니다.");
         await loadJobs();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to run playbook.");
+        setError(err instanceof Error ? err.message : "반복 작업 실행에 실패했습니다.");
       } finally {
         setRunBusyJobId(null);
       }
@@ -300,7 +300,7 @@ export function PlaybooksPanel({
   const handleDelete = useCallback(
     async (jobId: string) => {
       if (!cronEnabled) {
-        setError("This runtime does not expose scheduled playbooks.");
+        setError("현재 런타임은 예약 작업을 지원하지 않습니다.");
         return;
       }
       setDeleteBusyJobId(jobId);
@@ -308,10 +308,10 @@ export function PlaybooksPanel({
       setActionMessage(null);
       try {
         const result = await removeCronJob(client, jobId);
-        setActionMessage(result.ok && result.removed ? "Playbook removed." : "Playbook was not removed.");
+        setActionMessage(result.ok && result.removed ? "반복 작업을 제거했습니다." : "반복 작업을 제거하지 못했습니다.");
         await loadJobs();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to delete playbook.");
+        setError(err instanceof Error ? err.message : "반복 작업 제거에 실패했습니다.");
       } finally {
         setDeleteBusyJobId(null);
       }
@@ -388,70 +388,70 @@ export function PlaybooksPanel({
 
   return (
     <section className="flex h-full min-h-0 flex-col">
-      <div className="border-b border-cyan-500/10 px-4 py-3">
+      <div className="border-b border-border px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/70">
-              Playbooks
+            <div className="font-mono text-[12px] uppercase tracking-[0.22em] text-foreground">
+              일정·연구 절차
             </div>
-            <div className="mt-1 font-mono text-[11px] text-white/40">
-              Launch reusable schedules for the whole headquarters.
+            <div className="mt-1 font-mono text-[12px] text-muted-foreground">
+              반복할 연구 작업과 실행 일정을 관리합니다.
             </div>
           </div>
           <button
             type="button"
             onClick={() => void loadJobs()}
             disabled={!cronEnabled}
-            className="rounded border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-cyan-200 transition-colors hover:border-cyan-400/40 hover:text-cyan-100"
+            className="rounded border border-border bg-accent px-2 py-1 font-mono text-[12px] uppercase tracking-[0.16em] text-primary transition-colors hover:border-border hover:text-primary"
           >
-            Refresh
+            새로고침
           </button>
         </div>
         {!cronEnabled ? (
-          <div className="mt-2 font-mono text-[11px] text-white/35">
-            This runtime does not expose scheduled playbooks.
+          <div className="mt-2 font-mono text-[12px] text-muted-foreground">
+            현재 런타임은 예약 작업을 지원하지 않습니다.
           </div>
         ) : null}
-        {error ? <div className="mt-2 font-mono text-[11px] text-rose-300">{error}</div> : null}
+        {error ? <div className="mt-2 font-mono text-[12px] text-rose-700">{error}</div> : null}
         {actionMessage ? (
-          <div className="mt-2 font-mono text-[11px] text-emerald-300">{actionMessage}</div>
+          <div className="mt-2 font-mono text-[12px] text-emerald-700">{actionMessage}</div>
         ) : null}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="border-b border-cyan-500/10 px-4 py-3">
-          <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-            Active Jobs
+        <div className="border-b border-border px-4 py-3">
+          <div className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+            등록된 일정
           </div>
           <div className="mt-3 space-y-2">
             {loading ? (
-              <div className="font-mono text-[11px] text-white/40">Loading scheduled jobs.</div>
+              <div className="font-mono text-[12px] text-muted-foreground">일정을 불러오는 중…</div>
             ) : jobs.length === 0 ? (
-              <div className="font-mono text-[11px] text-white/35">No active playbooks yet.</div>
+              <div className="font-mono text-[12px] text-muted-foreground">등록된 반복 작업이 없습니다.</div>
             ) : (
               jobs.map((job) => {
-                const agentName = agentById.get(job.agentId ?? "")?.name || job.agentId || "Unknown";
+                const agentName = agentById.get(job.agentId ?? "")?.name || job.agentId || "알 수 없음";
                 return (
                   <div
                     key={job.id}
-                    className="rounded border border-white/8 bg-white/[0.03] px-3 py-3"
+                    className="rounded border border-border bg-surface-2 px-3 py-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="truncate font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85">
+                        <div className="truncate font-mono text-[12px] font-semibold uppercase tracking-[0.16em] text-foreground">
                           {job.name}
                         </div>
-                        <div className="mt-1 font-mono text-[11px] text-white/45">{agentName}</div>
+                        <div className="mt-1 font-mono text-[12px] text-muted-foreground">{agentName}</div>
                       </div>
-                      <div className="shrink-0 rounded border border-cyan-500/20 bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-cyan-200">
+                      <div className="shrink-0 rounded border border-border bg-accent px-1.5 py-0.5 font-mono text-[12px] uppercase tracking-[0.12em] text-primary">
                         {job.state.lastStatus ?? "ready"}
                       </div>
                     </div>
 
-                    <div className="mt-3 space-y-1 font-mono text-[11px] text-white/65">
+                    <div className="mt-3 space-y-1 font-mono text-[12px] text-muted-foreground">
                       <div>{formatCronSchedule(job.schedule)}</div>
-                      <div>Next run: {formatRelativeDateTime(job.state.nextRunAtMs)}</div>
-                      <div>Last run: {formatRelativeDateTime(job.state.lastRunAtMs)}</div>
+                      <div>다음 실행: {formatRelativeDateTime(job.state.nextRunAtMs)}</div>
+                      <div>최근 실행: {formatRelativeDateTime(job.state.lastRunAtMs)}</div>
                     </div>
 
                     <div className="mt-3 flex gap-2">
@@ -459,17 +459,17 @@ export function PlaybooksPanel({
                         type="button"
                         onClick={() => void handleRunNow(job.id)}
                         disabled={runBusyJobId === job.id || deleteBusyJobId === job.id}
-                        className="rounded border border-amber-500/25 bg-amber-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-200 transition-colors hover:border-amber-400/50 hover:text-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded border border-amber-500/25 bg-amber-500/10 px-2 py-1 font-mono text-[12px] uppercase tracking-[0.16em] text-amber-700 transition-colors hover:border-amber-400/50 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {runBusyJobId === job.id ? "Running" : "Run now"}
+                        {runBusyJobId === job.id ? "실행 중" : "지금 실행"}
                       </button>
                       <button
                         type="button"
                         onClick={() => void handleDelete(job.id)}
                         disabled={deleteBusyJobId === job.id || runBusyJobId === job.id}
-                        className="rounded border border-rose-500/25 bg-rose-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-rose-200 transition-colors hover:border-rose-400/50 hover:text-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded border border-rose-500/25 bg-rose-500/10 px-2 py-1 font-mono text-[12px] uppercase tracking-[0.16em] text-rose-700 transition-colors hover:border-rose-400/50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {deleteBusyJobId === job.id ? "Deleting" : "Delete"}
+                        {deleteBusyJobId === job.id ? "제거 중" : "제거"}
                       </button>
                     </div>
                   </div>
@@ -483,109 +483,109 @@ export function PlaybooksPanel({
           <div className="rounded border border-emerald-500/15 bg-emerald-500/[0.05] px-3 py-3">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-200/85">
-                  Automated Standup
+                <div className="font-mono text-[12px] uppercase tracking-[0.16em] text-emerald-700">
+                  연구 진행 공유
                 </div>
-                <div className="mt-1 font-mono text-[11px] leading-5 text-white/50">
-                  Configure the daily meeting, Jira source, and manual notes board.
+                <div className="mt-1 font-mono text-[12px] leading-5 text-muted-foreground">
+                  정기 공유 시간과 자료 출처, 연구 메모를 설정합니다.
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => void standup.startMeeting("manual")}
-                className="rounded border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-emerald-100 transition-colors hover:border-emerald-400/50 hover:text-white"
+                className="rounded border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 font-mono text-[12px] uppercase tracking-[0.16em] text-emerald-700 transition-colors hover:border-emerald-400/50 hover:text-foreground"
               >
-                Start now
+                지금 시작
               </button>
             </div>
 
             <div className="mt-3 grid gap-3">
-              <label className="flex items-center gap-2 font-mono text-[11px] text-white/75">
+              <label className="flex items-center gap-2 font-mono text-[12px] text-foreground">
                 <input
                   type="checkbox"
                   checked={standupScheduleEnabled}
                   onChange={(event) => setStandupScheduleEnabled(event.target.checked)}
                 />
-                Enable scheduled standup.
+                정기 진행 공유 사용
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                  Cron expression
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                  예약 규칙 (Cron)
                 </span>
                 <input
                   value={standupCronExpr}
                   onChange={(event) => setStandupCronExpr(event.target.value)}
-                  className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                  className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                 />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                  Timezone
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                  시간대
                 </span>
                 <input
                   value={standupTimezone}
                   onChange={(event) => setStandupTimezone(event.target.value)}
-                  className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                  className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                 />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                  Seconds per speaker
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                  연구원별 공유 시간 (초)
                 </span>
                 <input
                   value={standupSpeakerSeconds}
                   onChange={(event) => setStandupSpeakerSeconds(event.target.value)}
-                  className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                  className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                 />
               </label>
 
-              <label className="flex items-center gap-2 font-mono text-[11px] text-white/75">
+              <label className="flex items-center gap-2 font-mono text-[12px] text-foreground">
                 <input
                   type="checkbox"
                   checked={standupAutoOpenBoard}
                   onChange={(event) => setStandupAutoOpenBoard(event.target.checked)}
                 />
-                Auto-open the standup board when a meeting starts.
+                공유를 시작하면 진행 보드 열기
               </label>
 
-              <label className="flex items-center gap-2 font-mono text-[11px] text-white/75">
+              <label className="flex items-center gap-2 font-mono text-[12px] text-foreground">
                 <input
                   type="checkbox"
                   checked={jiraEnabled}
                   onChange={(event) => setJiraEnabled(event.target.checked)}
                 />
-                Enable Jira source.
+                Jira 자료 연동
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                  Jira base URL
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                  Jira 주소
                 </span>
                 <input
                   value={jiraBaseUrl}
                   onChange={(event) => setJiraBaseUrl(event.target.value)}
                   placeholder="https://company.atlassian.net"
-                  className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none placeholder:text-white/20"
+                  className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                  Jira email
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                  Jira 이메일
                 </span>
                 <input
                   value={jiraEmail}
                   onChange={(event) => setJiraEmail(event.target.value)}
-                  className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                  className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                 />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                  Jira API token
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                  Jira API 토큰
                 </span>
                 <input
                   type="password"
@@ -597,35 +597,35 @@ export function PlaybooksPanel({
                   placeholder={
                     jiraApiTokenConfigured ? "Stored on Studio host. Enter to replace." : ""
                   }
-                  className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                  className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                 />
                 {jiraApiTokenConfigured ? (
-                  <span className="text-[10px] text-white/45">
-                    A Jira API token is already stored on the Studio host.
+                  <span className="text-[12px] text-muted-foreground">
+                    서버에 저장된 Jira API 토큰을 사용합니다.
                   </span>
                 ) : null}
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                  Jira project key
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                  Jira 프로젝트 키
                 </span>
                 <input
                   value={jiraProjectKey}
                   onChange={(event) => setJiraProjectKey(event.target.value)}
-                  className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                  className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                 />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                  Jira JQL override
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                  사용자 JQL 쿼리
                 </span>
                 <textarea
                   value={jiraJql}
                   onChange={(event) => setJiraJql(event.target.value)}
                   rows={3}
-                  className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                  className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                 />
               </label>
 
@@ -633,27 +633,27 @@ export function PlaybooksPanel({
                 type="button"
                 onClick={() => void handleSaveStandupConfig()}
                 disabled={standup.saving}
-                className="rounded border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-emerald-100 transition-colors hover:border-emerald-400/50 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 font-mono text-[12px] uppercase tracking-[0.18em] text-emerald-700 transition-colors hover:border-emerald-400/50 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {standup.saving ? "Saving standup settings" : "Save standup settings"}
+                {standup.saving ? "설정 저장 중" : "진행 공유 설정 저장"}
               </button>
             </div>
 
-            <div className="mt-4 border-t border-white/10 pt-4">
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                Manual board input
+            <div className="mt-4 border-t border-border pt-4">
+              <div className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                연구 진행 메모
               </div>
               <div className="mt-3 grid gap-3">
                 <label className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                    Agent
+                  <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                    연구원
                   </span>
                   <select
                     value={standupAgentId}
                     onChange={(event) => setStandupAgentId(event.target.value)}
-                    className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                    className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                   >
-                    <option value="">Select an agent</option>
+                    <option value="">연구원 선택</option>
                     {agents.map((agent) => (
                       <option key={agent.agentId} value={agent.agentId}>
                         {agent.name || agent.agentId}
@@ -663,74 +663,74 @@ export function PlaybooksPanel({
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                    Jira assignee hint
+                  <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Jira 담당자
                   </span>
                   <input
                     value={manualJiraAssignee}
                     onChange={(event) => setManualJiraAssignee(event.target.value)}
-                    className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                    className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                   />
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                    Current task
+                  <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                    현재 작업
                   </span>
                   <input
                     value={manualTask}
                     onChange={(event) => setManualTask(event.target.value)}
-                    className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                    className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                   />
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                    Blockers
+                  <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                    진행을 막는 문제
                   </span>
                   <textarea
                     value={manualBlockers}
                     onChange={(event) => setManualBlockers(event.target.value)}
                     rows={3}
-                    className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                    className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                   />
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                    Manual note
+                  <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                    메모
                   </span>
                   <textarea
                     value={manualNote}
                     onChange={(event) => setManualNote(event.target.value)}
                     rows={4}
-                    className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                    className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                   />
                 </label>
 
                 <button
                   type="button"
                   onClick={() => void handleSaveManualNotes()}
-                  className="rounded border border-cyan-500/25 bg-cyan-500/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-cyan-100 transition-colors hover:border-cyan-400/50 hover:text-white"
+                  className="rounded border border-border bg-accent px-3 py-2 font-mono text-[12px] uppercase tracking-[0.18em] text-primary transition-colors hover:border-border hover:text-foreground"
                 >
-                  Save manual notes
+                  메모 저장
                 </button>
               </div>
             </div>
 
             {standup.meeting ? (
-              <div className="mt-4 rounded border border-white/8 bg-white/[0.03] px-3 py-3 font-mono text-[11px] text-white/65">
-                <div>Meeting phase: {standup.meeting.phase}</div>
-                <div>Participants: {standup.meeting.participantOrder.length}</div>
+              <div className="mt-4 rounded border border-border bg-surface-2 px-3 py-3 font-mono text-[12px] text-muted-foreground">
+                <div>진행 단계: {standup.meeting.phase}</div>
+                <div>참여 연구원: {standup.meeting.participantOrder.length}</div>
                 <div>
-                  Current speaker: {standup.meeting.currentSpeakerAgentId ?? "Waiting"}
+                  현재 공유 중: {standup.meeting.currentSpeakerAgentId ?? "대기 중"}
                 </div>
               </div>
             ) : null}
           </div>
 
-          <div className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-            Templates
+          <div className="mt-4 font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+            작업 양식
           </div>
           <div className="mt-3 space-y-2">
             {PLAYBOOK_TEMPLATES.map((template) => {
@@ -740,8 +740,8 @@ export function PlaybooksPanel({
                   key={template.id}
                   className={`rounded border px-3 py-3 transition-colors ${
                     isSelected
-                      ? "border-cyan-400/30 bg-cyan-500/[0.06]"
-                      : "border-white/8 bg-white/[0.03]"
+                      ? "border-border bg-accent"
+                      : "border-border bg-surface-2"
                   }`}
                 >
                   <button
@@ -755,26 +755,26 @@ export function PlaybooksPanel({
                     }}
                     className="w-full text-left"
                   >
-                    <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-white/85">
+                    <div className="font-mono text-[12px] font-semibold uppercase tracking-[0.16em] text-foreground">
                       {template.name}
                     </div>
-                    <div className="mt-1 font-mono text-[11px] leading-5 text-white/50">
+                    <div className="mt-1 font-mono text-[12px] leading-5 text-muted-foreground">
                       {template.description}
                     </div>
                   </button>
 
                   {isSelected ? (
-                    <div className="mt-3 space-y-3 border-t border-cyan-500/10 pt-3">
+                    <div className="mt-3 space-y-3 border-t border-border pt-3">
                       <label className="flex flex-col gap-1">
-                        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                          Agent
+                        <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                          연구원
                         </span>
                         <select
                           value={selectedAgentId}
                           onChange={(event) => setSelectedAgentId(event.target.value)}
-                          className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+                          className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
                         >
-                          <option value="">Select an agent</option>
+                          <option value="">연구원 선택</option>
                           {agents.map((agent) => (
                             <option key={agent.agentId} value={agent.agentId}>
                               {agent.name || agent.agentId}
@@ -784,14 +784,14 @@ export function PlaybooksPanel({
                       </label>
 
                       <label className="flex flex-col gap-1">
-                        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">
-                          Name override
+                        <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                          작업 이름 (선택)
                         </span>
                         <input
                           value={nameOverride}
                           onChange={(event) => setNameOverride(event.target.value)}
                           placeholder={template.name}
-                          className="rounded border border-white/10 bg-black/50 px-2 py-2 font-mono text-[11px] text-white/80 outline-none placeholder:text-white/20"
+                          className="rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none placeholder:text-muted-foreground"
                         />
                       </label>
 
@@ -799,9 +799,9 @@ export function PlaybooksPanel({
                         type="button"
                         onClick={() => void handleCreate()}
                         disabled={createBusy}
-                        className="w-full rounded border border-cyan-500/25 bg-cyan-500/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-cyan-100 transition-colors hover:border-cyan-400/50 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-full rounded border border-border bg-accent px-3 py-2 font-mono text-[12px] uppercase tracking-[0.18em] text-primary transition-colors hover:border-border hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {createBusy ? "Creating playbook" : "Launch playbook"}
+                        {createBusy ? "작업 등록 중" : "반복 작업 등록"}
                       </button>
                     </div>
                   ) : null}

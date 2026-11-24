@@ -30,7 +30,7 @@ export const AgentInspectHeader = ({
     <div className="flex items-center justify-between pl-4 pr-2 pb-3 pt-2">
       <div>
         {hasLabel ? (
-          <div className="font-mono text-[9px] font-medium tracking-[0.04em] text-muted-foreground/58">
+          <div className="font-mono text-[12px] font-medium tracking-[0.04em] text-muted-foreground/58">
             {normalizedLabel}
           </div>
         ) : null}

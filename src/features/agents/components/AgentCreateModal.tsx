@@ -18,7 +18,7 @@ type AgentCreateModalProps = {
 const fieldClassName =
   "ui-input w-full rounded-md px-3 py-2 text-xs text-foreground outline-none";
 const labelClassName =
-  "font-mono text-[11px] font-semibold tracking-[0.05em] text-muted-foreground";
+  "font-mono text-[12px] font-semibold tracking-[0.05em] text-muted-foreground";
 
 const resolveInitialName = (suggestedName: string): string => {
   const trimmed = suggestedName.trim();
@@ -64,7 +64,7 @@ const AgentCreateModalContent = ({
       >
         <div className="flex items-center justify-between border-b border-border/35 px-6 py-6">
           <div>
-            <div className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <div className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               New agent
             </div>
             <div className="mt-1 text-base font-semibold text-foreground">Launch agent</div>
@@ -72,7 +72,7 @@ const AgentCreateModalContent = ({
           </div>
           <button
             type="button"
-            className="ui-btn-ghost px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.06em] disabled:cursor-not-allowed disabled:opacity-60"
+            className="ui-btn-ghost px-3 py-1.5 font-mono text-[12px] font-semibold tracking-[0.06em] disabled:cursor-not-allowed disabled:opacity-60"
             onClick={onClose}
             disabled={busy}
           >
@@ -91,7 +91,7 @@ const AgentCreateModalContent = ({
               placeholder="My agent"
             />
           </label>
-          <div className="-mt-2 text-[11px] text-muted-foreground">
+          <div className="-mt-2 text-[12px] text-muted-foreground">
             You can rename this agent from the main chat header.
           </div>
           <div className="grid justify-items-center gap-2 border-t border-border/40 pt-3">
@@ -122,10 +122,10 @@ const AgentCreateModalContent = ({
         </div>
 
         <div className="flex items-center justify-between border-t border-border/45 px-6 pb-4 pt-5">
-          <div className="text-[11px] text-muted-foreground">Authority can be configured after launch.</div>
+          <div className="text-[12px] text-muted-foreground">Authority can be configured after launch.</div>
           <button
             type="submit"
-            className="ui-btn-primary px-3 py-1.5 font-mono text-[11px] font-semibold tracking-[0.06em] disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground"
+            className="ui-btn-primary px-3 py-1.5 font-mono text-[12px] font-semibold tracking-[0.06em] disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground"
             disabled={!canSubmit || busy}
           >
             {busy ? "Launching..." : "Launch agent"}

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
+import "./workspace.css";
 
 export const metadata: Metadata = {
   title: "REVELARE Security Labs",
-  description: "AI 연구원과 함께하는 로컬 보안 연구 오피스",
+  description: "AI 연구원과 함께하는 로컬 보안 연구실",
 };
 
 const display = Bebas_Neue({

@@ -37,7 +37,7 @@ type AgentCreateWizardModalProps = {
 };
 
 const stepClassName =
-  "rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em]";
+  "rounded-full border px-3 py-1 font-mono text-[12px] uppercase tracking-[0.16em]";
 
 const inputClassName =
   "h-10 rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none";
@@ -266,7 +266,7 @@ export function AgentCreateWizardModal({
         <div className="border-b border-border/40 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+              <div className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
                 New agent wizard
               </div>
               <div className="mt-1 text-lg font-semibold text-foreground">

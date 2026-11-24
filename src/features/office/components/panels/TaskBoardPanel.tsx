@@ -39,8 +39,8 @@ export function TaskBoardPanel({
 }) {
   return (
     <TaskBoardView
-      title="Hermes Tasks"
-      subtitle="The Hermes agent task lifecycle at a glance."
+      title="연구 작업 보드"
+      subtitle="요청부터 완료까지 연구 작업의 진행 상태를 확인하세요."
       agents={agents}
       cardsByStatus={cardsByStatus}
       selectedCard={selectedCard}

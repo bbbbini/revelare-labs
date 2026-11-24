@@ -35,7 +35,7 @@ export type AgentAvatarEditorPanelHandle = {
 };
 
 const pillClassName =
-  "rounded-full border px-3 py-1.5 text-[11px] transition-colors";
+  "rounded-full border px-3 py-1.5 text-[12px] transition-colors";
 
 const colorSwatchClassName =
   "h-7 w-7 rounded-full border-2 transition-transform hover:scale-105";
@@ -96,7 +96,7 @@ export const AgentAvatarEditorPanel = forwardRef<
   return (
     <div className="grid h-full min-h-0 gap-0 xl:grid-cols-[360px_minmax(0,1fr)]">
       <div className="border-b border-border/45 p-5 xl:border-b-0 xl:border-r">
-        <div className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+        <div className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
           Avatar creator
         </div>
         <div className="mt-1 text-lg font-semibold text-foreground">{agentName}</div>
@@ -153,7 +153,7 @@ export const AgentAvatarEditorPanel = forwardRef<
         ) : null}
         <div className="grid gap-6 xl:grid-cols-2">
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Skin tone
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -164,7 +164,7 @@ export const AgentAvatarEditorPanel = forwardRef<
                     key={option.id}
                     type="button"
                     aria-label={option.label}
-                    className={`${colorSwatchClassName} ${selected ? "border-white" : "border-white/15"}`}
+                    className={`${colorSwatchClassName} ${selected ? "border-border" : "border-border"}`}
                     style={{ backgroundColor: option.color }}
                     onClick={() =>
                       setDraft((current) => ({
@@ -179,7 +179,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Hair style
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -209,7 +209,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Hair color
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -220,7 +220,7 @@ export const AgentAvatarEditorPanel = forwardRef<
                     key={option.id}
                     type="button"
                     aria-label={option.label}
-                    className={`${colorSwatchClassName} ${selected ? "border-white" : "border-white/15"}`}
+                    className={`${colorSwatchClassName} ${selected ? "border-border" : "border-border"}`}
                     style={{ backgroundColor: option.color }}
                     onClick={() =>
                       setDraft((current) => ({
@@ -235,7 +235,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Top style
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -265,7 +265,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Top color
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -276,7 +276,7 @@ export const AgentAvatarEditorPanel = forwardRef<
                     key={`top-${option.id}`}
                     type="button"
                     aria-label={option.label}
-                    className={`${colorSwatchClassName} ${selected ? "border-white" : "border-white/15"}`}
+                    className={`${colorSwatchClassName} ${selected ? "border-border" : "border-border"}`}
                     style={{ backgroundColor: option.color }}
                     onClick={() =>
                       setDraft((current) => ({
@@ -291,7 +291,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Bottom style
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -321,7 +321,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Bottom color
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -332,7 +332,7 @@ export const AgentAvatarEditorPanel = forwardRef<
                     key={`bottom-${option.id}`}
                     type="button"
                     aria-label={option.label}
-                    className={`${colorSwatchClassName} ${selected ? "border-white" : "border-white/15"}`}
+                    className={`${colorSwatchClassName} ${selected ? "border-border" : "border-border"}`}
                     style={{ backgroundColor: option.color }}
                     onClick={() =>
                       setDraft((current) => ({
@@ -347,7 +347,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Shoe color
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -358,7 +358,7 @@ export const AgentAvatarEditorPanel = forwardRef<
                     key={`shoes-${option.id}`}
                     type="button"
                     aria-label={option.label}
-                    className={`${colorSwatchClassName} ${selected ? "border-white" : "border-white/15"}`}
+                    className={`${colorSwatchClassName} ${selected ? "border-border" : "border-border"}`}
                     style={{ backgroundColor: option.color }}
                     onClick={() =>
                       setDraft((current) => ({
@@ -373,7 +373,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Hat
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -403,7 +403,7 @@ export const AgentAvatarEditorPanel = forwardRef<
           </section>
 
           <section className="space-y-3 xl:col-span-2">
-            <h3 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-muted-foreground">
+            <h3 className="font-mono text-[12px] font-semibold tracking-[0.06em] text-muted-foreground">
               Accessories
             </h3>
             <div className="flex flex-wrap gap-2">

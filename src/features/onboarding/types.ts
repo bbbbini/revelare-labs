@@ -37,7 +37,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "welcome",
     title: "REVELARE Security Labs에 오신 것을 환영합니다",
-    description: "3D로 보는 AI 오피스",
+    description: "연구원과 작업을 이어가는 공간",
     skippable: false,
   },
   {
@@ -48,26 +48,26 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     id: "connect",
-    title: "게이트웨이 연결",
+    title: "연구실 연결",
     description: "런타임 인스턴스에 연결합니다",
     skippable: false,
   },
   {
     id: "agents",
-    title: "에이전트",
-    description: "AI 팀을 만나 보세요",
+    title: "연구원 확인",
+    description: "연결된 연구원을 확인합니다",
     skippable: true,
   },
   {
     id: "company",
-    title: "회사 구성",
-    description: "조직 구조를 생성합니다",
+    title: "연구팀 구성 (선택)",
+    description: "필요한 경우 연구팀을 구성합니다",
     skippable: true,
   },
   {
     id: "complete",
     title: "준비 완료",
-    description: "둘러보기를 시작하세요",
+    description: "연구 작업을 시작하세요",
     skippable: false,
   },
 ];

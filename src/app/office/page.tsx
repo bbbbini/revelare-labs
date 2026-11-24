@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { RunningAvatarLoader } from "@/features/agents/components/RunningAvatarLoader";
 import { AgentStoreProvider } from "@/features/agents/state/store";
 import { OfficeScreen } from "@/features/office/screens/OfficeScreen";
+import { researchLabAssetsAvailable } from "@/lib/office/researchLabAssets";
+
+export const dynamic = "force-dynamic";
 
 const ENABLED_RE = /^(1|true|yes|on)$/i;
 
@@ -30,13 +33,14 @@ function OfficeLoadingFallback() {
   );
 }
 
-export default function OfficePage() {
+export default async function OfficePage() {
   const showHermesConsole = readDebugFlag(process.env.DEBUG);
+  const defaultRenderMode = await researchLabAssetsAvailable() ? "lab" : "2d";
 
   return (
     <AgentStoreProvider>
       <Suspense fallback={<OfficeLoadingFallback />}>
-        <OfficeScreen showHermesConsole={showHermesConsole} />
+        <OfficeScreen showHermesConsole={showHermesConsole} defaultRenderMode={defaultRenderMode} />
       </Suspense>
     </AgentStoreProvider>
   );

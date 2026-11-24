@@ -57,7 +57,7 @@ const editorSections: Array<{
   {
     id: "avatar",
     label: "아바타",
-    hint: "오피스에서의 모습.",
+    hint: "연구실에서의 모습.",
     icon: Palette,
   },
   {
@@ -137,21 +137,21 @@ export const AgentEditorModal = ({
           type="button"
           onClick={onClose}
           className="absolute -right-3 -top-3 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/50 bg-background/92 text-muted-foreground shadow-lg transition-colors hover:text-foreground"
-          aria-label="에이전트 편집기 닫기"
+          aria-label="연구원 편집기 닫기"
         >
           <X className="h-4 w-4" />
         </button>
         <div className="ui-panel flex h-[min(90vh,920px)] w-full overflow-hidden shadow-xs">
           <aside className="flex w-[240px] shrink-0 flex-col border-r border-border/50 bg-muted/20">
             <div className="border-b border-border/40 px-5 py-4">
-              <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                에이전트 편집기
+              <div className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                연구원 편집기
               </div>
               <div className="mt-1 truncate text-lg font-semibold text-foreground">
                 {agent.name}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                오피스에서 아바타와 에이전트 설정 파일을 편집합니다.
+                연구실에서 아바타와 연구원 설정 파일을 편집합니다.
               </div>
               {onNavigateAgent ? (
                 <div className="mt-4 flex items-center gap-2">
@@ -213,13 +213,13 @@ export const AgentEditorModal = ({
                   onClick={() => {
                     void onDelete(agent.agentId);
                   }}
-                  className="flex w-full items-center gap-3 rounded-xl border border-red-500/40 bg-red-950/55 px-3 py-3 text-left text-red-100 transition-colors hover:border-red-300/65 hover:bg-red-900/75 hover:text-white"
+                  className="flex w-full items-center gap-3 rounded-xl border border-red-500/40 bg-red-950/55 px-3 py-3 text-left text-red-700 transition-colors hover:border-red-300/65 hover:bg-red-900/75 hover:text-foreground"
                 >
                   <Trash2 className="h-4 w-4" />
                   <div>
-                    <div className="text-sm font-semibold text-inherit">에이전트 삭제</div>
-                    <div className="text-xs text-red-100/85">
-                      Hermes3D와 Hermes에서 이 에이전트를 삭제합니다.
+                    <div className="text-sm font-semibold text-inherit">연구원 삭제</div>
+                    <div className="text-xs text-red-700">
+                      Hermes3D와 Hermes에서 이 연구원를 삭제합니다.
                     </div>
                   </div>
                 </button>
@@ -239,11 +239,11 @@ export const AgentEditorModal = ({
             ) : client ? (
               <div className="flex min-h-0 flex-1 flex-col">
                 <div className="border-b border-border/40 px-6 py-4">
-                  <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    에이전트 파일 편집기
+                  <div className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    연구원 파일 편집기
                   </div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    에이전트 파일을 하나씩 편집하고 게이트웨이를 통해 저장합니다.
+                    연구원 파일을 하나씩 편집하고 게이트웨이를 통해 저장합니다.
                   </div>
                 </div>
                 <div className="min-h-0 flex-1">

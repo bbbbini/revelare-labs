@@ -117,19 +117,19 @@ describe("TaskBoardView", () => {
       })
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: /new task/i })[0]!);
-    fireEvent.click(screen.getByRole("button", { name: /refresh/i }));
-    fireEvent.click(screen.getAllByRole("button", { name: /new task/i })[1]!);
-    fireEvent.change(screen.getByLabelText("Title"), {
+    fireEvent.click(screen.getAllByRole("button", { name: /작업 추가|New task/i })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: /새로고침/i }));
+    fireEvent.click(screen.getAllByRole("button", { name: /작업 추가|New task/i })[1]!);
+    fireEvent.change(screen.getByLabelText("작업 제목"), {
       target: { value: "Create marketing website" },
     });
-    fireEvent.change(screen.getByLabelText("Status"), {
+    fireEvent.change(screen.getByLabelText("상태"), {
       target: { value: "working" },
     });
-    fireEvent.change(screen.getByLabelText("Assigned agent"), {
+    fireEvent.change(screen.getByLabelText("담당 연구원"), {
       target: { value: "agent-1" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /delete task/i }));
+    fireEvent.click(screen.getByRole("button", { name: /작업 삭제/i }));
 
     expect(onCreateCard).toHaveBeenCalledTimes(1);
     expect(onRefreshCronJobs).toHaveBeenCalledTimes(1);

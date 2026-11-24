@@ -23,28 +23,28 @@ type MarketplaceFilter = "all" | SkillMarketplaceCollectionId;
 
 const FILTER_LABELS: Record<MarketplaceFilter, string> = {
   hermes3d: "Hermes3D",
-  all: "All",
-  featured: "Featured",
-  installed: "Installed",
-  "setup-required": "Needs setup",
-  "built-in": "Built-in",
-  workspace: "Workspace",
-  extra: "Community",
-  other: "Other",
+  all: "전체",
+  featured: "추천",
+  installed: "설치됨",
+  "setup-required": "설정 필요",
+  "built-in": "기본 제공",
+  workspace: "연구 공간",
+  extra: "커뮤니티",
+  other: "기타",
 };
 
 const READINESS_LABELS = {
-  ready: "Ready",
-  "needs-setup": "Needs setup",
-  unavailable: "Unavailable",
-  "disabled-globally": "Disabled globally",
+  ready: "사용 가능",
+  "needs-setup": "설정 필요",
+  unavailable: "사용 불가",
+  "disabled-globally": "전체 비활성화",
 } as const;
 
 const READINESS_CLASSES = {
-  ready: "border-emerald-500/30 bg-emerald-500/10 text-emerald-100",
-  "needs-setup": "border-amber-500/30 bg-amber-500/10 text-amber-100",
-  unavailable: "border-rose-500/30 bg-rose-500/10 text-rose-100",
-  "disabled-globally": "border-cyan-500/30 bg-cyan-500/10 text-cyan-100",
+  ready: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700",
+  "needs-setup": "border-amber-500/30 bg-amber-500/10 text-amber-700",
+  unavailable: "border-rose-500/30 bg-rose-500/10 text-rose-700",
+  "disabled-globally": "border-border bg-accent text-primary",
 } as const;
 
 const formatRating = (value: number | undefined) => {
@@ -178,45 +178,44 @@ export function SkillsMarketplacePanel({
 
   return (
     <section className="relative flex h-full min-h-0 flex-col">
-      <div className="border-b border-cyan-500/10 px-4 py-3">
+      <div className="border-b border-border px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/70">
-              Skills Marketplace
+            <div className="font-mono text-[12px] uppercase tracking-[0.22em] text-foreground">
+              연구 도구
             </div>
-            <div className="mt-1 font-mono text-[11px] text-white/40">
-              Browse gateway skills like a curated plugin store.
+            <div className="mt-1 font-mono text-[12px] text-muted-foreground">
+              연결한 런타임에서 사용할 도구를 살펴보고 관리합니다.
             </div>
           </div>
           <button
             type="button"
             onClick={() => void marketplace.refresh()}
-            className="inline-flex items-center gap-1 rounded border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-cyan-200 transition-colors hover:border-cyan-400/40 hover:text-cyan-100"
+            className="inline-flex items-center gap-1 rounded border border-border bg-accent px-2 py-1 font-mono text-[12px] uppercase tracking-[0.16em] text-primary transition-colors hover:border-border hover:text-primary"
           >
             <RefreshCcw className="h-3.5 w-3.5" />
-            Refresh
+            새로고침
           </button>
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-        <div className="rounded border border-amber-500/20 bg-amber-500/10 px-3 py-2 font-mono text-[10px] text-amber-100">
-          Packaged skill installs target the selected agent workspace. Global setup actions still affect
-          the whole gateway. Agent access controls below apply only to the selected agent.
+        <div className="rounded border border-amber-500/20 bg-amber-500/10 px-3 py-2 font-mono text-[12px] text-amber-700">
+          설치할 도구는 선택한 연구원에 적용합니다. 런타임 전체 설정과 연구원별 사용 권한을 확인해 주세요.
         </div>
 
-        <div className="mt-3 rounded border border-cyan-500/15 bg-white/[0.03] px-3 py-3">
+        <div className="mt-3 rounded border border-border bg-surface-2 px-3 py-3">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">
-                Agent context
+              <div className="font-mono text-[12px] uppercase tracking-[0.16em] text-muted-foreground">
+                사용할 연구원
               </div>
-              <div className="mt-1 font-mono text-[11px] text-white/75">
+              <div className="mt-1 font-mono text-[12px] text-foreground">
                 {marketplace.selectedAgent?.name ?? "No agent selected"}
               </div>
             </div>
-            <div className="font-mono text-[10px] text-white/35">
-              Access mode: {accessMode === "selected" ? "Selected skills" : accessMode}
+            <div className="font-mono text-[12px] text-muted-foreground">
+              접근 범위: {accessMode === "selected" ? "Selected skills" : accessMode}
             </div>
           </div>
 
@@ -224,9 +223,9 @@ export function SkillsMarketplacePanel({
             <select
               value={marketplace.selectedAgentId ?? ""}
               onChange={(event) => marketplace.setSelectedAgentId(event.target.value || null)}
-              className="min-w-0 flex-1 rounded border border-white/10 bg-black/40 px-2 py-2 font-mono text-[11px] text-white/80 outline-none"
+              className="min-w-0 flex-1 rounded border border-border bg-surface-1 px-2 py-2 font-mono text-[12px] text-foreground outline-none"
             >
-              {marketplace.agents.length === 0 ? <option value="">No agents available</option> : null}
+              {marketplace.agents.length === 0 ? <option value="">선택할 연구원이 없습니다.</option> : null}
               {marketplace.agents.map((agent) => (
                 <option key={agent.agentId} value={agent.agentId}>
                   {agent.name}
@@ -241,9 +240,9 @@ export function SkillsMarketplacePanel({
                   onSelectAgent(marketplace.selectedAgentId);
                 }
               }}
-              className="rounded border border-white/10 bg-white/5 px-2 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-white/75 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded border border-border bg-surface-2 px-2 py-2 font-mono text-[12px] uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Focus chat
+              대화 열기
             </button>
             <button
               type="button"
@@ -253,9 +252,9 @@ export function SkillsMarketplacePanel({
                   onOpenAgentSettings(marketplace.selectedAgentId);
                 }
               }}
-              className="rounded border border-white/10 bg-white/5 px-2 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-white/75 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded border border-border bg-surface-2 px-2 py-2 font-mono text-[12px] uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Settings
+              설정
             </button>
           </div>
         </div>
@@ -265,7 +264,7 @@ export function SkillsMarketplacePanel({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search skills, categories, or sources"
-            className="w-full rounded border border-white/10 bg-black/40 px-3 py-2 font-mono text-[11px] text-white/85 outline-none transition focus:border-cyan-400/35"
+            className="w-full rounded border border-border bg-surface-1 px-3 py-2 font-mono text-[12px] text-foreground outline-none transition focus:border-border"
             aria-label="Search marketplace skills"
           />
         </div>
@@ -276,10 +275,10 @@ export function SkillsMarketplacePanel({
               key={filterId}
               type="button"
               onClick={() => setActiveFilter(filterId)}
-              className={`rounded border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
+              className={`rounded border px-2 py-1 font-mono text-[12px] uppercase tracking-[0.14em] transition-colors ${
                 activeFilter === filterId
-                  ? "border-cyan-400/35 bg-cyan-500/10 text-cyan-100"
-                  : "border-white/10 bg-white/[0.03] text-white/45 hover:text-white/80"
+                  ? "border-border bg-accent text-primary"
+                  : "border-border bg-surface-2 text-muted-foreground hover:text-foreground"
               }`}
             >
               {FILTER_LABELS[filterId]} ({filterCounts[filterId]})
@@ -289,15 +288,15 @@ export function SkillsMarketplacePanel({
 
         {marketplace.message ? (
           <div
-            className={`mt-3 rounded border px-3 py-2 font-mono text-[11px] ${
+            className={`mt-3 rounded border px-3 py-2 font-mono text-[12px] ${
               marketplace.message.kind === "success"
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
-                : "border-rose-500/30 bg-rose-500/10 text-rose-100"
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
+                : "border-rose-500/30 bg-rose-500/10 text-rose-700"
             }`}
           >
             {marketplace.message.text}
             {marketplace.message.kind === "success" ? (
-              <div className="mt-1 font-mono text-[10px] text-emerald-100/80">
+              <div className="mt-1 font-mono text-[12px] text-emerald-700">
                 Check the `HERMES3D` filter below to find the installed skill quickly.
               </div>
             ) : null}
@@ -305,20 +304,20 @@ export function SkillsMarketplacePanel({
         ) : null}
 
         {marketplace.error && !marketplace.message ? (
-          <div className="mt-3 rounded border border-rose-500/30 bg-rose-500/10 px-3 py-2 font-mono text-[11px] text-rose-100">
+          <div className="mt-3 rounded border border-rose-500/30 bg-rose-500/10 px-3 py-2 font-mono text-[12px] text-rose-700">
             {marketplace.error}
           </div>
         ) : null}
 
         {marketplace.loading ? (
-          <div className="mt-4 font-mono text-[11px] text-white/45">Loading marketplace inventory...</div>
+          <div className="mt-4 font-mono text-[12px] text-muted-foreground">도구 목록을 불러오는 중…</div>
         ) : null}
 
         {!marketplace.loading && activeFilter === "all" && featuredEntries.length > 0 ? (
           <div className="mt-4">
-            <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
-              Featured shelf
+            <div className="mb-2 flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              추천 도구
             </div>
             <div className="grid gap-2">
               {featuredEntries.map((entry) => (
@@ -326,37 +325,37 @@ export function SkillsMarketplacePanel({
                   key={`featured:${entry.skill.skillKey}`}
                   type="button"
                   onClick={() => setDetailSkillKey(entry.skill.skillKey)}
-                  className="rounded border border-cyan-500/15 bg-gradient-to-br from-cyan-500/10 to-transparent px-3 py-3 text-left transition-colors hover:border-cyan-400/30"
+                  className="rounded border border-border bg-gradient-to-br from-cyan-500/10 to-transparent px-3 py-3 text-left transition-colors hover:border-border"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="font-mono text-[11px] font-semibold text-white/90">{entry.skill.name}</div>
-                      <div className="mt-1 font-mono text-[10px] text-cyan-100/75">{entry.metadata.tagline}</div>
+                      <div className="font-mono text-[12px] font-semibold text-foreground">{entry.skill.name}</div>
+                      <div className="mt-1 font-mono text-[12px] text-primary">{entry.metadata.tagline}</div>
                     </div>
-                    <div className="rounded border border-cyan-500/20 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-cyan-100/85">
-                      {entry.metadata.editorBadge ?? "Featured"}
+                    <div className="rounded border border-border px-1.5 py-0.5 font-mono text-[12px] uppercase tracking-[0.12em] text-primary">
+                      {entry.metadata.editorBadge ?? "추천"}
                     </div>
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-3 font-mono text-[10px] text-white/55">
+                  <div className="mt-3 flex flex-wrap items-center gap-3 font-mono text-[12px] text-muted-foreground">
                     {!entry.metadata.hideStats ? (
                       <>
                         <span className="inline-flex items-center gap-1">
-                          <Star className="h-3 w-3 text-amber-300" />
+                          <Star className="h-3 w-3 text-amber-700" />
                           {formatRating(entry.metadata.rating)}
                         </span>
-                        <span>{formatInstalls(entry.metadata.installs)} installs</span>
+                        <span>{formatInstalls(entry.metadata.installs)} 회 설치</span>
                       </>
                     ) : null}
                     <span>{entry.metadata.category}</span>
                   </div>
                   {entry.metadata.poweredByName && entry.metadata.poweredByUrl ? (
-                    <div className="mt-2 font-mono text-[10px] text-white/55">
-                      Powered by{" "}
+                    <div className="mt-2 font-mono text-[12px] text-muted-foreground">
+                      제공:{" "}
                       <a
                         href={entry.metadata.poweredByUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-cyan-200 underline decoration-cyan-500/40 underline-offset-2 transition-colors hover:text-cyan-100"
+                        className="text-primary underline decoration-cyan-500/40 underline-offset-2 transition-colors hover:text-primary"
                         onClick={(event) => event.stopPropagation()}
                       >
                         {entry.metadata.poweredByName}
@@ -370,15 +369,15 @@ export function SkillsMarketplacePanel({
         ) : null}
 
         {!marketplace.loading && filteredCollections.length === 0 ? (
-          <div className="mt-4 rounded border border-white/10 bg-white/[0.03] px-3 py-4 font-mono text-[11px] text-white/45">
-            No matching skills found for this gateway.
+          <div className="mt-4 rounded border border-border bg-surface-2 px-3 py-4 font-mono text-[12px] text-muted-foreground">
+            조건에 맞는 도구가 없습니다.
           </div>
         ) : null}
 
         {!marketplace.loading &&
           filteredCollections.map((collection) => (
             <div key={collection.id} className="mt-4">
-              <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
+              <div className="mb-2 font-mono text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
                 {collection.label}
               </div>
               <div className="flex flex-col gap-2">
@@ -389,7 +388,7 @@ export function SkillsMarketplacePanel({
                   const primaryAction =
                     packageOnly
                       ? {
-                          label: "Install skill",
+                          label: "도구 설치",
                           run: () => void marketplace.handleInstallPackagedSkill(entry.skill.skillKey),
                           icon: Download,
                         }
@@ -420,7 +419,7 @@ export function SkillsMarketplacePanel({
                   return (
                     <div
                       key={`${collection.id}:${entry.skill.skillKey}`}
-                      className="rounded border border-white/8 bg-white/[0.03] px-3 py-3"
+                      className="rounded border border-border bg-surface-2 px-3 py-3"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
@@ -428,51 +427,51 @@ export function SkillsMarketplacePanel({
                             <button
                               type="button"
                               onClick={() => setDetailSkillKey(entry.skill.skillKey)}
-                              className="truncate font-mono text-[11px] font-semibold text-white/90 transition-colors hover:text-cyan-100"
+                              className="truncate font-mono text-[12px] font-semibold text-foreground transition-colors hover:text-primary"
                             >
                               {entry.skill.name}
                             </button>
-                            <span className="rounded bg-white/[0.05] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-white/45">
+                            <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[12px] uppercase tracking-[0.12em] text-muted-foreground">
                               {entry.metadata.category}
                             </span>
                             <span
-                              className={`rounded border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] ${READINESS_CLASSES[entry.readiness]}`}
+                              className={`rounded border px-1.5 py-0.5 font-mono text-[12px] uppercase tracking-[0.12em] ${READINESS_CLASSES[entry.readiness]}`}
                             >
                               {READINESS_LABELS[entry.readiness]}
                             </span>
                           </div>
-                          <div className="mt-2 font-mono text-[10px] text-white/65">{entry.metadata.tagline}</div>
-                          <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-[10px] text-white/45">
+                          <div className="mt-2 font-mono text-[12px] text-muted-foreground">{entry.metadata.tagline}</div>
+                          <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-[12px] text-muted-foreground">
                             <span className="inline-flex items-center gap-1">
-                              <Shield className="h-3 w-3 text-cyan-300" />
+                              <Shield className="h-3 w-3 text-primary" />
                               {entry.metadata.trustLabel}
                             </span>
                             {!entry.metadata.hideStats ? (
                               <>
                                 <span className="inline-flex items-center gap-1">
-                                  <Star className="h-3 w-3 text-amber-300" />
+                                  <Star className="h-3 w-3 text-amber-700" />
                                   {formatRating(entry.metadata.rating)}
                                 </span>
-                                <span>{formatInstalls(entry.metadata.installs)} installs</span>
+                                <span>{formatInstalls(entry.metadata.installs)} 회 설치</span>
                               </>
                             ) : null}
                             <span>{entry.skill.source}</span>
                           </div>
                           {entry.metadata.poweredByName && entry.metadata.poweredByUrl ? (
-                            <div className="mt-2 font-mono text-[10px] text-white/55">
-                              Powered by{" "}
+                            <div className="mt-2 font-mono text-[12px] text-muted-foreground">
+                              제공:{" "}
                               <a
                                 href={entry.metadata.poweredByUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-cyan-200 underline decoration-cyan-500/40 underline-offset-2 transition-colors hover:text-cyan-100"
+                                className="text-primary underline decoration-cyan-500/40 underline-offset-2 transition-colors hover:text-primary"
                               >
                                 {entry.metadata.poweredByName}
                               </a>
                             </div>
                           ) : null}
                           {entry.missingDetails.length > 0 ? (
-                            <div className="mt-2 font-mono text-[10px] text-amber-100/85">
+                            <div className="mt-2 font-mono text-[12px] text-amber-700">
                               {entry.missingDetails[0]}
                             </div>
                           ) : null}
@@ -488,10 +487,10 @@ export function SkillsMarketplacePanel({
                               !marketplace.selectedAgentId ||
                               marketplace.busySkillKey === entry.skill.skillKey
                             }
-                            className={`rounded border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
+                            className={`rounded border px-2 py-1 font-mono text-[12px] uppercase tracking-[0.14em] transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
                               isEnabledForAgent
-                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
-                                : "border-white/10 bg-white/5 text-white/75 hover:bg-white/10"
+                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
+                                : "border-border bg-surface-2 text-foreground hover:bg-surface-2"
                             }`}
                           >
                             {isEnabledForAgent ? "Disable for agent" : "Enable for agent"}
@@ -508,7 +507,7 @@ export function SkillsMarketplacePanel({
                                   (primaryAction.label === "Open settings" &&
                                     !marketplace.selectedAgentId)
                                 }
-                                className="inline-flex items-center gap-1 rounded border border-cyan-500/25 bg-cyan-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-100 transition-colors hover:border-cyan-400/40 disabled:cursor-not-allowed disabled:opacity-45"
+                                className="inline-flex items-center gap-1 rounded border border-border bg-accent px-2 py-1 font-mono text-[12px] uppercase tracking-[0.14em] text-primary transition-colors hover:border-border disabled:cursor-not-allowed disabled:opacity-45"
                               >
                                 <PrimaryIcon className="h-3.5 w-3.5" />
                                 {primaryAction.label}
@@ -520,31 +519,31 @@ export function SkillsMarketplacePanel({
                                 type="button"
                                 onClick={() => void marketplace.handleRemoveSkill(entry.skill)}
                                 disabled={marketplace.busySkillKey === entry.skill.skillKey}
-                                className="inline-flex items-center gap-1 rounded border border-rose-500/25 bg-rose-500/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-rose-100 transition-colors hover:border-rose-400/40 disabled:cursor-not-allowed disabled:opacity-45"
+                                className="inline-flex items-center gap-1 rounded border border-rose-500/25 bg-rose-500/10 px-2 py-1 font-mono text-[12px] uppercase tracking-[0.14em] text-rose-700 transition-colors hover:border-rose-400/40 disabled:cursor-not-allowed disabled:opacity-45"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
-                                Remove for all agents
+                                모든 연구원에서 제거
                               </button>
                             ) : null}
 
                             <button
                               type="button"
                               onClick={() => setDetailSkillKey(entry.skill.skillKey)}
-                              className="rounded border border-white/10 bg-white/5 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-white/75 transition-colors hover:bg-white/10"
+                              className="rounded border border-border bg-surface-2 px-2 py-1 font-mono text-[12px] uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-surface-2"
                             >
-                              Details
+                              상세 보기
                             </button>
                           </div>
                         </div>
                       </div>
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-white/35">
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 font-mono text-[12px] text-muted-foreground">
                         <div>
                           {isEnabledForAgent
                             ? "This skill is currently enabled for the selected agent."
                             : "This skill is currently disabled for the selected agent."}
                         </div>
                         {entry.removable ? (
-                          <div>Removing from the gateway deletes the installed skill for every agent.</div>
+                          <div>런타임에서 도구를 제거하면 모든 연구원이 사용할 수 없게 됩니다.</div>
                         ) : null}
                       </div>
                     </div>
@@ -556,20 +555,20 @@ export function SkillsMarketplacePanel({
       </div>
 
       {detailEntry ? (
-        <div className="absolute inset-0 z-10 flex flex-col bg-[#050607]/96">
-          <div className="flex items-start justify-between border-b border-cyan-500/10 px-4 py-3">
+        <div className="absolute inset-0 z-10 flex flex-col bg-background">
+          <div className="flex items-start justify-between border-b border-border px-4 py-3">
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
-                Skill detail
+              <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
+                도구 상세
               </div>
-              <div className="mt-1 font-mono text-[14px] font-semibold text-white/90">
+              <div className="mt-1 font-mono text-[14px] font-semibold text-foreground">
                 {detailEntry.skill.name}
               </div>
             </div>
             <button
               type="button"
               onClick={() => setDetailSkillKey(null)}
-              className="rounded border border-white/10 bg-white/5 p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded border border-border bg-surface-2 p-1.5 text-foreground transition-colors hover:bg-surface-2 hover:text-foreground"
               aria-label="Close marketplace detail"
             >
               <X className="h-4 w-4" />
@@ -577,67 +576,67 @@ export function SkillsMarketplacePanel({
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-            <div className="rounded border border-white/8 bg-white/[0.03] px-3 py-3">
+            <div className="rounded border border-border bg-surface-2 px-3 py-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-cyan-100">
+                <span className="rounded bg-accent px-1.5 py-0.5 font-mono text-[12px] uppercase tracking-[0.12em] text-primary">
                   {detailEntry.metadata.category}
                 </span>
-                <span className="rounded bg-white/[0.05] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-white/55">
+                <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[12px] uppercase tracking-[0.12em] text-muted-foreground">
                   {detailEntry.metadata.trustLabel}
                 </span>
                 <span
-                  className={`rounded border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] ${READINESS_CLASSES[detailEntry.readiness]}`}
+                  className={`rounded border px-1.5 py-0.5 font-mono text-[12px] uppercase tracking-[0.12em] ${READINESS_CLASSES[detailEntry.readiness]}`}
                 >
                   {READINESS_LABELS[detailEntry.readiness]}
                 </span>
               </div>
-              <div className="mt-3 font-mono text-[11px] text-white/75">{detailEntry.metadata.tagline}</div>
+              <div className="mt-3 font-mono text-[12px] text-foreground">{detailEntry.metadata.tagline}</div>
               {detailEntry.metadata.poweredByName && detailEntry.metadata.poweredByUrl ? (
-                <div className="mt-3 font-mono text-[10px] text-white/60">
-                  Powered by{" "}
+                <div className="mt-3 font-mono text-[12px] text-muted-foreground">
+                  제공:{" "}
                   <a
                     href={detailEntry.metadata.poweredByUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-cyan-200 underline decoration-cyan-500/40 underline-offset-2 transition-colors hover:text-cyan-100"
+                    className="text-primary underline decoration-cyan-500/40 underline-offset-2 transition-colors hover:text-primary"
                   >
                     {detailEntry.metadata.poweredByName}
                   </a>
                 </div>
               ) : null}
               <div
-                className={`mt-3 grid gap-2 font-mono text-[10px] text-white/55 ${
+                className={`mt-3 grid gap-2 font-mono text-[12px] text-muted-foreground ${
                   detailEntry.metadata.hideStats ? "grid-cols-1" : "grid-cols-3"
                 }`}
               >
                 {!detailEntry.metadata.hideStats ? (
                   <>
-                    <div className="rounded border border-white/8 bg-black/30 px-2 py-2">
-                      <div className="text-white/35">Rating</div>
-                      <div className="mt-1 text-white/90">{formatRating(detailEntry.metadata.rating)}</div>
+                    <div className="rounded border border-border bg-surface-1 px-2 py-2">
+                      <div className="text-muted-foreground">평점</div>
+                      <div className="mt-1 text-foreground">{formatRating(detailEntry.metadata.rating)}</div>
                     </div>
-                    <div className="rounded border border-white/8 bg-black/30 px-2 py-2">
-                      <div className="text-white/35">Installs</div>
-                      <div className="mt-1 text-white/90">{formatInstalls(detailEntry.metadata.installs)}</div>
+                    <div className="rounded border border-border bg-surface-1 px-2 py-2">
+                      <div className="text-muted-foreground">설치 수</div>
+                      <div className="mt-1 text-foreground">{formatInstalls(detailEntry.metadata.installs)}</div>
                     </div>
                   </>
                 ) : null}
-                <div className="rounded border border-white/8 bg-black/30 px-2 py-2">
-                  <div className="text-white/35">Source</div>
-                  <div className="mt-1 text-white/90">{detailEntry.skill.source}</div>
+                <div className="rounded border border-border bg-surface-1 px-2 py-2">
+                  <div className="text-muted-foreground">출처</div>
+                  <div className="mt-1 text-foreground">{detailEntry.skill.source}</div>
                 </div>
               </div>
             </div>
 
             <div className="mt-4">
-              <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
-                Capabilities
+              <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
+                사용 기능
               </div>
               <div className="mt-2 flex flex-col gap-2">
                 {detailEntry.metadata.capabilities.map((capability) => (
                   <div
                     key={capability}
-                    className="rounded border border-white/8 bg-white/[0.03] px-3 py-2 font-mono text-[10px] text-white/70"
+                    className="rounded border border-border bg-surface-2 px-3 py-2 font-mono text-[12px] text-foreground"
                   >
                     {capability}
                   </div>
@@ -647,14 +646,14 @@ export function SkillsMarketplacePanel({
 
             {detailEntry.missingDetails.length > 0 ? (
               <div className="mt-4">
-                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
-                  Setup notes
+                <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
+                  설정 안내
                 </div>
                 <div className="mt-2 flex flex-col gap-2">
                   {detailEntry.missingDetails.map((line) => (
                     <div
                       key={line}
-                      className="rounded border border-amber-500/20 bg-amber-500/10 px-3 py-2 font-mono text-[10px] text-amber-100"
+                      className="rounded border border-amber-500/20 bg-amber-500/10 px-3 py-2 font-mono text-[12px] text-amber-700"
                     >
                       {line}
                     </div>
@@ -663,9 +662,8 @@ export function SkillsMarketplacePanel({
               </div>
             ) : null}
 
-            <div className="mt-4 rounded border border-cyan-500/15 bg-cyan-500/10 px-3 py-3 font-mono text-[10px] text-cyan-100">
-              Packaged installs land in the selected workspace. Gateway setup changes still apply to every
-              agent, and agent enablement depends on the selected agent&apos;s allowlist.
+            <div className="mt-4 rounded border border-border bg-accent px-3 py-3 font-mono text-[12px] text-primary">
+              도구는 선택한 연구 공간에 설치됩니다. 런타임 전체 설정은 다른 연구원에게도 영향을 줄 수 있습니다.
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -675,10 +673,10 @@ export function SkillsMarketplacePanel({
                   type="button"
                   onClick={() => void marketplace.handleInstallPackagedSkill(detailEntry.skill.skillKey)}
                   disabled={marketplace.busySkillKey === detailEntry.skill.skillKey}
-                  className="inline-flex items-center gap-1 rounded border border-cyan-500/25 bg-cyan-500/10 px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-100 transition-colors hover:border-cyan-400/40 disabled:cursor-not-allowed disabled:opacity-45"
+                  className="inline-flex items-center gap-1 rounded border border-border bg-accent px-2 py-1.5 font-mono text-[12px] uppercase tracking-[0.14em] text-primary transition-colors hover:border-border disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Install skill
+                  도구 설치
                 </button>
               ) : null}
               {detailEntry.readiness === "needs-setup" && detailEntry.installable ? (
@@ -686,10 +684,10 @@ export function SkillsMarketplacePanel({
                   type="button"
                   onClick={() => void marketplace.handleInstallSkill(detailEntry.skill)}
                   disabled={marketplace.busySkillKey === detailEntry.skill.skillKey}
-                  className="inline-flex items-center gap-1 rounded border border-cyan-500/25 bg-cyan-500/10 px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-100 transition-colors hover:border-cyan-400/40 disabled:cursor-not-allowed disabled:opacity-45"
+                  className="inline-flex items-center gap-1 rounded border border-border bg-accent px-2 py-1.5 font-mono text-[12px] uppercase tracking-[0.14em] text-primary transition-colors hover:border-border disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Install dependencies
+                  필요 항목 설치
                 </button>
               ) : null}
               {detailEntry.readiness === "disabled-globally" ? (
@@ -699,10 +697,10 @@ export function SkillsMarketplacePanel({
                     void marketplace.handleSetSkillGlobalEnabled(detailEntry.skill.skillKey, true)
                   }
                   disabled={marketplace.busySkillKey === detailEntry.skill.skillKey}
-                  className="inline-flex items-center gap-1 rounded border border-cyan-500/25 bg-cyan-500/10 px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-100 transition-colors hover:border-cyan-400/40 disabled:cursor-not-allowed disabled:opacity-45"
+                  className="inline-flex items-center gap-1 rounded border border-border bg-accent px-2 py-1.5 font-mono text-[12px] uppercase tracking-[0.14em] text-primary transition-colors hover:border-border disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   <Settings2 className="h-3.5 w-3.5" />
-                  Enable for gateway
+                  런타임에서 활성화
                 </button>
               ) : null}
               <button
@@ -713,26 +711,25 @@ export function SkillsMarketplacePanel({
                     onOpenAgentSettings(marketplace.selectedAgentId);
                   }
                 }}
-                className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/75 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45"
+                className="inline-flex items-center gap-1 rounded border border-border bg-surface-2 px-2 py-1.5 font-mono text-[12px] uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-45"
               >
                 <Settings2 className="h-3.5 w-3.5" />
-                Manage in settings
+                설정에서 관리
               </button>
               {detailEntry.skill.homepage ? (
                 <a
                   href={detailEntry.skill.homepage}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/75 transition-colors hover:bg-white/10"
+                  className="inline-flex items-center gap-1 rounded border border-border bg-surface-2 px-2 py-1.5 font-mono text-[12px] uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-surface-2"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  Homepage
+                  도구 홈페이지
                 </a>
               ) : null}
             </div>
-            <div className="mt-4 rounded border border-white/8 bg-white/[0.03] px-3 py-3 font-mono text-[10px] text-white/60">
-              `Enable/Disable for agent` only changes access for the selected agent. `Remove for all agents`
-              deletes the installed skill from the gateway workspace.
+            <div className="mt-4 rounded border border-border bg-surface-2 px-3 py-3 font-mono text-[12px] text-muted-foreground">
+              연구원별 활성화는 선택한 연구원의 사용 권한만 바꿉니다. 전체 제거는 런타임에서 도구를 삭제합니다.
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
-// Office renderer preference: immersive 3D scene vs. lightweight 2D pixel scene.
+// Office renderer preference: research laboratory, legacy 3D or pixel office.
 // Persisted in localStorage so the choice survives reloads.
 
-export type OfficeRenderMode = "3d" | "2d";
+export type OfficeRenderMode = "lab" | "3d" | "2d";
 
 export const OFFICE_RENDER_MODE_STORAGE_KEY = "hermes-office-render-mode-v1";
 
@@ -10,20 +10,21 @@ export const OFFICE_RENDER_MODE_OPTIONS: Array<{
   label: string;
   description: string;
 }> = [
+  { id: "lab", label: "2.5D 연구실", description: "연구원 상태를 확인하고 대화와 작업을 이어가는 연구실입니다." },
   {
     id: "3d",
-    label: "3D 몰입형",
-    description: "그림자와 후처리 효과가 있는 전체 Three.js 오피스입니다.",
+    label: "3D 연구실",
+    description: "입체 공간에서 연구원을 살펴보는 기존 화면입니다.",
   },
   {
     id: "2d",
-    label: "2D 픽셀",
-    description: "Gather 스타일 픽셀 오피스입니다. 저사양 컴퓨터에 적합합니다.",
+    label: "픽셀 연구실",
+    description: "가벼운 픽셀 화면입니다. 전용 이미지 없이도 사용할 수 있습니다.",
   },
 ];
 
 export const isOfficeRenderMode = (value: unknown): value is OfficeRenderMode =>
-  value === "3d" || value === "2d";
+  value === "lab" || value === "3d" || value === "2d";
 
 /** The explicit user choice, or null when the user never picked one. */
 export const loadStoredOfficeRenderMode = (): OfficeRenderMode | null => {
@@ -37,13 +38,14 @@ export const loadStoredOfficeRenderMode = (): OfficeRenderMode | null => {
   return null;
 };
 
-/**
- * The mode the office should boot with: the user's stored choice, or the 3D
- * office. Software-rendered machines still get the "low" graphics quality
- * (graphicsQuality.ts) and can switch to the 2D office, which is remembered.
- */
-export const resolveInitialOfficeRenderMode = (): OfficeRenderMode =>
-  loadStoredOfficeRenderMode() ?? "3d";
+/** A direct view link wins, otherwise retain the user's renderer preference. */
+export const resolveInitialOfficeRenderMode = (defaultMode: OfficeRenderMode = "lab"): OfficeRenderMode => {
+  if (typeof window !== "undefined") {
+    const requested = new URLSearchParams(window.location.search).get("renderer");
+    if (isOfficeRenderMode(requested)) return requested;
+  }
+  return loadStoredOfficeRenderMode() ?? defaultMode;
+};
 
 export const saveOfficeRenderMode = (mode: OfficeRenderMode) => {
   if (typeof window === "undefined") return;
