@@ -2,7 +2,7 @@
 
 이 문서는 REVELARE Security Labs가 Hermes3D 코드 위에서 기능을 붙이고 공개 빌드를 분리할 때 참고하는 지도이다. 경로는 모두 레포 루트 기준이다.
 
-현재 작업 범위와 상태는 [SPEC](../SPEC.md)과 [PROGRESS](../PROGRESS.md), 문서 분류는 [문서 안내](README.md)를 참고한다. 별도 비공개 2D 시안은 아래 앱 코드에 아직 통합되지 않았다.
+현재 작업 범위와 상태는 [SPEC](../SPEC.md)과 [PROGRESS](../PROGRESS.md), 문서 분류는 [문서 안내](README.md)를 참고한다. 2.5D 연구실은 아래 앱 코드에 통합했으며 원본 비공개 시안과 이미지는 저장소 밖에 보존한다.
 
 ## 1. 진입점과 서버
 
@@ -13,6 +13,12 @@
 | 바인딩 호스트 정책 (`HOST`, 공개 호스트 차단) | `server/network-policy.js` |
 | 데모 게이트웨이 | `server/demo-gateway-adapter.js` |
 | 첫 화면 리다이렉트 → `/office` | `src/app/page.tsx` |
+| 연구실 공통 메뉴·화면 패널 | `src/features/research-lab/ResearchWorkspaceNavigation.tsx` |
+| 연구실 작업 요청·응답·대기열 패널 | `src/features/research-lab/ResearcherTaskPanel.tsx` |
+| 실제 대화 기반 작업·결과 목록 | `src/features/research-lab/work.ts`, `ResearchWorkPanel.tsx` |
+| 연구실 연결·화면 설정 | `src/features/research-lab/ResearchSettings.tsx` |
+| 연구원 목록 | `src/features/research-lab/ResearchersPanel.tsx` |
+| 연구실 공통 UI·모바일 화면 규칙 | `src/app/workspace.css`, `src/app/globals.css`의 `.lab-theme` |
 | 오피스 페이지 | `src/app/office/page.tsx` → `src/features/office/screens/OfficeScreen.tsx` |
 | Studio 설정 저장 위치 (`HERMES_STATE_DIR`) | `src/lib/hermes/paths.ts`, `src/lib/studio/settings-store.ts` |
 
@@ -22,7 +28,10 @@
 
 | 대상 | 위치 |
 | --- | --- |
-| 렌더러 선택 (3D/2D) | `src/features/office/renderMode.ts` |
+| 렌더러 선택 (2.5D/3D/픽셀) | `src/features/office/renderMode.ts` |
+| 2.5D 연구실 호스트·실제 연구원 매핑 | `src/features/research-lab/ResearchLab2D.tsx`, `bridge.ts` |
+| 2.5D Canvas2D 장면·동일 출처 메시지 연결 | `public/research-lab/` |
+| 외부 표시 이미지 확인·허용 PNG 제공 | `src/lib/office/researchLabAssets.ts`, `src/app/api/office/research-lab/` |
 | 3D 오피스 렌더러 | `src/features/retro-office/RetroOffice3D.tsx` |
 | 새 3D 연구실 씬과 방 | `src/features/retro-office/ResearchLabScene.tsx`, `src/features/retro-office/scene/ResearchRoom.tsx` |
 | 새 3D 연구실 배치·저장과 아바타 | `src/features/retro-office/core/researchLayout.ts`, `src/features/retro-office/core/researchAvatar.ts` |
@@ -38,6 +47,8 @@
 | 레이아웃 편집기 | `src/app/office/builder/page.tsx`, `src/features/office/components/OfficeBuilderPanel.tsx` |
 | 레이아웃 API | `src/app/api/office/layout/` |
 
+2.5D는 `RESEARCH_LAB_ASSET_DIR`의 허용된 이미지로 표시한다. 자산이 없으면 기본 렌더러는 픽셀이고, 저장된 선택과 `?renderer=lab` 같은 직접 링크가 우선한다. iframe에는 실제 연구원의 ID·이름·상태와 선택·연결 여부만 전달한다. 작업 요청과 결과는 기존 채팅·런타임 경로가 처리한다. 장면은 최대 7명, 하단 목록은 모든 연구원을 지원한다.
+
 ## 3. 에이전트 목록과 상태 표시
 
 | 대상 | 위치 |
@@ -48,7 +59,7 @@
 | 상단 working/idle 수 표시 | 2D `src/features/pixel-office/PixelOffice2D.tsx` (`workingCount`), 3D `src/features/retro-office/RetroOffice3D.tsx` |
 | 3D 에이전트 아바타 | `src/features/retro-office/objects/agents.tsx` |
 | 사이드바 에이전트 목록 | `src/features/agents/components/FleetSidebar.tsx` |
-| 채팅 패널 | `src/features/agents/components/AgentChatPanel.tsx` |
+| 기존 에이전트 페이지 채팅 패널 (보존) | `src/features/agents/components/AgentChatPanel.tsx` |
 
 ## 4. 커스텀 런타임 연결부
 

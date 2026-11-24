@@ -268,6 +268,12 @@ Common environment variables:
 
 See [`.env.example`](.env.example) for the full local development template.
 
+### 2.5D research laboratory
+
+Open `/office?renderer=lab` for the research laboratory. The workspace provides research work, results, researchers and connection settings. Its dedicated researcher panel supports instructions, replies, follow-up queues and stopping a request. Work and result lists derive from restored conversation history; optional runtime management appears in advanced settings only when supported. The task panel opens beside the workspace on desktop and in a dedicated area on mobile. Selecting a researcher opens the existing chat; task status and results use the existing runtime connection. The scene shows up to seven researchers, and the researcher list supports the full roster.
+
+Set `RESEARCH_LAB_ASSET_DIR` in your untracked local environment to the external display-asset directory. The required asset layout is defined in `src/lib/office/researchLabAssets.ts`; only those named PNGs are served. Images, prompts and private evidence are not bundled in this repository. With assets configured, new visitors default to the laboratory; without them, they default to the pixel office. Saved renderer preferences and explicit renderer links take precedence. The unavailable laboratory view also offers a pixel-office fallback.
+
 ## Scripts
 
 - `npm run dev` starts the Studio dev server.
